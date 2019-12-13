@@ -48,15 +48,14 @@ def rtp_to_uvw(r, t, p):
     return u, v, w
 
 
-def xyz_to_uvw(x, y, z, wavelength):
+def baselines(filename, wavelength):
     """
     Given relative antenna positions in cartesian coordinates with units of meters
     and the wavelength in meters determines the u, v, w baselines in cartesian coordinates.
 
     Args:
-        x (float np.array): East-West antenna coordinate in meters.
-        y (float np.array): North-South antenna coordinate in meters.
-        z (float np.array): Altitude antenna coordinate in meters.
+        filename (string): File name of .csv for antenna cartersian coordinates in meters.
+        wavelength (float): Radar signal wavelength in meters.
 
     Returns:
         u (float np.array): East-West baseline coordinate divided by wavelength.
@@ -66,31 +65,38 @@ def xyz_to_uvw(x, y, z, wavelength):
     Notes:
         * Given N antenna then M=N(N-1)/2 unique baselines exist.
         * M baselines can include conjugates and a origin baseline for M_total = M*2 + 1.
+
+    Todo:
+        * Makes options to include or disclude 0th baseline and conjugates.
+        * Make array positions load from the calibration.ini file.
+        * Error handling for missing antenna position values (like no z).
     """
-    
-    num_xspectra = 9+8+7+6+5+4+3+2+1+1
 
-    xspectra_x_diff = np.zeros((num_xspectra),dtype=np.float32)
-    xspectra_y_diff = np.zeros((num_xspectra),dtype=np.float32)
-    xspectra_z_diff = np.zeros((num_xspectra),dtype=np.float32)
+    coords = np.loadtxt(filename, delimiter=",") / wavelength
+    # Baseline for an antenna with itself.
+    u = np.array([0])
+    v = np.array([0])
+    w = np.array([0])
+    # Include all possible baseline combinations.
+    for i in range(len(coords)):
+        for j in range(i+1, len(coords)):
+            u = np.append(u, (coords[i,0] - coords[j,0]))
+            v = np.append(v, (coords[i,1] - coords[j,1]))
+            w = np.append(w, (coords[i,2] - coords[j,2]))
+    # Include the conjugate baselines.
+    for i in range(len(coords)):
+        for j in range(i+1, len(coords)):
+            u = np.append(u, (-coords[i,0] + coords[j,0]))
+            v = np.append(v, (-coords[i,1] + coords[j,1]))
+            w = np.append(w, (-coords[i,2] + coords[j,2]))
 
-    antenna_num_coh_index = 1
-
-    for first_antenna in range(9):
-        for second_antenna in range(first_antenna+1,10):
-            xspectra_x_diff[antenna_num_coh_index] = x_antenna_loc[first_antenna]-x_antenna_loc[second_antenna]
-            xspectra_y_diff[antenna_num_coh_index] = y_antenna_loc[first_antenna]-y_antenna_loc[second_antenna]
-            xspectra_z_diff[antenna_num_coh_index] = z_antenna_loc[first_antenna]-z_antenna_loc[second_antenna]
-            antenna_num_coh_index+=1
-
-    u=xspectra_x_diff
-    v=xspectra_y_diff
-    w=xspectra_z_diff
-
-    u_conj = np.concatenate((u, -u))
-    v_conj = np.concatenate((v, -v))
-    w_conj = np.concatenate((w, -w)) 
     return u, v, w
+
+
+def fov_window():
+
+    return
+
 
 def stats_to_hdf5():
 
@@ -112,7 +118,7 @@ def hdf5_to_swhtcoeffs():
     return
 
 
-def rawdata_to hdf5():
+def rawdata_to_hdf5():
 
     return
 
@@ -120,3 +126,8 @@ def rawdata_to hdf5():
 def hdf5_to_rawdata():
 
     return
+
+
+if __name__ == '__main__':
+    print("ICEBEAR: Incoherent Continuous-Wave E-Region Bistatic Experimental Auroral Radar")
+    print("\t-icebear.utils.py")
