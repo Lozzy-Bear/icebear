@@ -124,6 +124,31 @@ def rawdata_to_hdf5():
     return
 
 def create_level1_hdf5(year,month,day,rx_name,tx_name,snr_cutoff,averages,fdec,center_freq,sample_rate):
+    """
+    Create a level1 HDF5 formatted file for storage of ICEBEAR spectra and cross-spectra
+
+    Args:
+        year (int):
+        month (int):
+        day (int):
+        rx_name (string):
+        tx_name (string):
+        snr_cutoff (float):
+        averages (int):
+        fdec (float):
+        center_freq (float):
+        sample_rate (float):
+
+    Returns:
+        (-1 on error, 0 on success)
+
+    Notes:
+        * Placeholder
+
+    Todo:
+        * create format for receiver and transmitter sites to be read in
+        * test using real data
+    """
 
     # inputs: year, month, day, hour
     # figure out way to grab most of these values from external file. antenna location, setup, corrections, type, code used, tx/rx locations
@@ -152,8 +177,8 @@ def create_level1_hdf5(year,month,day,rx_name,tx_name,snr_cutoff,averages,fdec,c
     vis_values_file.create_dataset('tx_antenna_locations_x_y_z', data=antenna_location_x_y_z)
     vis_values_file.create_dataset('tx_RF_path', data=np.array(['X300->amplifier->bulk->feed->antenna'],dtype='S'))
     vis_values_file.create_dataset('tx_antenna_type', data=np.array(['Cushcraft A50-5S'],dtype='S'))
-    vis_values_file.create_dataset('tx_phase_corrections_applied', data=phase_corr)
-    vis_values_file.create_dataset('tx_magnitude_corrections_applied', data=mag_corr)
+    vis_values_file.create_dataset('tx_phase_corrections', data=phase_corr)
+    vis_values_file.create_dataset('tx_magnitude_corrections', data=mag_corr)
     vis_values_file.create_dataset('tx_antennas_used', data=tx_antenna_array)
     vis_values_file.create_dataset('tx_location_lat_lon', data=[tx_lat,tx_lon])
 
@@ -175,7 +200,32 @@ def create_level1_hdf5(year,month,day,rx_name,tx_name,snr_cutoff,averages,fdec,c
     return
 
 def append_level1_hdf5(hour,minute,second,avg_noise,spec_noise_median,xspec_noise_median,data_flag,doppler,rf_propagation,snr_dB_value,spectra,xspectra):
+    """
+    Append spectra and cross-spectra ICEBEAR data to previously created HDF5 file
 
+    Args:
+        hour (int):
+        minute (int):
+        second (int):
+        avg_noise (float):
+        spec_noise_median (float np.array):
+        xspec_noise_median (complex float np.array):
+        data_flag (boolean):
+        doppler (float np.array):
+        rf_propagation (float np.array):
+        snr_dB_value (float np.array):
+        spectra (float np.array):
+        xspectra (complex float np.array):
+
+    Returns:
+        (-1 on error, 0 on success)
+
+    Notes:
+        * Placeholder
+
+    Todo:
+        * test using real data
+    """
     # filter by snr before input into this file. pass data flag into file
     # have most of these things input to function as arrays.  Try to pass the full arrays at once, rather than using for loop for writing (single write of data for each group rather than appending)
 
