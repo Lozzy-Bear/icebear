@@ -123,13 +123,13 @@ def rawdata_to_hdf5():
 
     return
 
-def icebear_level1_hdf5_create_file():
+def icebear_level1_hdf5_create_file(year,month,day,snr_cutoff,averages,b_code,fdec,center_freq,sample_rate):
 
     # inputs: year, month, day, hour
     # figure out way to grab most of these values from external file. antenna location, setup, corrections, type, code used, tx/rx locations
     # ex. coords = np.loadtxt(filename, delimiter=",")
 
-    vis_values_file = h5py.File(f'/home/icebear-processing/ICEBEAR_3D_software/ICEBEAR-3D/icebear_radar/prototype_vis_values/icebear_3db_1s_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_00.h5', 'w')
+    vis_values_file = h5py.File(f'prototype_vis_values/{year:04d}_{month:02d}_{day:02d}/icebear_{snr_cutoff:02d}dB_{averages:02d}00ms_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_00.h5', 'w')
     vis_values_file.create_dataset('rx_antenna_locations_x_y_z', data=antenna_location_x_y_z)
     vis_values_file.create_dataset('RF_path', data=np.array(['Ant->feed->bulk->BPF->LNA->LNA->X300'],dtype='S'))
     vis_values_file.create_dataset('date', data=[year,month,day])
@@ -137,7 +137,7 @@ def icebear_level1_hdf5_create_file():
     vis_values_file.create_dataset('phase_corrections', data=phase_corr)
     vis_values_file.create_dataset('magnitude_corrections', data=mag_corr)
     vis_values_file.create_dataset('decimation_rate', data=[fdec])
-    vis_values_file.create_dataset('center_freq', data=[49500000.0])
+    vis_values_file.create_dataset('center_freq', data=[center_freq])
     vis_values_file.create_dataset('initial_sample_rate', data=[sample_rate])
     vis_values_file.create_dataset('rx_antenna_type', data=np.array(['Cushcraft 50MHz Superboomer'],dtype='S'))
     vis_values_file.create_dataset('tx_antenna_type', data=np.array(['Cushcraft A50-5S'],dtype='S'))
@@ -151,12 +151,12 @@ def icebear_level1_hdf5_create_file():
 
     return
 
-def icebear_level1_hdf5_append_data():
+def icebear_level1_hdf5_append_data(hour,minute,second,avg_noise,spec_noise_median,xspec_noise_median,data_flag,doppler,rf_propagation,snr_dB_value,spectra,xspectra):
 
     # filter by snr before input into this file. pass data flag into file
     # have most of these things input to function as arrays.  Try to pass the full arrays at once, rather than using for loop for writing (single write of data for each group rather than appending)
 
-    vis_values_file = h5py.File(f'/home/icebear-processing/ICEBEAR_3D_software/ICEBEAR-3D/icebear_radar/prototype_vis_values/icebear_3db_1s_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_00.h5', 'a')
+    vis_values_file = h5py.File(f'prototype_vis_values/{year:04d}_{month:02d}_{day:02d}/icebear_{snr_cutoff:02d}dB_{averages:02d}00ms_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_00.h5', 'a')
     print(f'{hours:02d}{minutes:02d}{seconds:02d}')
     vis_values_file.create_group(f'{hours:02d}{minutes:02d}{seconds:02d}')
     vis_values_file.create_dataset(f'{hours:02d}{minutes:02d}{seconds:02d}/time',data=[hour,minute,second])
@@ -177,7 +177,7 @@ def icebear_level1_hdf5_append_data():
         vis_values_file.create_dataset(f'{hours:02d}{minutes:02d}{seconds:02d}/antenna_xspectra', data=np.reshape(antenna_xspectra,(1,len(antenna_xspectra))),chunks=True,maxshape=(None,len(antenna_xspectra)))
         vis_values_file.close
     else:
-        with h5py.File(f'/home/icebear-processing/ICEBEAR_3D_software/ICEBEAR-3D/icebear_radar/prototype_vis_values/icebear_3db_1s_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_00.h5', 'a') as vis_values_file:
+        with h5py.File(f'prototype_vis_values/{year:04d}_{month:02d}_{day:02d}/icebear_{snr_cutoff:02d}dB_{averages:02d}00ms_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_00.h5', 'a') as vis_values_file:
             vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift"].resize((vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift"].shape[0]+1,vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift"].shape[1]))
             vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift"][vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift"].shape[0]-1,:] = np.reshape(doppler_values,(1,1))
             vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/snr_dB"].resize((vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/snr_dB"].shape[0]+1,vis_values_file[f"{hours:02d}{minutes:02d}{seconds:02d}/snr_dB"].shape[1]))
