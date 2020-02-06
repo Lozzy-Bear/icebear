@@ -183,22 +183,22 @@ def append_level1_hdf5(hour,minute,second,avg_noise,spec_noise_median,xspec_nois
 
     # append a new group for the current measurement
     vis_values_file = h5py.File(f'prototype_vis_values/{year:04d}_{month:02d}_{day:02d}/icebear_{snr_cutoff:02d}dB_{averages:02d}00ms_vis_{year:04d}_{month:02d}_{day:02d}_{hour:02d}_{tx_name}_{rx_name}.h5', 'a')
-    vis_values_file.create_group(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}')
-    vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/time',data=[hour,minute,second])
+    vis_values_file.create_group(f'data/{hours:02d}{minutes:02d}{seconds:02d}')
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/time',data=[hour,minute,second])
 
     # create the noise data for the averaged spectra at a given time
-    vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/avg_spectra_noise_value',data=[noise/10.0])
-    vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/spectra_noise_value',data=[np.median(visi_spec[:,:,0]),np.median(visi_spec[:,:,1]),np.median(visi_spec[:,:,2]),np.median(visi_spec[:,:,3]),np.median(visi_spec[:,:,4]),np.median(visi_spec[:,:,5]),np.median(visi_spec[:,:,6]),np.median(visi_spec[:,:,7]),np.median(visi_spec[:,:,8]),np.median(visi_spec[:,:,9])])
-    vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/xspectra_noise_value',data=xspec_median_value)
-    vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/data_flag',data=[data_flag])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/avg_spectra_noise_value',data=[noise/10.0])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/spectra_noise_value',data=[np.median(visi_spec[:,:,0]),np.median(visi_spec[:,:,1]),np.median(visi_spec[:,:,2]),np.median(visi_spec[:,:,3]),np.median(visi_spec[:,:,4]),np.median(visi_spec[:,:,5]),np.median(visi_spec[:,:,6]),np.median(visi_spec[:,:,7]),np.median(visi_spec[:,:,8]),np.median(visi_spec[:,:,9])])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/xspectra_noise_value',data=xspec_median_value)
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/data_flag',data=[data_flag])
 
     # only write data if there are measurements above the SNR threshold
     if data_flag==True:
-        vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift', data=doppler_values)
-        vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/rf_distance', data=rf_propagation)    
-        vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/snr_dB', data=log_snr_value)
-        vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/antenna_spectra', data=spectra)
-        vis_values_file.create_dataset(f'data_index/{hours:02d}{minutes:02d}{seconds:02d}/antenna_xspectra', data=xspectra)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift', data=doppler_values)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/rf_distance', data=rf_propagation)    
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/snr_dB', data=log_snr_value)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/antenna_spectra', data=spectra)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/antenna_xspectra', data=xspectra)
     
     vis_values_file.close
 
