@@ -188,6 +188,7 @@ def create_level1_hdf5(year,month,day,rx_name,tx_name,snr_cutoff,averages,fdec,c
                                    dtype='S'))
     vis_values_file.create_dataset('tx_phase_corrections', data=phase_corr)
     vis_values_file.create_dataset('tx_magnitude_corrections', data=mag_corr)
+    vis_values_file.create_dataset('tx_sample_rate', data=[tx_sample_rate])
     vis_values_file.create_dataset('tx_antennas_used', data=tx_antenna_array)
     vis_values_file.create_dataset('tx_location_lat_lon', data=[tx_lat,tx_lon])
 
