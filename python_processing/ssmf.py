@@ -25,7 +25,7 @@ def ssmf(meas, code):
     dec=200
     codelen=20000
     nt=codelen/dec
-    result=n.zeros((nrange,codelen/dec),dtype=n.complex64)
+    result=n.zeros((int(nrange),int(codelen/dec)),dtype=n.complex64)
     _fmed.ssmf(meas.ctypes.data_as(C.POINTER(C.c_float)), code.ctypes.data_as(C.POINTER(C.c_float)),result.ctypes.data_as(C.POINTER(C.c_float)))
     S=(pyfftw.interfaces.scipy_fftpack.fft(result))
     return(S)
@@ -36,8 +36,8 @@ def ssmfx(meas0, meas1, code):
     dec=200
     codelen=20000
     nt=codelen/dec
-    result0=n.zeros((nrange,codelen/dec),dtype=n.complex64)
-    result1=n.zeros((nrange,codelen/dec),dtype=n.complex64)
+    result0=n.zeros((int(nrange),int(codelen/dec)),dtype=n.complex64)
+    result1=n.zeros((int(nrange),int(codelen/dec)),dtype=n.complex64)
 
     _fmed.ssmf(meas0.ctypes.data_as(C.POINTER(C.c_float)), code.ctypes.data_as(C.POINTER(C.c_float)),result0.ctypes.data_as(C.POINTER(C.c_float)))
     _fmed.ssmf(meas1.ctypes.data_as(C.POINTER(C.c_float)), code.ctypes.data_as(C.POINTER(C.c_float)),result1.ctypes.data_as(C.POINTER(C.c_float)))
