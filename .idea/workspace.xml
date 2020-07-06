@@ -5,20 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/hardware_info/rx_antenna_info.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hardware_info/tx_antenna_info.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/icebear_3d_test_script.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/igrf/igrf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/igrf/igrf12coeffs.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/libssmf.so" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/python_processing/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/python_processing/libssmf.so" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/python_processing/ssmf.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/python_processing/ssmf.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/python_processing/ssmf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tx_codes/pseudo_random_code_test_8_lpf.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modeling/models_fit.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/modeling/models_gen.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/python_processing/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/python_processing/libssmf.so" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/python_processing/ssmf.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/python_processing/ssmf.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/python_processing/ssmf.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,7 +22,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/mapping.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="2414">
@@ -52,10 +46,22 @@
           </provider>
         </entry>
       </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/processing/ssmf.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/imaging/swht.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
+            <state relative-caret-position="219">
               <caret line="24" selection-start-line="24" selection-end-line="24" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
@@ -126,6 +132,7 @@
         <option value="$APPLICATION_CONFIG_DIR$/scratches/mapping.py" />
         <option value="$PROJECT_DIR$/imaging/image_stats.py" />
         <option value="$PROJECT_DIR$/utils.py" />
+        <option value="$PROJECT_DIR$/cuda/ssmf.py" />
       </list>
     </option>
   </component>
@@ -165,12 +172,7 @@
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="imaging" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="modeling" type="462c0819:PsiDirectoryNode" />
+              <item name="processing" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -353,12 +355,20 @@
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
     </task>
+    <task id="LOCAL-00001" summary="organizing">
+      <created>1594059653204</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1594059653204</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1088" y="-298" width="1096" height="1896" extended-state="6" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2448015" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2448015" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -368,7 +378,7 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" visible="true" weight="0.3295519" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" visible="true" weight="0.3295519" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" />
@@ -421,6 +431,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="organizing" />
+    <option name="LAST_COMMIT_MESSAGE" value="organizing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -669,18 +683,6 @@
     <entry file="file://$PROJECT_DIR$/imaging/swht_image.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/cuda/ssmf.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cuda/ssmf.cu">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1477">
@@ -688,15 +690,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/imaging/swht.py">
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/mapping.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        <state relative-caret-position="2414">
+          <caret line="142" column="23" selection-start-line="142" selection-start-column="23" selection-end-line="142" selection-end-column="23" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modeling/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modeling/models_gen.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modeling/models_fit.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/imaging/image_stats.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -708,10 +719,38 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/mapping.py">
+    <entry file="file://$PROJECT_DIR$/imaging/swht.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2414">
-          <caret line="142" column="23" selection-start-line="142" selection-start-column="23" selection-end-line="142" selection-end-column="23" />
+        <state relative-caret-position="219">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cuda/ssmf.cu">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/ssmf.h">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/ssmf.c">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/ssmf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/processing/ssmf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
