@@ -1,0 +1,12 @@
+'date', data=[year,month,day]
+'experiment_name',data=['normal_ops']
+'tx_name',data=['prelate_site']
+'tx_antenna_locations_x_y_z', data=antenna_location_x_y_z
+'RF_path', data=np.array(['Ant->feed->bulk->BPF->LNA->LNA->X300'])
+'phase_corrections', data=phase_corr
+'magnitude_corrections', data=mag_corr
+'tx_antenna_type', data=np.array(['Cushcraft A50-5S'],dtype='S')
+'tx_antennas_used', data=[1,0,0,1,0,0,0,0,0,0]
+'code_used', data='b_code_filename' #store the binary code
+'tx_sample_rate', data=[800000]
+'tx_location_lat_lon', data=[tx_lat,tx_lon]

@@ -1,0 +1,8 @@
+'date', data=[year,month,day]
+'rx_name', data=(['bakker_site'])
+'rx_antenna_locations_x_y_z', data=antenna_location_x_y_z
+'RF_path', data=np.array(['Ant->feed->bulk->BPF->LNA->LNA->X300']
+'phase_corrections', data=phase_corr
+'magnitude_corrections', data=mag_corr
+'rx_antenna_type', data=np.array(['Cushcraft 50MHz Superboomer']
+'rx_location_lat_lon', data=[rx_lat,rx_lon]
