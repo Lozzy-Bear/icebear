@@ -4,10 +4,9 @@
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="70" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
+    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="forced RTD master_doc = index">
+      <change afterPath="$PROJECT_DIR$/docs/contents.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/contents.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.rst" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -41,10 +40,23 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/docs/conf.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="969">
-              <caret line="58" column="20" selection-start-line="58" selection-start-column="20" selection-end-line="58" selection-end-column="20" />
+            <state relative-caret-position="986">
+              <caret line="58" column="1" selection-start-line="58" selection-start-column="1" selection-end-line="58" selection-end-column="1" />
+              <folding>
+                <element signature="e#553#562#0" expanded="true" />
+              </folding>
             </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/contents.rst">
+          <provider selected="true" editor-type-id="restructured-text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/index.rst">
+          <provider selected="true" editor-type-id="restructured-text-editor" />
         </entry>
       </file>
     </leaf>
@@ -108,6 +120,7 @@
         <option value="$PROJECT_DIR$/documentation/index.rst" />
         <option value="$PROJECT_DIR$/documentation/conf.py" />
         <option value="$PROJECT_DIR$/docs/conf.py" />
+        <option value="$PROJECT_DIR$/docs/contents.rst" />
       </list>
     </option>
   </component>
@@ -171,7 +184,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python docs.docutils task in index.rst">
+  <component name="RunManager" selected="Python docs.docutils task in index.rst (1)">
     <configuration name="conf" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="icebear" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -214,27 +227,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="scratch_12 (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="icebear" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch_12.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="swht" type="PythonConfigurationType" factoryName="Python">
       <module name="icebear" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -254,6 +246,22 @@
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
       <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="docutils task in index.rst (1)" type="docs" factoryName="Docutils task" temporary="true">
+      <module name="icebear" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/docs" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="docutils_input_file" value="$PROJECT_DIR$/docs/index.rst" />
+      <option name="docutils_output_file" value="$PROJECT_DIR$/docs/index.html" />
+      <option name="docutils_params" value="" />
+      <option name="docutils_task" value="rst2html" />
+      <option name="docutils_open_in_browser" value="true" />
       <method v="2" />
     </configuration>
     <configuration name="docutils task in index.rst" type="docs" factoryName="Docutils task" temporary="true">
@@ -290,11 +298,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python docs.docutils task in index.rst (1)" />
         <item itemvalue="Python docs.docutils task in index.rst" />
         <item itemvalue="Python.conf" />
         <item itemvalue="Python docs.docutils task in license.rst" />
         <item itemvalue="Python.mapping" />
-        <item itemvalue="Python.scratch_12 (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -358,7 +366,21 @@
       <option name="project" value="LOCAL" />
       <updated>1594153348130</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="forced RTD master_doc = index">
+      <created>1594153885608</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1594153885608</updated>
+    </task>
+    <task id="LOCAL-00009" summary="forced RTD master_doc = index">
+      <created>1594154325623</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1594154325623</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -370,7 +392,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3295519" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.17470221" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.17470221" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39931935" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -447,7 +469,8 @@
     <MESSAGE value="organizing" />
     <MESSAGE value="Added Sphinx documentation" />
     <MESSAGE value="adding auto docstrings" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding auto docstrings" />
+    <MESSAGE value="forced RTD master_doc = index" />
+    <option name="LAST_COMMIT_MESSAGE" value="forced RTD master_doc = index" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -460,14 +483,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/imaging/deconv.py" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/test_-90_ant0_corr.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-641032">
-          <caret selection-end-column="62" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/test_20191219_0w2.csv">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2105">
@@ -714,10 +729,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/docs/contents.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/index.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/docs/conf.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="969">
-          <caret line="58" column="20" selection-start-line="58" selection-start-column="20" selection-end-line="58" selection-end-column="20" />
+        <state relative-caret-position="986">
+          <caret line="58" column="1" selection-start-line="58" selection-start-column="1" selection-end-line="58" selection-end-column="1" />
+          <folding>
+            <element signature="e#553#562#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
