@@ -10,18 +10,17 @@ ICEBEAR-3D Documentation
    :maxdepth: 2
    :caption: Readme:
 
-   README.rst
+   README
 
 .. toctree::
    :maxdepth: 2
    :caption: Docstring:
 
-   modules.rst
+   modules
 
 .. toctree::
    :maxdepth: 2
    :caption: Index:
 
-   indices.rst
-
+   indices
 

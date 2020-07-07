@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 
 # -- Project information -----------------------------------------------------
@@ -30,7 +30,7 @@ release = '0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.napoleon']
+extensions = ['sphinx.ext.napoleon', 'sphinx.ext.autodoc']
 # Napoleon settings
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
