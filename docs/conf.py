@@ -56,4 +56,5 @@ html_static_path = ['_static']
 
 
 # -- Additional options ------------------------------------------------------
-master_doc = 'index'
+#master_doc = 'index'
+
