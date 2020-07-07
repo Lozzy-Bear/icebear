@@ -4,38 +4,8 @@
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="70" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/plotting/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/plotting/igrf/__init__.py" afterDir="false" />
+    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="organizing structure">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/REQUIREMENTS.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/README.rst" beforeDir="false" afterPath="$PROJECT_DIR$/README.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/contents.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/contents.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/license.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/license.rst" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/modules.rst" beforeDir="false" afterPath="$PROJECT_DIR$/etc/examples/example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imaging/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/imaging/stats.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/imaging/swht.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/info/pseudo_random_code_test_8_lpf.txt" beforeDir="false" afterPath="$PROJECT_DIR$/dat/pseudo_random_code_test_8_lpf.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/info/rx_antenna_info.dat" beforeDir="false" afterPath="$PROJECT_DIR$/dat/rx_antenna_info.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/info/tx_antenna_info.dat" beforeDir="false" afterPath="$PROJECT_DIR$/dat/tx_antenna_info.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotting/igrf/igrf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotting/igrf/igrf12coeffs.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotting/plot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/processing/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/processing/libssmf.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/processing/ssmf.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/processing/ssmf.cu" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/processing/ssmf.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/processing/ssmf.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/icebear_3d_test_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/tests/icebear_3d_test_script.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -45,51 +15,9 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/imaging/stats.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="493">
-              <caret line="32" column="29" selection-start-line="32" selection-start-column="29" selection-end-line="32" selection-end-column="29" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/imaging/swht.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
-              <caret line="24" selection-start-line="24" selection-end-line="24" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/docs/conf.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="18" lean-forward="true" selection-start-line="18" selection-end-line="18" />
-              <folding>
-                <element signature="e#553#562#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/docs/contents.rst">
           <provider selected="true" editor-type-id="restructured-text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/make.bat">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="17" column="53" lean-forward="true" selection-start-line="17" selection-start-column="53" selection-end-line="17" selection-end-column="53" />
-            </state>
-          </provider>
         </entry>
       </file>
     </leaf>
@@ -178,11 +106,6 @@
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="docs" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -431,7 +354,21 @@
       <option name="project" value="LOCAL" />
       <updated>1594157311045</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="organizing structure">
+      <created>1594159135028</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1594159135028</updated>
+    </task>
+    <task id="LOCAL-00013" summary="organizing structure">
+      <created>1594159472152</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1594159472152</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -517,13 +454,15 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="organizing" />
     <MESSAGE value="Added Sphinx documentation" />
     <MESSAGE value="adding auto docstrings" />
     <MESSAGE value="forced RTD master_doc = index" />
     <MESSAGE value="added contents.rst" />
     <MESSAGE value="napoleon extension for google docstrings" />
-    <option name="LAST_COMMIT_MESSAGE" value="napoleon extension for google docstrings" />
+    <MESSAGE value="organizing structure" />
+    <option name="LAST_COMMIT_MESSAGE" value="organizing structure" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -694,13 +633,6 @@
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/documentation/index.html" />
-    <entry file="file://$PROJECT_DIR$/src/imaging/stats.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="32" column="29" selection-start-line="32" selection-start-column="29" selection-end-line="32" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/documentation/index.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
@@ -727,16 +659,6 @@
     <entry file="file://$PROJECT_DIR$/README.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/imaging/swht.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="24" selection-start-line="24" selection-end-line="24" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/REQUIREMENTS.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
@@ -759,15 +681,22 @@
     <entry file="file://$PROJECT_DIR$/docs/index.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/make.bat">
+    <entry file="file://$PROJECT_DIR$/src/imaging/stats.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="53" lean-forward="true" selection-start-line="17" selection-start-column="53" selection-end-line="17" selection-end-column="53" />
+        <state relative-caret-position="493">
+          <caret line="32" column="29" selection-start-line="32" selection-start-column="29" selection-end-line="32" selection-end-column="29" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/contents.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
+    <entry file="file://$PROJECT_DIR$/src/imaging/swht.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/docs/conf.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -778,6 +707,16 @@
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/make.bat">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" column="53" lean-forward="true" selection-start-line="17" selection-start-column="53" selection-end-line="17" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/contents.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
   </component>
   <component name="masterDetails">
