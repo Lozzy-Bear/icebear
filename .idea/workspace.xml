@@ -4,13 +4,7 @@
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="70" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/documentation/README.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation/indices.rst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation/modules.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/icebear.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/icebear.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,26 +37,21 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/documentation/conf.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" column="42" selection-start-line="14" selection-start-column="42" selection-end-line="14" selection-end-column="42" />
-              <folding>
-                <element signature="e#553#562#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/documentation/index.rst">
           <provider selected="true" editor-type-id="restructured-text-editor" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/documentation/modules.rst">
-          <provider selected="true" editor-type-id="restructured-text-editor" />
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/documentation/conf.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="782">
+              <caret line="46" column="61" selection-start-line="46" selection-start-column="58" selection-end-line="46" selection-end-column="61" />
+              <folding>
+                <element signature="e#553#562#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
         </entry>
       </file>
     </leaf>
@@ -84,6 +73,7 @@
       <find>19.9</find>
       <find>28.4</find>
       <find>POIN</find>
+      <find>doc</find>
     </findStrings>
     <replaceStrings>
       <replace>plt</replace>
@@ -122,8 +112,8 @@
         <option value="$PROJECT_DIR$/documentation/license.rst" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/mapping.py" />
         <option value="$PROJECT_DIR$/documentation/indices.rst" />
-        <option value="$PROJECT_DIR$/documentation/conf.py" />
         <option value="$PROJECT_DIR$/documentation/index.rst" />
+        <option value="$PROJECT_DIR$/documentation/conf.py" />
       </list>
     </option>
   </component>
@@ -144,11 +134,6 @@
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="documentation" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -346,7 +331,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594148411084</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added Sphinx documentation">
+      <created>1594151720087</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1594151720087</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -356,8 +348,8 @@
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32969603" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.17470221" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3295519" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.17470221" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39931935" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -693,6 +685,9 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/documentation/modules.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/imaging/swht.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="408">
@@ -703,9 +698,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/documentation/modules.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/documentation/index.html">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -714,8 +706,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/documentation/conf.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" column="42" selection-start-line="14" selection-start-column="42" selection-end-line="14" selection-end-column="42" />
+        <state relative-caret-position="782">
+          <caret line="46" column="61" selection-start-line="46" selection-start-column="58" selection-end-line="46" selection-end-column="61" />
           <folding>
             <element signature="e#553#562#0" expanded="true" />
           </folding>
