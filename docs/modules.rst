@@ -4,4 +4,7 @@ src
 .. toctree::
    :maxdepth: 4
 
-   src
+   imaging
+   plotting
+   processing
+   utils

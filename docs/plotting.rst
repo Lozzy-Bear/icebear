@@ -1,5 +1,5 @@
-src.plotting package
-====================
+plotting package
+================
 
 Subpackages
 -----------
@@ -7,15 +7,15 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   src.plotting.igrf
+   plotting.igrf
 
 Submodules
 ----------
 
-src.plotting.plot module
-------------------------
+plotting.plot module
+--------------------
 
-.. automodule:: src.plotting.plot
+.. automodule:: plotting.plot
    :members:
    :undoc-members:
    :show-inheritance:
@@ -24,7 +24,7 @@ src.plotting.plot module
 Module contents
 ---------------
 
-.. automodule:: src.plotting
+.. automodule:: plotting
    :members:
    :undoc-members:
    :show-inheritance:
