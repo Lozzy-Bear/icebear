@@ -128,12 +128,6 @@ def plot_stats(rng, doppler, snr, az, el):
     ax3.set_xlabel("Doppler [m/s]")
     ax3.set_ylabel("Estimated Range [km]")
     plt.show()
+
     return None
 
-
-if __name__ == '__main__':
-    print("ICEBEAR-3D Statistic Functions. Adam Lozinsky 2019")
-    time = str([2019, 10, 25, 3, 2.0, 4.9])
-    r, d, s, a, e = load_data(
-        "/home/icebear-processing/ICEBEAR_3D_software/ICEBEAR-3D/icebear_radar/third_can_kick.csv", time)
-    plot_stats(r, d, s, a, e)

@@ -100,7 +100,3 @@ def swht_cuda():
     """
     return
 
-
-if __name__ == '__main__':
-    print("ICEBEAR: Incoherent Continuous-Wave E-Region Bistatic Experimental Auroral Radar")
-    print("\t-icebear.imaging.swht.py")

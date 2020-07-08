@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/docs/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/imaging/stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/imaging/stats.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/imaging/swht.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/imaging/swht.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,39 +20,48 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/conf.py">
+        <entry file="file://$PROJECT_DIR$/docs/contents.rst">
+          <provider selected="true" editor-type-id="restructured-text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/docs/requirements.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
+            <state relative-caret-position="136">
+              <caret line="8" column="5" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1620">
+              <caret line="318" selection-start-line="318" selection-end-line="318" />
               <folding>
-                <element signature="e#553#562#0" expanded="true" />
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/imaging/swht.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1630">
+              <caret line="102" selection-start-line="102" selection-end-line="102" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/docs/requirements.txt">
+        <entry file="file://$PROJECT_DIR$/src/imaging/stats.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="8" selection-start-column="8" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/utils.rst">
-          <provider selected="true" editor-type-id="restructured-text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/utils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="5" column="7" selection-start-line="5" selection-start-column="7" selection-end-line="5" selection-end-column="7" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="1633">
+              <caret line="133" lean-forward="true" selection-start-line="133" selection-end-line="133" />
             </state>
           </provider>
         </entry>
@@ -118,20 +131,23 @@
         <option value="$PROJECT_DIR$/etc/examples/example.py" />
         <option value="$PROJECT_DIR$/docs/Makefile" />
         <option value="$PROJECT_DIR$/docs/make.bat" />
-        <option value="$PROJECT_DIR$/docs/contents.rst" />
         <option value="$PROJECT_DIR$/REQUIREMENTS.txt" />
         <option value="$PROJECT_DIR$/docs/index.rst" />
-        <option value="$PROJECT_DIR$/src/utils.py" />
         <option value="$PROJECT_DIR$/docs/conf.py" />
+        <option value="$PROJECT_DIR$/docs/contents.rst" />
+        <option value="$PROJECT_DIR$/README.rst" />
         <option value="$PROJECT_DIR$/docs/requirements.txt" />
+        <option value="$PROJECT_DIR$/src/utils.py" />
+        <option value="$PROJECT_DIR$/src/imaging/swht.py" />
+        <option value="$PROJECT_DIR$/src/imaging/stats.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-1088" />
     <option name="y" value="-298" />
-    <option name="width" value="1094" />
-    <option name="height" value="1056" />
+    <option name="width" value="1096" />
+    <option name="height" value="1936" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -159,7 +175,8 @@
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="venv" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="imaging" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -477,7 +494,28 @@
       <option name="project" value="LOCAL" />
       <updated>1594190035669</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="test summary">
+      <created>1594190208259</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1594190208259</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Come on whats the issue!?">
+      <created>1594190428942</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1594190428942</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Come on whats the issue!?">
+      <created>1594191245518</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1594191245518</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -576,7 +614,8 @@
     <MESSAGE value="changed RTD style, adding napoleon to read Google style Docstrings" />
     <MESSAGE value="trying to fix autodoc" />
     <MESSAGE value="test summary" />
-    <option name="LAST_COMMIT_MESSAGE" value="test summary" />
+    <MESSAGE value="Come on whats the issue!?" />
+    <option name="LAST_COMMIT_MESSAGE" value="Come on whats the issue!?" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -589,8 +628,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/imaging/swht_coeffs.py" />
-    <entry file="file://$PROJECT_DIR$/cuda/cvstats.py" />
     <entry file="file://$PROJECT_DIR$/imaging/direct_image.py" />
     <entry file="file://$PROJECT_DIR$/imaging/wproj_image.py" />
     <entry file="file://$PROJECT_DIR$/imaging/swht_image.py" />
@@ -653,22 +690,12 @@
     <entry file="file://$PROJECT_DIR$/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/imaging/stats.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="32" column="29" selection-start-line="32" selection-start-column="29" selection-end-line="32" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/docs/Makefile">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
           <caret line="5" column="16" selection-start-line="5" selection-start-column="16" selection-end-line="5" selection-end-column="16" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/modules.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/docs/src.plotting.igrf.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
@@ -683,16 +710,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/imaging/swht.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="24" selection-start-line="24" selection-end-line="24" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/processing/ssmf.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
@@ -700,13 +717,6 @@
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/REQUIREMENTS.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="5" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -719,30 +729,27 @@
     <entry file="file://$PROJECT_DIR$/docs/src.imaging.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/LICENSE.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/contents.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/docs/index.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/utils.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
+    <entry file="file://$PROJECT_DIR$/src/imaging/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/utils.py">
+    <entry file="file://$PROJECT_DIR$/REQUIREMENTS.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="7" selection-start-line="5" selection-start-column="7" selection-end-line="5" selection-end-column="7" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state>
+          <caret selection-end-line="7" selection-end-column="5" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/modules.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/plotting.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/docs/conf.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -754,10 +761,46 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/utils.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/contents.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/docs/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="8" selection-start-column="8" selection-end-column="8" />
+        <state relative-caret-position="136">
+          <caret line="8" column="5" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1620">
+          <caret line="318" selection-start-line="318" selection-end-line="318" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/imaging/swht.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1630">
+          <caret line="102" selection-start-line="102" selection-end-line="102" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/imaging/stats.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1633">
+          <caret line="133" lean-forward="true" selection-start-line="133" selection-end-line="133" />
         </state>
       </provider>
     </entry>

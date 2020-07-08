@@ -316,7 +316,3 @@ def append_level1_hdf5(hour,minute,second,avg_noise,spec_noise_median,xspec_nois
 def hdf5_to_rawdata():
     return
 
-
-if __name__ == '__main__':
-    print("ICEBEAR: Incoherent Continuous-Wave E-Region Bistatic Experimental Auroral Radar")
-    print("\t-icebear.utils.py")
