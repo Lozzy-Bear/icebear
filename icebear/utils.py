@@ -7,15 +7,23 @@ def uvw_to_rtp(u, v, w):
     Converts u, v, w cartesian baseline coordinates to radius, theta, phi 
     spherical coordinates.
 
-    Args:
-        u (float np.array): East-West baseline coordinate divided by wavelength.
-        v (float np.array): North-South baseline coordinate divided by wavelength.
-        w (float np.array): Altitude baseline coordinate divided by wavelength.
+    Parameters
+    ----------
+        u : float np.array
+            East-West baseline coordinate divided by wavelength.
+        v : float np.array
+            North-South baseline coordinate divided by wavelength.
+        w : float np.array
+            Altitude baseline coordinate divided by wavelength.
 
-    Returns:
-        r (float np.array): Radius baseline coordinate divided by wavelength.
-        t (float np.array): Theta (elevation) baseline coordinate.
-        p (float np.array): Phi (azimuthal) baseline coordinate.
+    Returns
+    -------
+        r : float np.array
+            Radius baseline coordinate divided by wavelength.
+        t : float np.array
+            Theta (elevation) baseline coordinate.
+        p : float np.array
+            Phi (azimuthal) baseline coordinate.
     """
 
     r = np.sqrt(u ** 2 + v ** 2 + w ** 2)
