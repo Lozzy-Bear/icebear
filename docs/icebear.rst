@@ -1,14 +1,6 @@
 icebear package
 ===============
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   icebear.src
-
 Module contents
 ---------------
 

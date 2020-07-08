@@ -3,24 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-ICEBEAR-3D Documentation
-========================
+ICEBEAR-3D Documentation Contents
+=================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Readme:
-
-   ../README
-
-.. toctree::
-   :maxdepth: 2
-   :caption: License:
-
-   ../LICENSE
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Docstring:
+   :caption: Docstrings:
 
    modules
 
