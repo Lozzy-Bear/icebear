@@ -5,29 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/conf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/contents.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/icebear.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/imaging.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/modules.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/plotting.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/processing.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/utils.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/imaging/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/imaging/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/imaging/stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/imaging/stats.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/imaging/swht.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/imaging/swht.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/plotting/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/plotting/igrf.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/igrf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/plotting/igrf12coeffs.txt" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/igrf12coeffs.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/plotting/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processing/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/processing/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processing/libssmf.so" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/processing/libssmf.so" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processing/ssmf.c" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/processing/ssmf.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processing/ssmf.cu" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/processing/ssmf.cu" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processing/ssmf.h" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/processing/ssmf.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/processing/ssmf.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/processing/ssmf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icebear/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -37,11 +16,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/docs/conf.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="527">
-              <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
+            <state relative-caret-position="680">
+              <caret line="46" column="25" selection-start-line="46" selection-start-column="25" selection-end-line="46" selection-end-column="25" />
               <folding>
                 <element signature="e#553#562#0" expanded="true" />
               </folding>
@@ -49,9 +28,16 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
-          <provider selected="true" editor-type-id="text-editor" />
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/icebear/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="15" column="34" selection-start-line="15" selection-start-column="34" selection-end-line="15" selection-end-column="34" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
         </entry>
       </file>
     </leaf>
@@ -130,6 +116,7 @@
         <option value="$PROJECT_DIR$/docs/requirements.txt" />
         <option value="$PROJECT_DIR$/__init__.py" />
         <option value="$PROJECT_DIR$/docs/conf.py" />
+        <option value="$PROJECT_DIR$/icebear/utils.py" />
       </list>
     </option>
   </component>
@@ -179,6 +166,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="X:\PythonProjects\icebear\etc\tests" />
       <recent name="X:\PythonProjects\icebear\icebear" />
       <recent name="X:\PythonProjects\icebear\src" />
       <recent name="X:\PythonProjects\icebear\src\imaging" />
@@ -617,7 +605,21 @@
       <option name="project" value="LOCAL" />
       <updated>1594246094292</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="trying to fix napoleon">
+      <created>1594247297063</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1594247297063</updated>
+    </task>
+    <task id="LOCAL-00042" summary="trying to fix napoleon">
+      <created>1594247964493</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1594247964493</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -734,9 +736,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/dat/rx_antenna_info.dat">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/dat/pseudo_random_code_test_8_lpf.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -835,16 +834,6 @@
     <entry file="file://$PROJECT_DIR$/icebear/plotting/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="1" selection-end-column="11" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
@@ -898,9 +887,6 @@
     <entry file="file://$PROJECT_DIR$/docs/utils.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/docs/modules.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
@@ -913,12 +899,28 @@
     <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/etc/tests/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/docs/conf.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
+        <state relative-caret-position="680">
+          <caret line="46" column="25" selection-start-line="46" selection-start-column="25" selection-end-line="46" selection-end-column="25" />
           <folding>
             <element signature="e#553#562#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="34" selection-start-line="15" selection-start-column="34" selection-end-line="15" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
