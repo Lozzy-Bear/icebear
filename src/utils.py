@@ -3,7 +3,7 @@ import h5py
 
 
 def uvw_to_rtp(u, v, w):
-    """This is a Test.
+    """
     Converts u, v, w cartesian baseline coordinates to radius, theta, phi 
     spherical coordinates.
 
