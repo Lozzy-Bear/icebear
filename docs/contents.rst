@@ -10,7 +10,13 @@ ICEBEAR-3D Documentation Contents
    :maxdepth: 2
    :caption: Readme:
 
-   README
+   ../README
+
+.. toctree::
+   :maxdepth: 2
+   :caption: License:
+
+   ../LICENSE
 
 .. toctree::
    :maxdepth: 2

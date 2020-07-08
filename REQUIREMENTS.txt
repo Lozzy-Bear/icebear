@@ -1,2 +1,8 @@
 numpy
-matplotlib.pyplot
+scipy
+matplotlib
+time
+h5py
+ctypes
+pyfftw
+numba
