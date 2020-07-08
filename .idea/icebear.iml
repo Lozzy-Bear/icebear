@@ -11,7 +11,7 @@
     <option name="requirementsPath" value="" />
   </component>
   <component name="PyDocumentationSettings">
-    <option name="myDocStringFormat" value="Google" />
+    <option name="myDocStringFormat" value="NumPy" />
   </component>
   <component name="ReSTService">
     <option name="workdir" value="X:\PythonProjects\icebear\docs" />

@@ -39,15 +39,23 @@ def rtp_to_uvw(r, t, p):
     Converts radius, theta, phi spherical baseline coordinates to u, v, w
     cartesian coordinates.
 
-    Args:
-        r (float np.array): Radius baseline coordinate divided by wavelength.
-        t (float np.array): Theta (elevation) baseline coordinate.
-        p (float np.array): Phi (azimuthal) baseline coordinate.
+    Parameters
+    ----------
+        r : float np.array
+            Radius baseline coordinate divided by wavelength.
+        t : float np.array
+            Theta (elevation) baseline coordinate.
+        p : float np.array
+            Phi (azimuthal) baseline coordinate.
 
-    Returns:
-        u (float np.array): East-West baseline coordinate divided by wavelength.
-        v (float np.array): North-South baseline coordinate divided by wavelength.
-        w (float np.array): Altitude baseline coordinate divided by wavelength.
+    Returns
+    -------
+        u : float np.array
+            East-West baseline coordinate divided by wavelength.
+        v : float np.array
+            North-South baseline coordinate divided by wavelength.
+        w : float np.array
+            Altitude baseline coordinate divided by wavelength.
     """
 
     u = r * np.sin(t) * np.cos(p)
@@ -62,20 +70,29 @@ def baselines(filename, wavelength):
     Given relative antenna positions in cartesian coordinates with units of meters
     and the wavelength in meters determines the u, v, w baselines in cartesian coordinates.
 
-    Args:
-        filename (string): File name of .csv for antenna cartersian coordinates in meters.
-        wavelength (float): Radar signal wavelength in meters.
+    Parameters
+    ----------
+        filename : string
+            File name of .csv for antenna cartesian coordinates in meters.
+        wavelength : float
+            Radar signal wavelength in meters.
 
-    Returns:
-        u (float np.array): East-West baseline coordinate divided by wavelength.
-        v (float np.array): North-South baseline coordinate divided by wavelength.
-        w (float np.array): Altitude baseline coordinate divided by wavelength.
+    Returns
+    -------
+        u : float np.array
+            East-West baseline coordinate divided by wavelength.
+        v : float np.array
+            North-South baseline coordinate divided by wavelength.
+        w : float np.array
+            Altitude baseline coordinate divided by wavelength.
 
-    Notes:
+    Notes
+    -----
         * Given N antenna then M=N(N-1)/2 unique baselines exist.
         * M baselines can include conjugates and a origin baseline for M_total = M*2 + 1.
 
-    Todo:
+    Todo
+    ----
         * Makes options to include or disclude 0th baseline and conjugates.
         * Make array positions load from the calibration.ini file.
         * Error handling for missing antenna position values (like no z).
