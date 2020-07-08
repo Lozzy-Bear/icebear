@@ -10,13 +10,13 @@ ICEBEAR-3D Documentation Contents
    :maxdepth: 2
    :caption: Readme:
 
-   ../README
+   icebear/README
 
 .. toctree::
    :maxdepth: 2
    :caption: License:
 
-   ../LICENSE
+   icebear/LICENSE
 
 .. toctree::
    :maxdepth: 2
