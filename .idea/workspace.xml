@@ -4,12 +4,8 @@
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="70" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="fixed some __init__.py issues">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/src.imaging.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/src.plotting.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/src.processing.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/src.rst" beforeDir="false" />
+    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/docs/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/docs/conf.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,7 +15,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="51">
@@ -31,11 +27,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/docs/conf.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="229">
-              <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
+            <state relative-caret-position="467">
+              <caret line="46" column="26" selection-start-line="46" selection-start-column="26" selection-end-line="46" selection-end-column="26" />
               <folding>
                 <element signature="e#553#562#0" expanded="true" />
               </folding>
@@ -168,6 +164,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="X:\PythonProjects\icebear\src" />
       <recent name="X:\PythonProjects\icebear\src\imaging" />
       <recent name="X:\PythonProjects\icebear\src\processing" />
     </key>
@@ -541,7 +538,14 @@
       <option name="project" value="LOCAL" />
       <updated>1594242845684</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="fixed some __init__.py issues">
+      <created>1594243232096</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1594243232096</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -657,7 +661,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/modeling/models_gen.py" />
     <entry file="file://$PROJECT_DIR$/modeling/models_fit.py" />
     <entry file="file://$PROJECT_DIR$/src/processing/ssmf.cu">
       <provider selected="true" editor-type-id="text-editor" />
@@ -825,22 +828,25 @@
     <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/conf.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
-          <folding>
-            <element signature="e#553#562#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
           <caret line="3" column="31" lean-forward="true" selection-start-line="3" selection-start-column="31" selection-end-line="3" selection-end-column="31" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/conf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="467">
+          <caret line="46" column="26" selection-start-line="46" selection-start-column="26" selection-end-line="46" selection-end-column="26" />
+          <folding>
+            <element signature="e#553#562#0" expanded="true" />
           </folding>
         </state>
       </provider>
