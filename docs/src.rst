@@ -1,6 +1,16 @@
 src package
 ===========
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   src.imaging
+   src.plotting
+   src.processing
+
 Submodules
 ----------
 
