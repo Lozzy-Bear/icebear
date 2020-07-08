@@ -2,7 +2,6 @@ sphinx==3.1.*
 numpy
 scipy
 matplotlib
-time
 h5py
 ctypes
 pyfftw
