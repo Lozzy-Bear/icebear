@@ -1,5 +1,5 @@
-PythonProjects
-==============
+icebear
+=======
 
 .. toctree::
    :maxdepth: 4
