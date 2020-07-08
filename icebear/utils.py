@@ -13,9 +13,9 @@ def uvw_to_rtp(u, v, w):
         w (float np.array): Altitude baseline coordinate divided by wavelength.
 
     Returns:
-        - **r** (*float np.array*): Radius baseline coordinate divided by wavelength.
-        - **t** (*float np.array*): Theta (elevation) baseline coordinate.
-        - **p** (*float np.array*): Phi (azimuthal) baseline coordinate.
+        r (float np.array): Radius baseline coordinate divided by wavelength.
+        t (float np.array): Theta (elevation) baseline coordinate.
+        p (float np.array): Phi (azimuthal) baseline coordinate.
     """
 
     r = np.sqrt(u ** 2 + v ** 2 + w ** 2)
@@ -37,7 +37,7 @@ def rtp_to_uvw(r, t, p):
         p (float np.array): Phi (azimuthal) baseline coordinate.
 
     Returns:
-        u (float np.array): East-West baseline coordinate divided by wavelength.
+        * **u** (*float np.array*): East-West baseline coordinate divided by wavelength.
         v (float np.array): North-South baseline coordinate divided by wavelength.
         w (float np.array): Altitude baseline coordinate divided by wavelength.
     """
@@ -55,13 +55,13 @@ def baselines(filename, wavelength):
     and the wavelength in meters determines the u, v, w baselines in cartesian coordinates.
 
     Args:
-        filename (string): File name of .csv for antenna cartersian coordinates in meters.
-        wavelength (float): Radar signal wavelength in meters.
+        * filename (string): File name of .csv for antenna cartersian coordinates in meters.
+        * wavelength (float): Radar signal wavelength in meters.
 
     Returns:
-        u (float np.array): East-West baseline coordinate divided by wavelength.
-        v (float np.array): North-South baseline coordinate divided by wavelength.
-        w (float np.array): Altitude baseline coordinate divided by wavelength.
+        * u (float np.array): East-West baseline coordinate divided by wavelength.
+        * v (float np.array): North-South baseline coordinate divided by wavelength.
+        * w (float np.array): Altitude baseline coordinate divided by wavelength.
 
     Notes:
         * Given N antenna then M=N(N-1)/2 unique baselines exist.
