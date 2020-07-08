@@ -1,13 +1,13 @@
-processing package
-==================
+src package
+===========
 
 Submodules
 ----------
 
-processing.ssmf module
-----------------------
+src.utils module
+----------------
 
-.. automodule:: processing.ssmf
+.. automodule:: src.utils
    :members:
    :undoc-members:
    :show-inheritance:
@@ -16,7 +16,7 @@ processing.ssmf module
 Module contents
 ---------------
 
-.. automodule:: processing
+.. automodule:: src
    :members:
    :undoc-members:
    :show-inheritance:

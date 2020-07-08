@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.special as special
 import time
-import icebear.utils
+import icebear.utils as utils
 
 
 def swht_coeffs(azimuth, elevation, resolution, lmax, wavelength, u, v, w):
