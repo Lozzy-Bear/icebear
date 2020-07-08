@@ -13,9 +13,9 @@ def uvw_to_rtp(u, v, w):
         w (float np.array): Altitude baseline coordinate divided by wavelength.
 
     Returns:
-        r (float np.array): Radius baseline coordinate divided by wavelength.
-        t (float np.array): Theta (elevation) baseline coordinate.
-        p (float np.array): Phi (azimuthal) baseline coordinate.
+        - **r** (*float np.array*): Radius baseline coordinate divided by wavelength.
+        - **t** (*float np.array*): Theta (elevation) baseline coordinate.
+        - **p** (*float np.array*): Phi (azimuthal) baseline coordinate.
     """
 
     r = np.sqrt(u ** 2 + v ** 2 + w ** 2)
@@ -37,9 +37,9 @@ def rtp_to_uvw(r, t, p):
         p (float np.array): Phi (azimuthal) baseline coordinate.
 
     Returns:
-        {u (float np.array): East-West baseline coordinate divided by wavelength.,
-        v (float np.array): North-South baseline coordinate divided by wavelength.,
-        w (float np.array): Altitude baseline coordinate divided by wavelength.}
+        u (float np.array): East-West baseline coordinate divided by wavelength.
+        v (float np.array): North-South baseline coordinate divided by wavelength.
+        w (float np.array): Altitude baseline coordinate divided by wavelength.
     """
 
     u = r * np.sin(t) * np.cos(p)
