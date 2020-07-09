@@ -92,7 +92,6 @@ def baselines(filename, wavelength):
         * M baselines can include conjugates and a origin baseline for M_total = M*2 + 1.
 
     Todo
-    ----
         * Makes options to include or disclude 0th baseline and conjugates.
         * Make array positions load from the calibration.ini file.
         * Error handling for missing antenna position values (like no z).
