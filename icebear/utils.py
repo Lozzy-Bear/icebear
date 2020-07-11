@@ -121,19 +121,27 @@ def baselines(filename, wavelength):
 def fov_window(coeffs, resolution=np.array([0.1, 0.1]),
                azimuth=np.array([225.0, 315.0]), elevation=np.array([90.0, 110.0])):
     """
-    Set the field-of-view (fov) for a coefficents set. A narrower fov will result in
-    faster runtimes.
+    Set the field-of-view (fov) for a coefficients set. A narrower fov will result in
+    faster run times.
 
-    Args:
-        coeffs (complex64 np.array): Array of pre-calculated SWHT coefficents for full sphere.
-        resolution (float np.array): [Azimuth, Elevation] resolution with minimum 0.1 degrees.
-        azimuth (float np.array): [[start, stop],...] angles within 0 to 360 degrees.
-        elevation (float np.array): [[start, stop],...] angles within 0 to 180 degrees.
+    Parameters
+    ----------
+        coeffs : complex64 np.array
+            Array of pre-calculated SWHT coefficents for full sphere.
+        resolution : float np.array
+            [Azimuth, Elevation] resolution with minimum 0.1 degrees.
+        azimuth : float np.array
+            [[start, stop],...] angles within 0 to 360 degrees.
+        elevation : float np.array
+            [[start, stop],...] angles within 0 to 180 degrees.
 
-    Returns:
-        fov_coeffs (complex64 np.array): Array of pre-calculated SWHt coefficents for FOV.
+    Returns
+    -------
+        fov_coeffs : complex64 np.array
+            Array of pre-calculated SWHt coefficients for FOV.
 
-    Notes:
+    Notes
+    -----
         * All azimuth field of view zones must have a corresponding elevation zone specified.
         * It is advised to specify field of view zones slightly larger than required.
         * Azimuth and elevation resolution are best kept equal.
@@ -176,25 +184,28 @@ def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages,
     """
     Create a level1 HDF5 formatted file for storage of ICEBEAR spectra and cross-spectra
 
-    Args:
-        year (int):
-        month (int):
-        day (int):
-        rx_name (string):
-        tx_name (string):
-        snr_cutoff (float):
-        averages (int):
-        fdec (float):
-        center_freq (float):
-        sample_rate (float):
+    Parameters
+    ----------
+        year : int
+        month : int
+        day : int
+        rx_name : string
+        tx_name : string
+        snr_cutoff : float
+        averages : int
+        fdec : float
+        center_freq : float
+        sample_rate : float
 
-    Returns:
-        (-1 on error, 0 on success)
+    Returns
+    -------
+        None
 
-    Notes:
+    Notes
+    -----
         * Placeholder
 
-    Todo:
+    Todo
         * create format for receiver and transmitter sites to be read in
         * test using real data
     """
@@ -213,16 +224,13 @@ def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages,
 
     # date and experiment
     vis_values_file.create_dataset('date', data=[year, month, day])
-    vis_values_file.create_dataset('experiment_name', data=np.array(['normal_operations'], \
-                                                                    dtype='S'))
+    vis_values_file.create_dataset('experiment_name', data=np.array(['normal_operations'], dtype='S'))
 
     # receiver site information
     vis_values_file.create_dataset('rx_name', data=np.array(['bakker'], dtype='S'))
     vis_values_file.create_dataset('rx_antenna_locations_x_y_z', data=antenna_location_x_y_z)
-    vis_values_file.create_dataset('rx_RF_path', data=np.array(['Ant->feed->bulk->BPF->LNA->LNA->\
-                                   X300'], dtype='S'))
-    vis_values_file.create_dataset('rx_antenna_type', data=np.array(['Cushcraft 50MHz \
-                                   Superboomer'], dtype='S'))
+    vis_values_file.create_dataset('rx_RF_path', data=np.array(['Ant->feed->bulk->BPF->LNA->LNA->X300'], dtype='S'))
+    vis_values_file.create_dataset('rx_antenna_type', data=np.array(['Cushcraft 50MHz Superboomer'], dtype='S'))
     vis_values_file.create_dataset('rx_phase_corrections_applied', data=phase_corr)
     vis_values_file.create_dataset('rx_magnitude_corrections_applied', data=mag_corr)
     vis_values_file.create_dataset('rx_location_lat_lon', data=[rx_lat, rx_lon])
@@ -230,10 +238,8 @@ def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages,
     # transmitter site information
     vis_values_file.create_dataset('tx_name', data=np.array(['prelate'], dtype='S'))
     vis_values_file.create_dataset('tx_antenna_locations_x_y_z', data=antenna_location_x_y_z)
-    vis_values_file.create_dataset('tx_RF_path', data=np.array(['X300->amplifier->bulk->feed->\
-                                   antenna'], dtype='S'))
-    vis_values_file.create_dataset('tx_antenna_type', data=np.array(['Cushcraft A50-5S'], \
-                                                                    dtype='S'))
+    vis_values_file.create_dataset('tx_RF_path', data=np.array(['X300->amplifier->bulk->feed->antenna'], dtype='S'))
+    vis_values_file.create_dataset('tx_antenna_type', data=np.array(['Cushcraft A50-5S'], dtype='S'))
     vis_values_file.create_dataset('tx_phase_corrections', data=phase_corr)
     vis_values_file.create_dataset('tx_magnitude_corrections', data=mag_corr)
     vis_values_file.create_dataset('tx_sample_rate', data=[tx_sample_rate])
@@ -250,25 +256,22 @@ def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages,
     vis_values_file.create_dataset('dB_SNR_cutoff', data=[snr_cutoff])
 
     # data information
-    vis_values_file.create_dataset('spectra_descriptors', data=np.array(['spec00', 'spec11', 'spec22', 'spec33',
-                                                                         'spec44', 'spec55', 'spec66', 'spec77',
-                                                                         'spec88', 'spec99'], dtype='S'))
-    vis_values_file.create_dataset('xspectra_descriptors', data=np.array(['xspec01', 'xspec02', 'xspec03', 'xspec04',
-                                                                          'xspec05', 'xspec06', 'xspec07', 'xspec08',
-                                                                          'xspec09', 'xspec12', 'xspec13', 'xspec14',
-                                                                          'xspec15', 'xspec16', 'xspec17', 'xspec18',
-                                                                          'xspec19', 'xspec23', 'xspec24', 'xspec25',
-                                                                          'xspec26', 'xspec27', 'xspec28', 'xspec29',
-                                                                          'xspec34', 'xspec35', 'xspec36', 'xspec37',
-                                                                          'xspec38', 'xspec39', 'xspec45', 'xspec46',
-                                                                          'xspec47', 'xspec48', 'xspec49', 'xspec56',
-                                                                          'xspec57', 'xspec58', 'xspec59', 'xspec67',
-                                                                          'xspec68', 'xspec69', 'xspec78', 'xspec79',
-                                                                          'xspec89'], dtype='S'))
+    vis_values_file.create_dataset('spectra_descriptors', data=np.array(
+                                        ['spec00', 'spec11', 'spec22', 'spec33',
+                                         'spec44', 'spec55', 'spec66', 'spec77',
+                                         'spec88', 'spec99'], dtype='S'))
+    vis_values_file.create_dataset('xspectra_descriptors', data=np.array(
+                                       ['xspec01', 'xspec02', 'xspec03', 'xspec04', 'xspec05', 'xspec06', 'xspec07',
+                                        'xspec08', 'xspec09', 'xspec12', 'xspec13', 'xspec14', 'xspec15', 'xspec16',
+                                        'xspec17', 'xspec18', 'xspec19', 'xspec23', 'xspec24', 'xspec25', 'xspec26',
+                                        'xspec27', 'xspec28', 'xspec29', 'xspec34', 'xspec35', 'xspec36', 'xspec37',
+                                        'xspec38', 'xspec39', 'xspec45', 'xspec46', 'xspec47', 'xspec48', 'xspec49',
+                                        'xspec56', 'xspec57', 'xspec58', 'xspec59', 'xspec67', 'xspec68', 'xspec69',
+                                        'xspec78', 'xspec79', 'xspec89'], dtype='S'))
 
-    vis_values_file.close
+    vis_values_file.close()
 
-    return
+    return None
 
 
 def append_level1_hdf5(hour, minute, second, avg_noise, spec_noise_median, xspec_noise_median,
@@ -276,24 +279,27 @@ def append_level1_hdf5(hour, minute, second, avg_noise, spec_noise_median, xspec
     """
     Append spectra and cross-spectra ICEBEAR data to previously created HDF5 file
 
-    Args:
-        hour (int):
-        minute (int):
-        second (int):
-        avg_noise (float):
-        spec_noise_median (float np.array):
-        xspec_noise_median (complex float np.array):
-        data_flag (boolean):
-        doppler (float np.array):
-        rf_propagation (float np.array):
-        snr_dB_value (float np.array):
-        spectra (float np.array):
-        xspectra (complex float np.array):
+    Parameters
+    ----------
+        hour : int
+        minute : int
+        second : int
+        avg_noise : float
+        spec_noise_median : float np.array
+        xspec_noise_median : complex float np.array
+        data_flag : bool
+        doppler : float np.array
+        rf_propagation : float np.array
+        snr_dB_value : float np.array
+        spectra : float np.array
+        xspectra : complex float np.array
 
-    Returns:
-        (-1 on error, 0 on success)
+    Returns
+    -------
+        None
 
-    Notes:
+    Notes
+    -----
         * Placeholder
 
     Todo:
@@ -313,35 +319,28 @@ def append_level1_hdf5(hour, minute, second, avg_noise, spec_noise_median, xspec
 
     vis_values_file.create_group(f'data/{hours:02d}{minutes:02d}{seconds:02d}')
 
-    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/time', \
-                                   data=[hour, minute, second])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/time', data=[hour, minute, second])
 
     # create the noise data for the averaged spectra at a given time
-    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/avg_spectra_\
-                                   noise_value', data=[noise / 10.0])
-    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/spectra_noise_\
-                                   value', data=spec_noise_median)
-    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/xspectra_noise_\
-                                   value', data=xspec_median_value)
-    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/data_flag', \
-                                   data=[data_flag])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/avg_spectra_noise_value',
+                                   data=[noise / 10.0])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/spectra_noise_value',
+                                   data=spec_noise_median)
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/xspectra_noise_value',
+                                   data=xspec_median_value)
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/data_flag',data=[data_flag])
 
     # only write data if there are measurements above the SNR threshold
     if data_flag == True:
-        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/doppler_\
-                                       shift', data=doppler_values)
-        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/rf_distance', \
-                                       data=rf_propagation)
-        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/snr_dB', \
-                                       data=log_snr_value)
-        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/antenna_\
-                                       spectra', data=spectra)
-        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/antenna_\
-                                       xspectra', data=xspectra)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/doppler_shift', data=doppler_values)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/rf_distance', data=rf_propagation)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/snr_dB', data=log_snr_value)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/antenna_spectra', data=spectra)
+        vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/antenna_xspectra', data=xspectra)
 
-    vis_values_file.close
+    vis_values_file.close()
 
-    return
+    return None
 
 
 def hdf5_to_rawdata():
