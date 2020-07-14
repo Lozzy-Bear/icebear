@@ -1,0 +1,20 @@
+general:
+  name: ib3d
+  version: 1.0
+  date: 20200713
+  wavelength: 6.056
+  center_frequency: 49.5 MHz
+  antenna: Cushcraft 617-6B SuperBoomer
+array:
+  reference:
+    units: meters
+    lattitude:
+    longitude:
+    height:
+  pattern:
+    units: meters
+    x:
+    y:
+    z:
+
+
