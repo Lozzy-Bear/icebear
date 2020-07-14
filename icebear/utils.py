@@ -179,8 +179,7 @@ def rawdata_to_hdf5():
     return
 
 
-def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages, fdec, center_freq, \
-                       sample_rate):
+def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages, fdec, center_freq, sample_rate):
     """
     Create a level1 HDF5 formatted file for storage of ICEBEAR spectra and cross-spectra
 
@@ -328,7 +327,8 @@ def append_level1_hdf5(hour, minute, second, avg_noise, spec_noise_median, xspec
                                    data=spec_noise_median)
     vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/xspectra_noise_value',
                                    data=xspec_median_value)
-    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/data_flag',data=[data_flag])
+    vis_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:02d}/data_flag',
+                                   data=[data_flag])
 
     # only write data if there are measurements above the SNR threshold
     if data_flag == True:
