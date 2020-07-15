@@ -4,14 +4,12 @@
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="6" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="changing to Numpy style Dcostrings">
-      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/Clubs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dat/ib3d_v1.yml" afterDir="false" />
+    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="modifying generate_coeffs behaviour">
+      <change beforePath="$PROJECT_DIR$/.idea/icebear.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/icebear.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icebear/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dat/ib3d_v1.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dat/ib3d_v1.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/icebear/imaging/swht.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/imaging/swht.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icebear/plotting/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icebear/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,49 +18,70 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/dat/ib3d_v1.yml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="15" column="6" selection-start-line="15" selection-start-column="6" selection-end-line="15" selection-end-column="6" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <folding>
-                <element signature="e#0#48#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="46" selection-start-line="46" selection-end-line="49" selection-end-column="23" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="6" column="26" selection-start-line="6" selection-start-column="26" selection-end-line="6" selection-end-column="26" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.5">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="816">
+                  <caret line="48" selection-start-line="48" selection-end-line="48" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="51">
+                  <caret line="3" selection-start-line="3" selection-end-line="6" selection-end-column="32" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/dat/rx_antenna_info.dat">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="136">
+                  <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/dat/ib3d_v1.yml">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="17">
+                  <caret line="1" column="13" selection-start-line="1" selection-start-column="13" selection-end-line="1" selection-end-column="13" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/icebear/utils.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="406">
+                  <caret line="228" column="82" selection-start-line="228" selection-start-column="36" selection-end-line="228" selection-end-column="82" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -96,6 +115,20 @@
         <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="july" />
+                <branch-info repo="$PROJECT_DIR$" source="refactor" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -140,19 +173,20 @@
         <option value="$PROJECT_DIR$/icebear/plotting/plot.py" />
         <option value="$PROJECT_DIR$/icebear/utils.py" />
         <option value="$PROJECT_DIR$/icebear/__init__.py" />
-        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.dat" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yaml" />
-        <option value="$PROJECT_DIR$/icebear/imaging/swht.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
+        <option value="$PROJECT_DIR$/icebear/imaging/swht.py" />
+        <option value="$PROJECT_DIR$/dat/ib3d_v1.yml" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="549" />
-    <option name="y" value="-18" />
+    <option name="x" value="764" />
+    <option name="y" value="-10" />
     <option name="width" value="462" />
-    <option name="height" value="1056" />
+    <option name="height" value="1013" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -175,15 +209,6 @@
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Scratches and Consoles" type="1a2a3e82:ScratchProjectViewPane$MyProjectNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Scratches and Consoles" type="1a2a3e82:ScratchProjectViewPane$MyProjectNode" />
-              <item name="Scratches" type="d62648e6:ScratchProjectViewPane$MyRootNode" />
             </path>
           </expand>
           <select />
@@ -229,7 +254,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.scratch_10">
+  <component name="RunManager" selected="Python.scratch_13">
     <configuration name="conf" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="icebear" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -348,8 +373,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.scratch_10" />
         <item itemvalue="Python.scratch_13" />
+        <item itemvalue="Python.scratch_10" />
         <item itemvalue="Python docs.docutils task in index.rst (1)" />
         <item itemvalue="Python docs.docutils task in index.rst" />
         <item itemvalue="Python.conf" />
@@ -714,20 +739,20 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-16" y="-16" width="1293" height="693" extended-state="6" />
+    <frame x="-983" y="276" width="462" height="1013" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14387918" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.36084905" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3295519" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.39076376" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.26266563" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39931935" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.3295519" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.3289166" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.3295519" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" />
@@ -828,7 +853,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/cuda/__init__.py" />
     <entry file="file://$PROJECT_DIR$/documentation/license.rst" />
     <entry file="file://$PROJECT_DIR$/documentation/README.rst" />
     <entry file="file://$PROJECT_DIR$/documentation/Makefile" />
@@ -866,16 +890,6 @@
     <entry file="file://$PROJECT_DIR$/README.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/processing/ssmf.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/processing/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -899,11 +913,6 @@
     <entry file="file://$PROJECT_DIR$/docs/src.rst" />
     <entry file="file://$PROJECT_DIR$/docs/imaging.rst" />
     <entry file="file://$PROJECT_DIR$/docs/plotting.rst" />
-    <entry file="file://$PROJECT_DIR$/icebear/plotting/igrf.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-408" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/docs/utils.rst" />
     <entry file="file://$PROJECT_DIR$/docs/modules.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
@@ -915,13 +924,6 @@
     <entry file="file://$PROJECT_DIR$/etc/tests/__init__.py" />
     <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/imaging/stats.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1477">
-          <caret line="125" selection-start-line="125" selection-end-line="125" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/icebear/plotting/plot.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -953,30 +955,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
-    <entry file="file://$PROJECT_DIR$/dat/rx_antenna_info.dat">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="73">
-          <caret line="207" column="14" lean-forward="true" selection-start-line="207" selection-start-column="14" selection-end-line="207" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="46" selection-start-line="46" selection-end-line="49" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
@@ -984,10 +962,82 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/plotting/igrf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1020">
+          <folding>
+            <element signature="e#2492#2503#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/imaging/stats.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2125">
+          <caret line="125" selection-start-line="125" selection-end-line="125" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/processing/ssmf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/pyvenv.cfg">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/rx_antenna_info.dat">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dat/pseudo_random_code_test_8_lpf.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="816">
+          <caret line="48" selection-start-line="48" selection-end-line="48" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" selection-start-line="3" selection-end-line="6" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="406">
+          <caret line="228" column="82" selection-start-line="228" selection-start-column="36" selection-end-line="228" selection-end-column="82" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/dat/ib3d_v1.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="6" selection-start-line="15" selection-start-column="6" selection-end-line="15" selection-end-column="6" />
+        <state relative-caret-position="17">
+          <caret line="1" column="13" selection-start-line="1" selection-start-column="13" selection-end-line="1" selection-end-column="13" />
         </state>
       </provider>
     </entry>

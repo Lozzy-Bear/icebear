@@ -44,10 +44,9 @@ def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resol
             Altitude baseline coordinate divided by wavelength.
     """
 
-    with open(array_file, "r") as f:
-        cfg = yaml.load(f)
+    cfg = yaml.full_load(open(array_file))
+    array_name = cfg["general"]["name"]
 
-    for section in cfg:
 
 
     ko = 2 * np.pi / wavelength

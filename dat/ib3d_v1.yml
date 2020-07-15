@@ -1,20 +1,47 @@
 general:
-  name: ib3d
-  version: 1.0
-  date: 20200713
-  wavelength: 6.056
-  center_frequency: 49.5 MHz
-  antenna: Cushcraft 617-6B SuperBoomer
-array:
-  reference:
-    units: meters
-    lattitude:
-    longitude:
-    height:
-  pattern:
-    units: meters
-    x:
-    y:
-    z:
+  radar_name:             # human readable radar name
+  version:                # version of radar if needed
+  date:                   # [year, month, day] file creation date
 
+transmitter:
+  location_name:          # human readable site name
+  coordinates:            # [latitude, longitude, altitude] of site reference antenna
+  array:
+    updated:              # [year, month, day] date the positions, mask, and/or calibration was updated
+    xyz:                  # [[x,...], [y,...], [z,...]] relative antenna locations
+    mask:                 # [0,...] binary mask of which antennas were used
+    calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
+  sample_rate:            #
+  antenna_type:           # brand and model of antenna used
+  rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+
+reciever:
+  location_name:          # human readable site name
+  coordinates:            # [latitude, longitude, altitude] of site reference antenna
+  array:
+    updated:              # [year, month, day] date the positions, mask, and/or calibration was updated
+    xyz:                  # [[x,...], [y,...], [z,...]] relative antenna locations
+    mask:                 # [0,...] binary mask of which antennas were used
+    calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
+  sample_rate:            #
+  antenna_type:           # brand and model of antenna used
+  rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+
+processing:
+  experiment_name:
+  wavelength:             # [value, units] radar wavelength
+  center_frequency:       # [value, units] radar center frequency
+  code_used:              # name of pseudo-random code file used
+  raw_sample_rate:        #
+  decimation_rate:
+  incoherent_averages:
+  time_resolution:
+  snr_cutoff:             # [values, units] signal-to-noise ratio cutoff
+  spectra_descriptors:
+  xspectra_descriptors:
+
+imaging:
+
+
+plotting:
 
