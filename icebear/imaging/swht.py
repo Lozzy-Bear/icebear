@@ -80,7 +80,7 @@ def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resol
 
 def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax):
 
-    coeffs_file =
+    coeffs_file = 'none'
     return None
 
 
