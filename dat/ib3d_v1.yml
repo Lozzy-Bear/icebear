@@ -15,7 +15,7 @@ transmitter:
   antenna_type:           # brand and model of antenna used
   rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
 
-reciever:
+receiver:
   location_name:          # human readable site name
   coordinates:            # [latitude, longitude, altitude] of site reference antenna
   array:

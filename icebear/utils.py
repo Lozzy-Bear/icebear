@@ -1,5 +1,6 @@
 import numpy as np
 import h5py
+import yaml
 
 
 def uvw_to_rtp(u, v, w):
@@ -343,5 +344,48 @@ def append_level1_hdf5(hour, minute, second, avg_noise, spec_noise_median, xspec
     return None
 
 
-def hdf5_to_rawdata():
-    return
+def walk_hdf5(filepath):
+    """
+    Walks the tree for a given hdf5 file.
+
+    Parameters
+    ----------
+        filepath : string
+            File path and name to hdf5 file to be walked.
+
+    Returns
+    -------
+        None
+
+    """
+
+    f = h5py.File(filepath, 'r')
+    f.visititems(_print_attrs)
+    return None
+
+
+def walk_yaml(filepath):
+    """
+    Walks the tree for a given yaml file.
+
+    Parameters
+    ----------
+        filepath : string
+            File path and name to yaml file to be walked.
+
+    Returns
+    -------
+        None
+
+    """
+
+    f = yaml.full_load(open(filepath))
+    print(yaml.dump(f))
+    return None
+
+
+def _print_attrs(name, obj):
+    print(name)
+    for key, val in obj.attrs.items():
+        print("    %s: %s" % (key, val))
+    return None
