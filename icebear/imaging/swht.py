@@ -47,8 +47,6 @@ def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resol
     cfg = yaml.full_load(open(array_file))
     array_name = cfg["general"]["name"]
 
-
-
     ko = 2 * np.pi / wavelength
     az_step = int(np.abs(azimuth[0] - azimuth[1]) / resolution)
     el_step = int(np.abs(elevation[0] - elevation[1]) / resolution)
