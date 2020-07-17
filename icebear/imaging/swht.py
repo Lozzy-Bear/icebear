@@ -6,7 +6,7 @@ import h5py
 import yaml
 
 
-def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resolution=1.0, lmax=85):
+def generate_coeffs(filepath, azimuth=(0, 360), elevation=(0, 90), resolution=1.0, lmax=85):
     """
     Makes an array containing all the factors that do not change with Visibility values.
     This array can then be saved to quickly create Brightness values given changing
@@ -16,8 +16,8 @@ def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resol
     ----------
         date : string
             Date coefficients are calculated in format YYYYMMDD.
-        array_file : string
-            Filename and path to the receiver array configuration data.
+        filepath : string
+            File path and name to the receiver array configuration data.
         azimuth : float np.array
             [start, stop] angles within 0 to 360 degrees.
         elevation : float np.array
@@ -44,10 +44,14 @@ def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resol
             Altitude baseline coordinate divided by wavelength.
     """
 
-    cfg = yaml.full_load(open(array_file))
-    array_name = cfg["general"]["name"]
+    cfg = yaml.full_load(open(filepath))
+    array_name = cfg["general"]["radar_name"]
     wavelength = cfg["processing"]["wavelength"]
-    uvw = cfg["receiver"]["array"]["xyz"] / wavelength
+    date = cfg["receiver"]["array"]["updated"]
+    u, v, w = utils.baselines(np.array(cfg["receiver"]["array"]["x"]),
+                              np.array(cfg["receiver"]["array"]["y"]),
+                              np.array(cfg["receiver"]["array"]["z"]),
+                              wavelength)
 
     ko = 2 * np.pi / wavelength
     az_step = int(np.abs(azimuth[0] - azimuth[1]) / resolution)
@@ -60,31 +64,49 @@ def generate_coeffs(date, array_file, azimuth=(0, 360), elevation=(0, 90), resol
                   f"{str(resolution).replace('.', '')}-" \
                   f"{lmax}"
 
-    # Example filename: SWHTCoeffs_icebear_20200713_360-90-10-85
-    filename = 'SWHTCoeffs_' + array_name + '_' + date + '_' + config_name
+    # Example filename: swhtcoeffs_icebear_2020-07-13_360-90-10-85
+    filename = f"swhtcoeffs_{array_name}_{date[0]}-{date[1]}-{date[2]}_{config_name}"
 
     print(f"Calculating SWHT coeffs:")
-    print(f"\t-filename: \t{filename}")
-    print(f"\tconfiguration: \t{array_name}")
-    print(f"\t-azimuth: \t{azimuth[0]} - {azimuth[1]}")
-    print(f"\t-elevation: \t{elevation[0]} - {elevation[1]}")
-    print(f"\t-resolution: \t{resolution}")
-    print(f"\t-degree: \t{lmax}")
-    print(f"\t-wavelength: \t{wavelength}")
+    print(f"\t-filename: {filename}")
+    print(f"\t-configuration: {array_name}")
+    print(f"\t-azimuth: {azimuth[0]} - {azimuth[1]}")
+    print(f"\t-elevation: {elevation[0]} - {elevation[1]}")
+    print(f"\t-resolution: {resolution}")
+    print(f"\t-degree: {lmax}")
+    print(f"\t-wavelength: {wavelength}")
 
-    create_coeffs_hdf5(filename)
+    create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax,
+                       wavelength, r, t, p)
     calculate_coeffs(filename, az, el, ko, r, t, p, lmax)
 
     return None
 
 
-def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax):
+def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax,
+                       wavelength, r, t, p):
+    f = h5py.File(filename, 'w')
+    f.create_group('general')
+    f.create_dataset('general/radar_name', data=array_name)
+    f.create_dataset('general/date', data=date)
+    f.create_group('settings')
+    f.create_dataset('settings/azimuth', data=azimuth)
+    f.create_dataset('settings/elevation', data=elevation)
+    f.create_dataset('settings/resolution', data=resolution)
+    f.create_dataset('settings/lmax', data=lmax)
+    f.create_dataset('settings/wavelength', data=wavelength)
+    f.create_group('baseline')
+    f.create_dataset('baseline/radius', data=r)
+    f.create_dataset('baseline/theta', data=t)
+    f.create_dataset('baseline/phi', data=p)
+    f.create_group('coeffs')
 
-    coeffs_file = 'none'
     return None
 
 
 def append_coeffs_hdf5(filename, l, coeffs):
+    f = h5py.File(filename, 'a')
+    f.create_dataset(f'coeffs/{l:02d}', data=coeffs)
 
     return None
 
@@ -137,7 +159,7 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                       np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
                       np.conjugate(special.sph_harm(m, l, p, t)) \
                       [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
-            print(f"Harmonic degree (l) step: {l}\t / {lmax}\r")
+            print(f"\tharmonic degree (l) step: {l}\t / {lmax}\r")
         append_coeffs_hdf5(filename, l, coeffs)
 
     print(f"Complete time: \t{time.time()-start_time}")

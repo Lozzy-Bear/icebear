@@ -1,5 +1,5 @@
 general:
-  radar_name:             # human readable radar name
+  radar_name: test            # human readable radar name
   version:                # version of radar if needed
   date:                   # [year, month, day] file creation date
 
@@ -8,7 +8,9 @@ transmitter:
   coordinates:            # [latitude, longitude, altitude] of site reference antenna
   array:
     updated:              # [year, month, day] date the positions, mask, and/or calibration was updated
-    xyz:                  # [[x,...], [y,...], [z,...]] relative antenna locations
+    x:                    # [x,...] relative antenna locations
+    y:                    # [y,...] relative antenna locations
+    z:                    # [z,...] relative antenna locations
     mask:                 # [0,...] binary mask of which antennas were used
     calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
   sample_rate:            #
@@ -19,8 +21,10 @@ receiver:
   location_name:          # human readable site name
   coordinates:            # [latitude, longitude, altitude] of site reference antenna
   array:
-    updated:              # [year, month, day] date the positions, mask, and/or calibration was updated
-    xyz:                  # [[x,...], [y,...], [z,...]] relative antenna locations
+    updated: [2020,07,17]             # [year, month, day] date the positions, mask, and/or calibration was updated
+    x: [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9]                    # [x,...] relative antenna locations
+    y: [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.]                    # [y,...] relative antenna locations
+    z: [0.,0.08952414692,0.3473541846,0.2181136458,0.6834058436,-0.05865289508,-1.06679923,-0.7540427261,-0.5265822222,-0.4087481019]                    # [z,...] relative antenna locations
     mask:                 # [0,...] binary mask of which antennas were used
     calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
   sample_rate:            #
@@ -29,7 +33,7 @@ receiver:
 
 processing:
   experiment_name:
-  wavelength:             # [value, units] radar wavelength
+  wavelength: 6.056   # [value, units] radar wavelength
   center_frequency:       # [value, units] radar center frequency
   code_used:              # name of pseudo-random code file used
   raw_sample_rate:        #
@@ -41,7 +45,6 @@ processing:
   xspectra_descriptors:
 
 imaging:
-
 
 plotting:
 

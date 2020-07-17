@@ -66,15 +66,19 @@ def rtp_to_uvw(r, t, p):
     return u, v, w
 
 
-def baselines(filename, wavelength):
+def baselines(x, y, z, wavelength):
     """
     Given relative antenna positions in cartesian coordinates with units of meters
     and the wavelength in meters determines the u, v, w baselines in cartesian coordinates.
 
     Parameters
     ----------
-        filename : string
-            File name of .csv for antenna cartesian coordinates in meters.
+        x : float np.array
+            East-West antenna coordinate in meters.
+        y : float np.array
+            North-South antenna coordinate in meters.
+        z : float np.array
+            Altitude antenna coordinate in meters.
         wavelength : float
             Radar signal wavelength in meters.
 
@@ -98,25 +102,67 @@ def baselines(filename, wavelength):
         * Error handling for missing antenna position values (like no z).
     """
 
-    coords = np.loadtxt(filename, delimiter=",") / wavelength
     # Baseline for an antenna with itself.
     u = np.array([0])
     v = np.array([0])
     w = np.array([0])
     # Include all possible baseline combinations.
-    for i in range(len(coords)):
-        for j in range(i + 1, len(coords)):
-            u = np.append(u, (coords[i, 0] - coords[j, 0]))
-            v = np.append(v, (coords[i, 1] - coords[j, 1]))
-            w = np.append(w, (coords[i, 2] - coords[j, 2]))
+    for i in range(len(x)):
+        for j in range(i + 1, len(x)):
+            u = np.append(u, (x[i] - x[j]) / wavelength)
+            v = np.append(v, (y[i] - y[j]) / wavelength)
+            w = np.append(w, (z[i] - z[j]) / wavelength)
     # Include the conjugate baselines.
-    for i in range(len(coords)):
-        for j in range(i + 1, len(coords)):
-            u = np.append(u, (-coords[i, 0] + coords[j, 0]))
-            v = np.append(v, (-coords[i, 1] + coords[j, 1]))
-            w = np.append(w, (-coords[i, 2] + coords[j, 2]))
+    u = np.append(u, -1 * u)
+    v = np.append(v, -1 * v)
+    w = np.append(w, -1 * w)
 
     return u, v, w
+
+
+def walk_hdf5(filepath):
+    """
+    Walks the tree for a given hdf5 file.
+
+    Parameters
+    ----------
+        filepath : string
+            File path and name to hdf5 file to be walked.
+
+    Returns
+    -------
+        None
+    """
+
+    f = h5py.File(filepath, 'r')
+    f.visititems(_print_attrs)
+    return None
+
+
+def walk_yaml(filepath):
+    """
+    Walks the tree for a given yaml file.
+
+    Parameters
+    ----------
+        filepath : string
+            File path and name to yaml file to be walked.
+
+    Returns
+    -------
+        None
+    """
+
+    f = yaml.full_load(open(filepath))
+    print(yaml.dump(f))
+    return None
+
+
+def _print_attrs(name, obj):
+    print(name)
+    for key, val in obj.attrs.items():
+        print("    %s: %s" % (key, val))
+    return None
 
 
 def fov_window(coeffs, resolution=np.array([0.1, 0.1]),
@@ -147,6 +193,9 @@ def fov_window(coeffs, resolution=np.array([0.1, 0.1]),
         * It is advised to specify field of view zones slightly larger than required.
         * Azimuth and elevation resolution are best kept equal.
         * Boresight is at 270 degrees azimuth and 90 degrees elevation.
+
+    todo
+        * function is not complete DO NOT USE.
     """
 
     fov_coeffs = np.array([])
@@ -158,26 +207,6 @@ def fov_window(coeffs, resolution=np.array([0.1, 0.1]),
         fov_coeffs = np.append(coeffs[el_index[0]:el_index[1]:el_step, \
                                az_index[0]:az_index[1]:az_step, :], axis=0)
     return fov_coeffs
-
-
-def stats_to_hdf5():
-    return
-
-
-def hdf5_to_stats():
-    return
-
-
-def swhtcoeffs_to_hdf5():
-    return
-
-
-def hdf5_to_swhtcoeffs():
-    return
-
-
-def rawdata_to_hdf5():
-    return
 
 
 def create_level1_hdf5(year, month, day, rx_name, tx_name, snr_cutoff, averages, fdec, center_freq, sample_rate):
@@ -343,49 +372,3 @@ def append_level1_hdf5(hour, minute, second, avg_noise, spec_noise_median, xspec
 
     return None
 
-
-def walk_hdf5(filepath):
-    """
-    Walks the tree for a given hdf5 file.
-
-    Parameters
-    ----------
-        filepath : string
-            File path and name to hdf5 file to be walked.
-
-    Returns
-    -------
-        None
-
-    """
-
-    f = h5py.File(filepath, 'r')
-    f.visititems(_print_attrs)
-    return None
-
-
-def walk_yaml(filepath):
-    """
-    Walks the tree for a given yaml file.
-
-    Parameters
-    ----------
-        filepath : string
-            File path and name to yaml file to be walked.
-
-    Returns
-    -------
-        None
-
-    """
-
-    f = yaml.full_load(open(filepath))
-    print(yaml.dump(f))
-    return None
-
-
-def _print_attrs(name, obj):
-    print(name)
-    for key, val in obj.attrs.items():
-        print("    %s: %s" % (key, val))
-    return None
