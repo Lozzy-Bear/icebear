@@ -1,0 +1,49 @@
+# General Information
+radar_name: ib3d            # human readable radar name
+version:                # version of radar if needed
+date: [2020, 07, 20]                  # [year, month, day] file creation date
+
+# Transmitter Information
+tx_location:          # human readable site name
+tx_coordinates:            # [latitude, longitude, altitude] of site reference antenna
+tx_updated:              # [year, month, day] date the positions, mask, and/or calibration was updated
+tx_x:                    # [x,...] relative antenna locations
+tx_y:                    # [y,...] relative antenna locations
+tx_z:                    # [z,...] relative antenna locations
+tx_mask:                 # [0,...] binary mask of which antennas were used
+tx_calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
+tx_sample_rate:            #
+tx_antenna_type:           # brand and model of antenna used
+tx_rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+
+# Receiver Information
+rx_location:          # human readable site name
+rx_coordinates:            # [latitude, longitude, altitude] of site reference antenna
+rx_updated: [2020,07,17]             # [year, month, day] date the positions, mask, and/or calibration was updated
+rx_x: [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9]                    # [x,...] relative antenna locations
+rx_y: [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.]                    # [y,...] relative antenna locations
+rx_z: [0.,0.08952414692,0.3473541846,0.2181136458,0.6834058436,-0.05865289508,-1.06679923,-0.7540427261,-0.5265822222,-0.4087481019]                    # [z,...] relative antenna locations
+rx_mask:                 # [0,...] binary mask of which antennas were used
+rx_calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
+rx_sample_rate:            #
+rx_antenna_type:           # brand and model of antenna used
+rx_rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+
+# Processing Settings
+experiment_name:
+wavelength: 6.056   # [value, units] radar wavelength
+center_frequency:       # [value, units] radar center frequency
+code_used:              # name of pseudo-random code file used
+raw_sample_rate:        #
+decimation_rate:
+incoherent_averages:
+time_resolution:
+snr_cutoff:             # [values, units] signal-to-noise ratio cutoff
+spectra_descriptors:
+xspectra_descriptors:
+
+# Imaging Settings
+imaging:
+
+# Plotting Settings
+plotting:

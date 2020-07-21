@@ -3,10 +3,9 @@ import scipy.special as special
 import time
 import icebear.utils as utils
 import h5py
-import yaml
 
 
-def generate_coeffs(filepath, azimuth=(0, 360), elevation=(0, 90), resolution=1.0, lmax=85):
+def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0, lmax=85):
     """
     Makes an array containing all the factors that do not change with Visibility values.
     This array can then be saved to quickly create Brightness values given changing
@@ -14,8 +13,6 @@ def generate_coeffs(filepath, azimuth=(0, 360), elevation=(0, 90), resolution=1.
 
     Parameters
     ----------
-        date : string
-            Date coefficients are calculated in format YYYYMMDD.
         filepath : string
             File path and name to the receiver array configuration data.
         azimuth : float np.array
@@ -44,15 +41,13 @@ def generate_coeffs(filepath, azimuth=(0, 360), elevation=(0, 90), resolution=1.
             Altitude baseline coordinate divided by wavelength.
     """
 
-    cfg = yaml.full_load(open(filepath))
-    array_name = cfg["general"]["radar_name"]
-    wavelength = cfg["processing"]["wavelength"]
-    date = cfg["receiver"]["array"]["updated"]
-    u, v, w = utils.baselines(np.array(cfg["receiver"]["array"]["x"]),
-                              np.array(cfg["receiver"]["array"]["y"]),
-                              np.array(cfg["receiver"]["array"]["z"]),
+    array_name = config.radar_name
+    wavelength = config.wavelength
+    date = config.date
+    u, v, w = utils.baselines(np.array(config.rx_x),
+                              np.array(config.rx_y),
+                              np.array(config.rx_z),
                               wavelength)
-
     ko = 2 * np.pi / wavelength
     az_step = int(np.abs(azimuth[0] - azimuth[1]) / resolution)
     el_step = int(np.abs(elevation[0] - elevation[1]) / resolution)
@@ -159,7 +154,7 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                       np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
                       np.conjugate(special.sph_harm(m, l, p, t)) \
                       [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
-            print(f"\tharmonic degree (l) step: {l}\t / {lmax}\r")
+            print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
         append_coeffs_hdf5(filename, l, coeffs)
 
     print(f"Complete time: \t{time.time()-start_time}")
