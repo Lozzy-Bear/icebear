@@ -6,10 +6,11 @@ import icebear
 
 class Imaging:
     def __init__(self, config):
-        self.generate_coeffs(config)
+        self.check_coeffs(config)
+        
         pass
 
-    def generate_coeffs(self, config):
+    def check_coeffs(self, config):
         if config.check_attr('swht_coeffs'):
             if config.compare_attr('swht_coeffs', None):
                 filename = icebear.generate_coeffs(config)

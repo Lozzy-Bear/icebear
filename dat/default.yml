@@ -19,10 +19,10 @@ tx_rf_path:                # RF hardware path chain, eg. antenna->feedline->bulk
 # Receiver Information
 rx_location:          # human readable site name
 rx_coordinates:            # [latitude, longitude, altitude] of site reference antenna
-rx_updated: [2020,07,17]             # [year, month, day] date the positions, mask, and/or calibration was updated
-rx_x: [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9]                    # [x,...] relative antenna locations
-rx_y: [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.]                    # [y,...] relative antenna locations
-rx_z: [0.,0.08952414692,0.3473541846,0.2181136458,0.6834058436,-0.05865289508,-1.06679923,-0.7540427261,-0.5265822222,-0.4087481019]                    # [z,...] relative antenna locations
+rx_updated: [2020,07,17] # [year, month, day] date the positions, mask, and/or calibration was updated
+rx_x: [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9] # [x,...] relative antenna locations
+rx_y: [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.] # [y,...] relative antenna locations
+rx_z: [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] # [z,...] relative antenna locations
 rx_mask:                 # [0,...] binary mask of which antennas were used
 rx_calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
 rx_sample_rate:            #
@@ -31,8 +31,8 @@ rx_rf_path:                # RF hardware path chain, eg. antenna->feedline->bulk
 
 # Processing Settings
 experiment_name:
-wavelength: 6.056   # [value, units] radar wavelength
-center_frequency:       # [value, units] radar center frequency
+wavelength: 6.05641329 # radar wavelength in meters
+center_frequency: 49.5e6 # radar center frequency in Hz
 code_used:              # name of pseudo-random code file used
 raw_sample_rate:        #
 decimation_rate:
@@ -43,7 +43,11 @@ spectra_descriptors:
 xspectra_descriptors:
 
 # Imaging Settings
-imaging:
+swht_coeffs: #'swhtcoeffs_ib3d_2020-7-20_360-090-10-85'
+azimuth: [-45, 45]
+elevation: [0, 30]
+resolution: 1.0
+lmax: 85
 
 # Plotting Settings
 plotting:

@@ -2,8 +2,10 @@
   <dictionary name="Clubs">
     <words>
       <w>coeffs</w>
+      <w>cuda</w>
       <w>filepath</w>
       <w>lmax</w>
+      <w>swht</w>
     </words>
   </dictionary>
 </component>

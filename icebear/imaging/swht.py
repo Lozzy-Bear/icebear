@@ -13,8 +13,8 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
 
     Parameters
     ----------
-        filepath : string
-            File path and name to the receiver array configuration data.
+        config : Class Object
+            Config class instantiation.
         azimuth : float np.array
             [start, stop] angles within 0 to 360 degrees.
         elevation : float np.array
@@ -48,6 +48,14 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
                               np.array(config.rx_y),
                               np.array(config.rx_z),
                               wavelength)
+    if config.check_attr('azimuth'):
+        azimuth = config.azimuth
+    if config.check_attr('elevation'):
+        elevation = config.elevation
+    if config.check_attr('resolution'):
+        resolution = config.resolution
+    if config.check_attr('lmax'):
+        lmax = config.lmax
     ko = 2 * np.pi / wavelength
     az_step = int(np.abs(azimuth[0] - azimuth[1]) / resolution)
     el_step = int(np.abs(elevation[0] - elevation[1]) / resolution)
@@ -75,7 +83,7 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
                        wavelength, r, t, p)
     calculate_coeffs(filename, az, el, ko, r, t, p, lmax)
 
-    return None
+    return filename
 
 
 def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax,

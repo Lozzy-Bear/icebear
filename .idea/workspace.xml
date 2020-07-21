@@ -2,15 +2,15 @@
 <project version="4">
   <component name="BookmarkManager">
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="6" mnemonic="1" />
+    <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" line="13" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/dat/default.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/Clubs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/Clubs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dat/ib3d_v1.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dat/default.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dat/default.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/icebear/imaging/swht.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/imaging/swht.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icebear/run.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -37,8 +37,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/run.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="319">
-                  <caret line="38" column="97" selection-start-line="38" selection-start-column="97" selection-end-line="38" selection-end-column="97" />
+                <state relative-caret-position="-1071">
+                  <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
                   <folding>
                     <element signature="e#23#38#0" expanded="true" />
                   </folding>
@@ -49,10 +49,10 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="68">
-                  <caret line="4" selection-start-line="4" selection-end-line="10" />
+                <state relative-caret-position="255">
+                  <caret line="15" column="30" selection-start-line="15" selection-end-line="16" selection-end-column="25" />
                   <folding>
-                    <element signature="e#0#18#0" expanded="true" />
+                    <element signature="e#0#25#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -65,10 +65,15 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="85">
-                  <caret line="5" selection-start-line="5" selection-end-line="5" />
+                <state relative-caret-position="119">
+                  <caret line="85" column="19" lean-forward="true" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
+                    <element signature="e#202#3202#0" />
+                    <element signature="e#3314#4013#0" />
+                    <element signature="e#4065#4163#0" />
+                    <element signature="e#6140#7030#0" />
+                    <element signature="e#7054#7487#0" />
                   </folding>
                 </state>
               </provider>
@@ -89,8 +94,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dat/default.yml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="305">
-                  <caret line="24" column="9" selection-start-line="24" selection-start-column="9" selection-end-line="24" selection-end-column="9" />
+                <state relative-caret-position="744">
+                  <caret line="49" column="8" selection-start-line="49" selection-start-column="8" selection-end-line="49" selection-end-column="8" />
                 </state>
               </provider>
             </entry>
@@ -191,21 +196,21 @@
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yaml" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py" />
         <option value="$PROJECT_DIR$/docs/requirements.txt" />
-        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yml" />
         <option value="$PROJECT_DIR$/icebear/utils.py" />
         <option value="$PROJECT_DIR$/icebear/run.py" />
-        <option value="$PROJECT_DIR$/dat/default.yml" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
         <option value="$PROJECT_DIR$/icebear/imaging/swht.py" />
+        <option value="$PROJECT_DIR$/dat/default.yml" />
         <option value="$PROJECT_DIR$/run.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="244" />
-    <option name="y" value="-25" />
+    <option name="x" value="694" />
+    <option name="y" value="-22" />
     <option name="width" value="1096" />
-    <option name="height" value="1442" />
+    <option name="height" value="1055" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -289,7 +294,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RunManager" selected="Python.scratch_13">
     <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="icebear" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -408,8 +413,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.run" />
         <item itemvalue="Python.scratch_13" />
+        <item itemvalue="Python.run" />
         <item itemvalue="Python.scratch_10" />
         <item itemvalue="Python docs.docutils task in index.rst (1)" />
         <item itemvalue="Python docs.docutils task in index.rst" />
@@ -426,20 +431,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
-    </task>
-    <task id="LOCAL-00008" summary="forced RTD master_doc = index">
-      <created>1594153885608</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1594153885608</updated>
-    </task>
-    <task id="LOCAL-00009" summary="forced RTD master_doc = index">
-      <created>1594154325623</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1594154325623</updated>
     </task>
     <task id="LOCAL-00010" summary="added contents.rst">
       <created>1594156303259</created>
@@ -770,14 +761,28 @@
       <option name="project" value="LOCAL" />
       <updated>1594996549961</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="added command line args parser and Config class.">
+      <created>1595299414086</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1595299414086</updated>
+    </task>
+    <task id="LOCAL-00058" summary="auto generate coeffs if no file given.">
+      <created>1595334900811</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1595334900811</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="2576" height="1416" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14460205" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14460205" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -788,7 +793,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.3289166" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.30319563" />
+      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.30319563" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32969603" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -878,7 +883,9 @@
     <MESSAGE value="writing default yaml config" />
     <MESSAGE value="Added functions to walk hdf5 and yaml files." />
     <MESSAGE value="Reworked swht.generate_coeffs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reworked swht.generate_coeffs" />
+    <MESSAGE value="added command line args parser and Config class." />
+    <MESSAGE value="auto generate coeffs if no file given." />
+    <option name="LAST_COMMIT_MESSAGE" value="auto generate coeffs if no file given." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1029,22 +1036,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" selection-start-line="4" selection-end-line="10" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
           <caret line="3" selection-start-line="3" selection-end-line="3" />
           <folding>
             <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/imaging/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="30" selection-start-line="15" selection-end-line="16" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1059,30 +1069,32 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/imaging/__init__.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" selection-start-line="5" selection-end-line="5" />
+        <state relative-caret-position="119">
+          <caret line="85" column="19" lean-forward="true" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#202#3202#0" />
+            <element signature="e#3314#4013#0" />
+            <element signature="e#4065#4163#0" />
+            <element signature="e#6140#7030#0" />
+            <element signature="e#7054#7487#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/dat/default.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="24" column="9" selection-start-line="24" selection-start-column="9" selection-end-line="24" selection-end-column="9" />
+        <state relative-caret-position="744">
+          <caret line="49" column="8" selection-start-line="49" selection-start-column="8" selection-end-line="49" selection-end-column="8" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="38" column="97" selection-start-line="38" selection-start-column="97" selection-end-line="38" selection-end-column="97" />
+        <state relative-caret-position="-1071">
+          <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
           <folding>
             <element signature="e#23#38#0" expanded="true" />
           </folding>
