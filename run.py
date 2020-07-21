@@ -4,6 +4,22 @@ import yaml
 import icebear
 
 
+class Imaging:
+    def __init__(self, config):
+        self.generate_coeffs(config)
+        pass
+
+    def generate_coeffs(self, config):
+        if config.check_attr('swht_coeffs'):
+            if config.compare_attr('swht_coeffs', None):
+                filename = icebear.generate_coeffs(config)
+                config.add_attr('swht_coeff', filename)
+            pass
+        else:
+            print(f'ERROR: Attribute {key} does not exists')
+        return None
+
+
 class Config:
     def __init__(self, args):
         self.cfg_file = args.configuration
@@ -17,6 +33,52 @@ class Config:
                 cfg = yaml.full_load(stream)
                 for key, value in cfg.items():
                     setattr(self, key, value)
+
+    def print_attrs(self):
+        print("Experiment attributes loaded: ")
+        for item in vars(self).items():
+            print(f"\t-{item}")
+        return None
+
+    def update_attr(self, key, value):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            setattr(self, key, value)
+        return None
+
+    def check_attr(self, key):
+        if hasattr(self, key):
+            return True
+        else:
+            return False
+
+    def compare_attr(self, key, value):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            if getattr(self, key) == value:
+                return True
+            else:
+                return False
+
+    def add_attr(self, key, value):
+        if self.check_attr(key):
+            print(f'ERROR: Attribute {key} already exists')
+            exit()
+        else:
+            setattr(self, key, value)
+        return None
+
+    def remove_attr(self, key):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            delattr(self, key)
+        return None
 
 
 def main():
@@ -47,14 +109,12 @@ def main():
 
 def run(args):
     config = Config(args)
-    print("Experiment attributes loaded: ")
-    for item in vars(config).items():
-        print(f"\t-{item}")
+    config.print_attrs()
 
     if args.processing:
         Proccesing(config)
     if args.imaging:
-        icebear.generate_coeffs(config)
+        Imaging(config)
     if args.plotting:
         Plotting(config)
 
