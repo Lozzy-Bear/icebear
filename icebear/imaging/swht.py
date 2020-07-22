@@ -103,6 +103,7 @@ def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolutio
     f.create_dataset('baseline/theta', data=t)
     f.create_dataset('baseline/phi', data=p)
     f.create_group('coeffs')
+    f.close()
 
     return None
 
@@ -110,6 +111,7 @@ def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolutio
 def append_coeffs_hdf5(filename, l, coeffs):
     f = h5py.File(filename, 'a')
     f.create_dataset(f'coeffs/{l:02d}', data=coeffs)
+    f.close()
 
     return None
 

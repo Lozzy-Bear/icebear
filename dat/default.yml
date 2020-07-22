@@ -4,43 +4,50 @@ version:                # version of radar if needed
 date: [2020, 07, 20]                  # [year, month, day] file creation date
 
 # Transmitter Information
-tx_location:          # human readable site name
+tx_name:          # human readable site name
 tx_coordinates:            # [latitude, longitude, altitude] of site reference antenna
 tx_updated:              # [year, month, day] date the positions, mask, and/or calibration was updated
+tx_pointing:
 tx_x:                    # [x,...] relative antenna locations
 tx_y:                    # [y,...] relative antenna locations
 tx_z:                    # [z,...] relative antenna locations
 tx_mask:                 # [0,...] binary mask of which antennas were used
-tx_calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
+tx_phase:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
+tx_magnitude:
 tx_sample_rate:            #
-tx_antenna_type:           # brand and model of antenna used
-tx_rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+tx_antenna_type: Cushcraft A50-5S # brand and model of antenna used
+tx_rf_path: X300->amplifier->bulk->feed->antenna               # RF hardware path chain, eg. antenna->feedline->bulkhead->...
 
 # Receiver Information
-rx_location:          # human readable site name
+rx_name:          # human readable site name
 rx_coordinates:            # [latitude, longitude, altitude] of site reference antenna
 rx_updated: [2020,07,17] # [year, month, day] date the positions, mask, and/or calibration was updated
+rx_pointing:
 rx_x: [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9] # [x,...] relative antenna locations
 rx_y: [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.] # [y,...] relative antenna locations
 rx_z: [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] # [z,...] relative antenna locations
-rx_mask:                 # [0,...] binary mask of which antennas were used
+rx_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0,...] binary mask of which antennas were used
 rx_calibration:          # [[a,...], [bj,...] complex values of magnitude and phase corrections for each antenna
 rx_sample_rate:            #
-rx_antenna_type:           # brand and model of antenna used
-rx_rf_path:                # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+rx_antenna_type: Cushcraft 50MHz Superboomer # brand and model of antenna used
+rx_rf_path: Ant->feed->bulk->BPF->LNA->LNA->X300 # RF hardware path chain, eg. antenna->feedline->bulkhead->...
 
 # Processing Settings
-experiment_name:
+processing_method: normal
 wavelength: 6.05641329 # radar wavelength in meters
 center_frequency: 49.5e6 # radar center frequency in Hz
-code_used:              # name of pseudo-random code file used
+prn_code_file:              # name of pseudo-random code file used
 raw_sample_rate:        #
 decimation_rate:
 incoherent_averages:
 time_resolution:
 snr_cutoff:             # [values, units] signal-to-noise ratio cutoff
-spectra_descriptors:
-xspectra_descriptors:
+spectra_descriptors: [spec00,spec11,spec22,spec33spec44,spec55,spec66,spec77,spec88,spec99]
+xspectra_descriptors: [xspec01,xspec02,xspec03,xspec04,xspec05,xspec06,xspec07, xspec08,xspec09,xspec12,
+                       xspec13,xspec14,xspec15,xspec16,xspec17,xspec18,xspec19,xspec23,xspec24,xspec25,
+                       xspec26,xspec27,xspec28,xspec29,xspec34,xspec35,xspec36,xspec37,xspec38,xspec39,
+                       xspec45,xspec46,xspec47,xspec48,xspec49,xspec56,xspec57,xspec58,xspec59,xspec67,
+                       xspec68,xspec69,xspec78,xspec79,xspec89]
 
 # Imaging Settings
 swht_coeffs: #'swhtcoeffs_ib3d_2020-7-20_360-090-10-85'
@@ -48,6 +55,7 @@ azimuth: [-45, 45]
 elevation: [0, 30]
 resolution: 1.0
 lmax: 85
+fov:
 
 # Plotting Settings
 plotting:

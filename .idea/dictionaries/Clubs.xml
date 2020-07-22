@@ -5,7 +5,9 @@
       <w>cuda</w>
       <w>filepath</w>
       <w>lmax</w>
+      <w>logsnr</w>
       <w>swht</w>
+      <w>xspectra</w>
     </words>
   </dictionary>
 </component>

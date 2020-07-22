@@ -2,14 +2,17 @@
 <project version="4">
   <component name="BookmarkManager">
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="6" mnemonic="1" />
-    <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" line="13" />
+    <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" line="0" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/icebear/processing/process.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dictionaries/Clubs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/Clubs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dat/default.yml" beforeDir="false" afterPath="$PROJECT_DIR$/dat/default.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/icebear/imaging/swht.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/imaging/swht.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icebear/plotting/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/plot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icebear/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -23,22 +26,10 @@
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="51">
-                  <caret line="3" selection-start-line="3" selection-end-line="3" />
-                  <folding>
-                    <element signature="e#0#48#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/run.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1071">
-                  <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
+                <state relative-caret-position="1989">
+                  <caret line="117" lean-forward="true" selection-start-line="117" selection-end-line="117" />
                   <folding>
                     <element signature="e#23#38#0" expanded="true" />
                   </folding>
@@ -47,12 +38,24 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
+            <entry file="file://$PROJECT_DIR$/icebear/plotting/plot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="255">
-                  <caret line="15" column="30" selection-start-line="15" selection-end-line="16" selection-end-column="25" />
+                <state relative-caret-position="835">
+                  <caret line="94" column="30" selection-start-line="94" selection-start-column="30" selection-end-line="94" selection-end-column="30" />
                   <folding>
-                    <element signature="e#0#25#0" expanded="true" />
+                    <element signature="e#0#31#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="340">
+                  <caret line="98" column="17" lean-forward="true" selection-start-line="98" selection-start-column="17" selection-end-line="98" selection-end-column="17" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -63,27 +66,10 @@
       <split-second>
         <leaf>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="119">
-                  <caret line="85" column="19" lean-forward="true" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                    <element signature="e#202#3202#0" />
-                    <element signature="e#3314#4013#0" />
-                    <element signature="e#4065#4163#0" />
-                    <element signature="e#6140#7030#0" />
-                    <element signature="e#7054#7487#0" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/icebear/utils.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-578">
-                  <caret line="2" column="11" selection-start-line="2" selection-start-column="11" selection-end-line="2" selection-end-column="11" />
+                <state relative-caret-position="861">
+                  <caret line="193" column="35" lean-forward="true" selection-start-line="193" selection-start-column="35" selection-end-line="193" selection-end-column="35" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -92,10 +78,22 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-153">
+                  <caret line="45" column="6" selection-start-line="45" selection-start-column="6" selection-end-line="45" selection-end-column="6" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/dat/default.yml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="744">
-                  <caret line="49" column="8" selection-start-line="49" selection-start-column="8" selection-end-line="49" selection-end-column="8" />
+                <state relative-caret-position="731">
+                  <caret line="43" column="10" selection-start-line="43" selection-start-column="10" selection-end-line="43" selection-end-column="10" />
                 </state>
               </provider>
             </entry>
@@ -122,10 +120,20 @@
       <find>28.4</find>
       <find>POIN</find>
       <find>doc</find>
+      <find>vis_values_file</find>
+      <find />
+      <find>tx</find>
+      <find>visi_spec</find>
+      <find>xspectra_var</find>
     </findStrings>
     <replaceStrings>
       <replace>plt</replace>
       <replace>,</replace>
+      <replace>f</replace>
+      <replace>rx</replace>
+      <replace>hour</replace>
+      <replace>minute</replace>
+      <replace>xspectra_variance</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -190,27 +198,28 @@
         <option value="$PROJECT_DIR$/docs/index.rst" />
         <option value="$PROJECT_DIR$/__init__.py" />
         <option value="$PROJECT_DIR$/docs/conf.py" />
-        <option value="$PROJECT_DIR$/icebear/plotting/plot.py" />
         <option value="$PROJECT_DIR$/icebear/__init__.py" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.dat" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yaml" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py" />
         <option value="$PROJECT_DIR$/docs/requirements.txt" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yml" />
-        <option value="$PROJECT_DIR$/icebear/utils.py" />
         <option value="$PROJECT_DIR$/icebear/run.py" />
-        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
-        <option value="$PROJECT_DIR$/icebear/imaging/swht.py" />
-        <option value="$PROJECT_DIR$/dat/default.yml" />
+        <option value="$PROJECT_DIR$/icebear/plotting/plot.py" />
         <option value="$PROJECT_DIR$/run.py" />
+        <option value="$PROJECT_DIR$/icebear/imaging/swht.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py" />
+        <option value="$PROJECT_DIR$/icebear/utils.py" />
+        <option value="$PROJECT_DIR$/dat/default.yml" />
+        <option value="$PROJECT_DIR$/icebear/processing/process.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="694" />
-    <option name="y" value="-22" />
-    <option name="width" value="1096" />
-    <option name="height" value="1055" />
+    <option name="x" value="12" />
+    <option name="y" value="4" />
+    <option name="width" value="2445" />
+    <option name="height" value="1292" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -224,23 +233,6 @@
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="imaging" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="icebear" type="462c0819:PsiDirectoryNode" />
-              <item name="processing" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
@@ -431,13 +423,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
-    </task>
-    <task id="LOCAL-00010" summary="added contents.rst">
-      <created>1594156303259</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1594156303259</updated>
     </task>
     <task id="LOCAL-00011" summary="napoleon extension for google docstrings">
       <created>1594157311045</created>
@@ -775,25 +760,32 @@
       <option name="project" value="LOCAL" />
       <updated>1595334900811</updated>
     </task>
-    <option name="localTasksCounter" value="59" />
+    <task id="LOCAL-00059" summary="auto generate coeffs if no file given.">
+      <created>1595337261028</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1595337261028</updated>
+    </task>
+    <option name="localTasksCounter" value="60" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="2576" height="1416" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14460205" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.3468809" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3295519" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.26266563" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.19115144" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39931935" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.3289166" />
-      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.30319563" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.25409198" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32969603" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -898,9 +890,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/documentation/README.rst" />
-    <entry file="file://$PROJECT_DIR$/documentation/Makefile" />
-    <entry file="file://$PROJECT_DIR$/documentation/make.bat" />
     <entry file="file://$PROJECT_DIR$/documentation/indices.rst" />
     <entry file="file://$PROJECT_DIR$/documentation/modules.rst" />
     <entry file="file://$PROJECT_DIR$/documentation/index.html" />
@@ -959,16 +948,6 @@
     <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/plotting/plot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" column="66" selection-start-line="22" selection-start-column="66" selection-end-line="22" selection-end-column="66" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/mapping.py" />
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -990,16 +969,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2125">
           <caret line="125" selection-start-line="125" selection-end-line="125" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/processing/ssmf.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -1036,6 +1005,9 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/imaging/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
@@ -1046,57 +1018,87 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/imaging/__init__.py">
+    <entry file="file://$PROJECT_DIR$/icebear/processing/ssmf.cu">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2244" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/processing/ssmf.c">
       <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/processing/ssmf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2210">
+          <caret line="130" column="12" lean-forward="true" selection-start-line="130" selection-start-column="12" selection-end-line="130" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/plotting/plot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="835">
+          <caret line="94" column="30" selection-start-line="94" selection-start-column="30" selection-end-line="94" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1989">
+          <caret line="117" lean-forward="true" selection-start-line="117" selection-end-line="117" />
+          <folding>
+            <element signature="e#23#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
     </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_13.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="30" selection-start-line="15" selection-end-line="16" selection-end-column="25" />
+        <state relative-caret-position="119">
+          <caret line="7" column="10" lean-forward="true" selection-start-line="7" selection-start-column="10" selection-end-line="7" selection-end-column="10" />
           <folding>
-            <element signature="e#0#25#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/icebear/utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-578">
-          <caret line="2" column="11" selection-start-line="2" selection-start-column="11" selection-end-line="2" selection-end-column="11" />
+        <state relative-caret-position="861">
+          <caret line="193" column="35" lean-forward="true" selection-start-line="193" selection-start-column="35" selection-end-line="193" selection-end-column="35" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="85" column="19" lean-forward="true" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#202#3202#0" />
-            <element signature="e#3314#4013#0" />
-            <element signature="e#4065#4163#0" />
-            <element signature="e#6140#7030#0" />
-            <element signature="e#7054#7487#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/dat/default.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="744">
-          <caret line="49" column="8" selection-start-line="49" selection-start-column="8" selection-end-line="49" selection-end-column="8" />
+        <state relative-caret-position="731">
+          <caret line="43" column="10" selection-start-line="43" selection-start-column="10" selection-end-line="43" selection-end-column="10" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run.py">
+    <entry file="file://$PROJECT_DIR$/icebear/imaging/swht.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1071">
-          <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
+        <state relative-caret-position="-153">
+          <caret line="45" column="6" selection-start-line="45" selection-start-column="6" selection-end-line="45" selection-end-column="6" />
           <folding>
-            <element signature="e#23#38#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="98" column="17" lean-forward="true" selection-start-line="98" selection-start-column="17" selection-end-line="98" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>

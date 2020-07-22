@@ -4,10 +4,14 @@ import yaml
 import icebear
 
 
+class Processing:
+    def __init__(self, config):
+
+
+
 class Imaging:
     def __init__(self, config):
         self.check_coeffs(config)
-        
         pass
 
     def check_coeffs(self, config):
@@ -113,7 +117,7 @@ def run(args):
     config.print_attrs()
 
     if args.processing:
-        Proccesing(config)
+        Processing(config)
     if args.imaging:
         Imaging(config)
     if args.plotting:
