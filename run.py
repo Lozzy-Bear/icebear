@@ -6,7 +6,10 @@ import icebear
 
 class Processing:
     def __init__(self, config):
+        self.iter(config)
 
+    def iter(self, config):
+        icebear.generate_level1(config)
 
 
 class Imaging:
@@ -117,12 +120,21 @@ def run(args):
     config.print_attrs()
 
     if args.processing:
+        if args.start:
+            config.update_attr('processing_start', args.start)
+        if args.stop:
+            config.update_attr('processing_stop', args.stop)
+        if args.step:
+            config.update_attr('processing_step', args.step)
         Processing(config)
+
     if args.imaging:
         Imaging(config)
+
     if args.plotting:
         Plotting(config)
 
+    return None
 
 if __name__ == '__main__':
     main()
