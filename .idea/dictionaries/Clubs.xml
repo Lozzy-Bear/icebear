@@ -4,11 +4,14 @@
       <w>bcode</w>
       <w>coeffs</w>
       <w>cuda</w>
+      <w>filenames</w>
       <w>filepath</w>
       <w>lmax</w>
       <w>logsnr</w>
+      <w>spectras</w>
       <w>swht</w>
       <w>xspectra</w>
+      <w>xspectras</w>
     </words>
   </dictionary>
 </component>

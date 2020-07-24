@@ -22,7 +22,7 @@ def generate_level1(config):
             print(f'\t\t-{str(channels[i])}')
 
     total_xspectras = int(len(channels)*(len(channels) - 1) / 2)
-    total_spectras = int(len(channels))w
+    total_spectras = int(len(channels))
     bcode = generate_bcode(config.prn_code_file)
     complex_correction = config.rx_magnitude * np.exp(1j * np.deg2rad(config.rx_phase))
     fft_freq = np.fft.fftfreq(int(config.code_length / config.decimation_rate),
@@ -48,6 +48,7 @@ def generate_level1(config):
                 f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
                 f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_' \
                 f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
+            print(f'\t-created level 1 HDf5: {filename}')
             filenames.append(filename)
             create_level1_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
@@ -234,6 +235,9 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
 def generate_bcode(filepath):
     """
        Uses the pseudo-random code file to generate the binary code for signal matching
+
+    todo
+        Make function able to take any code length and resample at any rate
     """
     # Array for storing the code to be analyzed
     b_code = np.zeros(20000, dtype=np.float32)
