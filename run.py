@@ -6,10 +6,8 @@ import icebear
 
 class Processing:
     def __init__(self, config):
-        self.iter(config)
-
-    def iter(self, config):
-        icebear.generate_level1(config)
+        filenames = icebear.generate_level1(config)
+        config.add_attr('level1_data_files', filenames)
 
 
 class Imaging:

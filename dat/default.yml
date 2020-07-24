@@ -1,7 +1,7 @@
 # General Information
 radar_name: ib3d # human readable radar name
 version: 1.0 # version of radar if needed
-date: [2020, 07, 20] # [year, month, day] file creation date
+config_updated: [2020, 07, 20] # [year, month, day] file creation date
 
 # Transmitter Information
 tx_name: prelate # human readable site name
@@ -43,7 +43,10 @@ raw_sample_rate: 200000 #
 decimation_rate: 200
 incoherent_averages: 10
 number_ranges: 2000
-time_resolution:
+range_resolution: 1.5 # km
+timestamp_correction: 30
+time_resolution: 0.1
+clutter_gates: 100
 snr_cutoff: 1.0 # signal-to-noise ratio cutoff in dB
 spectra_descriptors: [spec00,spec11,spec22,spec33spec44,spec55,spec66,spec77,spec88,spec99]
 xspectra_descriptors: [xspec01,xspec02,xspec03,xspec04,xspec05,xspec06,xspec07, xspec08,xspec09,xspec12,

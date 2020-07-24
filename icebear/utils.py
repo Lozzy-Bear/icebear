@@ -1,6 +1,8 @@
 import numpy as np
 import h5py
 import yaml
+import datetime
+from dateutil.tz import tzutc
 
 
 def uvw_to_rtp(u, v, w):
@@ -207,3 +209,37 @@ def fov_window(coeffs, resolution=np.array([0.1, 0.1]),
         fov_coeffs = np.append(coeffs[el_index[0]:el_index[1]:el_step, \
                                az_index[0]:az_index[1]:az_step, :], axis=0)
     return fov_coeffs
+
+
+class Time:
+    def __init__(self, start, stop, step):
+        """
+        Class which hold the iteration time series in both human readable and seconds since epoch (1970-01-01) formats.
+
+        Parameters
+        ----------
+            start : list int
+                Start point of time series in format [year, month, day, hour, minute, second, micro-second]
+            stop : list int
+                Stop point of time series in format [year, month, day, hour, minute, second, micro-second]
+            step : list int
+                Step size of time series in format [day, hour, minute, second, micro-second]
+        """
+        if len(start) != 7:
+            raise ValueError('Must include [year, month, day, hour, minute, second, microsecond]')
+        if len(stop) != 7:
+            raise ValueError('Must include [year, month, day, hour, minute, second, microsecond]')
+        if len(step) != 5:
+            raise ValueError('Must include [day, hour, minute, second, microsecond]')
+        self.start_human = datetime.datetime(year=start[0], month=start[1], day=start[2], hour=start[3],
+                                             minute=start[4], second=start[5], microsecond=start[6], tzinfo=tzutc())
+        self.stop_human = datetime.datetime(year=stop[0], month=stop[1], day=stop[2], hour=stop[3],
+                                            minute=stop[4], second=stop[5], microsecond=stop[6], tzinfo=tzutc())
+        self.step_human = datetime.timedelta(days=step[0], hours=step[1], minutes=step[2],
+                                             seconds=step[3], microseconds=step[4])
+        self.start_epoch = self.start_human.timestamp()
+        self.stop_epoch = self.stop_human.timestamp()
+        self.step_epoch = self.step_human.total_seconds()
+
+    def get_date(self, timestamp):
+        return datetime.datetime.fromtimestamp(timestamp, tz=tzutc())

@@ -1,17 +1,16 @@
 import h5py
 import scipy
-import calendar
 import pyfftw
 import numba
 import numpy as np
 import ctypes as C
 import digital_rf
+import icebear.utils
 pyfftw.interfaces.cache.enable()
 
 
 def generate_level1(config):
-    time = np.array(config.processing_start)
-    bcode = generate_bcode(config.prn_code_file)
+    filenames = []
     level0_data = digital_rf.DigitalRFReader(config.processing_source)
     channels = level0_data.get_channels()
     if len(channels) == 0:
@@ -21,26 +20,98 @@ def generate_level1(config):
         print('\tchannels acquired:')
         for i in range(len(channels)):
             print(f'\t\t-{str(channels[i])}')
+
+    total_xspectras = int(len(channels)*(len(channels) - 1) / 2)
+    total_spectras = int(len(channels))w
+    bcode = generate_bcode(config.prn_code_file)
     complex_correction = config.rx_magnitude * np.exp(1j * np.deg2rad(config.rx_phase))
     fft_freq = np.fft.fftfreq(int(config.code_length / config.decimation_rate),
                               config.decimation_rate / config.raw_sample_rate)
 
-    start = time[0]
-    filename = f'level1/{time[0]:04d}_{time[1]:02d}_{time[2]:02d}/' \
-               f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
-               f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_' \
-               f'{time[0]:04d}_{time[1]:02d}_{time[2]:02d}_{time[3]:02d}.h5'
+    if not config.processing_step:
+        config.processing_step = [0, 0, 0, config.incoherent_averages * config.time_resolution, 0]
+    time = icebear.utils.Time(config.processing_start, config.processing_stop, config.processing_step)
+    if config.incoherent_averages * config.time_resolution >= time.step_epoch:
+        print("WARNING: averaging time length is greater than step time length")
+    temp_hour = [-1, -1, -1, -1]
+    for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
+        now = time.get_date(t)
+        spectra = np.array([])
+        spectra_variance = np.array([])
+        xspectra = np.array([])
+        xspectra_variance = np.array([])
+        power = np.array([])
 
-    create_level1_hdf5(config, filename)
+        # create new file if new hour
+        if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
+            filename = f'level1/{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
+                f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
+                f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_' \
+                f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
+            filenames.append(filename)
+            create_level1_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
+            temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
 
-    # do work here
-    append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_distance, logsnr, noise,
-                       spectra, spectra_variance, spectra_median, spectra_clutter_corr,
-                       xspectra, xspectra_variance, xspectra_median, xspectra_clutter_corr)
-    return None
+        # calculate the self-spectra
+        for antenna_num in range(0, 10):
+            result, variance = decx(config, t, level0_data, bcode, channels[antenna_num], channels[antenna_num],
+                                    complex_correction[antenna_num], complex_correction[antenna_num])
+            spectra = np.append(spectra, result[:, :][:, :, np.newaxis], axis=2)
+            spectra_variance = np.append(spectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
+            power += result
+
+        # Perform cross-spectra for each desired baseline or correlation
+        for j in range(len(channels)-1):
+            for i in range(j + 1, len(channels)):
+                result, variance = decx(config, t, level0_data, bcode, channels[j], channels[i],
+                                        complex_correction[j], complex_correction[i])
+                xspectra = np.append(xspectra, result[:, :][:, :, np.newaxis], axis=2)
+                xspectra_variance = np.append(xspectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
+
+        noise = np.median(power)
+        snr = (power - noise) / noise
+        snr = np.ma.masked_where(snr < 0.0, snr)
+        logsnr = 10 * np.log10(snr.filled(1))
+        logsnr = np.ma.masked_where(logsnr < 1.0, logsnr)
+        # Find the range-Doppler bins with a SNR above the threshold.
+        snr_indices = np.asarray(np.where(logsnr >= config.snr_cutoff)).T
+        if len(snr_indices) > 0:
+            data_flag = True
+        else:
+            data_flag = False
+
+        # Calculate the spectra noise value.
+        spectra_median = np.zeros(10, dtype=np.complex64)
+        spectra_clutter_corr = np.zeros(10, dtype=np.complex64)
+        for num_spec in range(total_spectras):
+            spectra_median[num_spec] = np.median(spectra[:, :, num_spec])
+            spectra_clutter_corr[num_spec] = np.mean(spectra[:, 0:config.clutter_gates, num_spec])
+
+        # calculate the xspectra 'noise' value
+        xspectra_median = np.zeros(45, dtype=np.complex64)
+        xspectra_clutter_corr = np.zeros(45, dtype=np.complex64)
+        for num_xspec in range(total_xspectras):
+            xspectra_median[num_xspec] = np.median(xspectra[:, :, num_xspec + 1])
+            xspectra_clutter_corr[num_xspec] = np.mean(xspectra[:, 0:config.clutter_gates, num_xspec + 1])
+
+        # Calculate noise, range and Doppler values
+        doppler = fft_freq[snr_indices[:, 0]]
+        rf_distance = config.range_resolution * (snr_indices[:, 1] - config.timestamp_correction)
+        noise /= total_spectras
+
+        append_level1_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000),
+                           data_flag, doppler, rf_distance, logsnr, noise,
+                           spectra[snr_indices[:, 0], snr_indices[:, 1], :],
+                           spectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
+                           spectra_median, spectra_clutter_corr,
+                           xspectra[snr_indices[:, 0], snr_indices[:, 1], :],
+                           xspectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
+                           xspectra_median, xspectra_clutter_corr)
+
+    return filenames
 
 
-def create_level1_hdf5(config, filename):
+def create_level1_hdf5(config, filename, year, month, day):
     """
     Create a level1 HDF5 formatted file for storage of ICEBEAR spectra and cross-spectra
 
@@ -57,7 +128,8 @@ def create_level1_hdf5(config, filename):
     """
     # general information
     f = h5py.File(filename, 'w')
-    f.create_dataset('date', data=np.array(config.date))
+    f.create_dataset('config_updated', data=np.array(config.date))
+    f.create_dataset('date', data=np.array([year, month, day]))
     f.create_dataset('processing_method', data=config.processing_method)
     # transmitter site information
     f.create_dataset('tx_name', data=config.tx_name)
@@ -159,23 +231,6 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
     return None
 
 
-class Xdata:
-    """
-      Class defined to hold cross-spectra data
-    """
-    def __init__(self, data, b_num, dist):
-        """
-        Parameters
-        ----------
-            data
-            b_num
-            dist
-        """
-        self.data = data
-        self.b_num = b_num
-        self.dist = dist
-
-
 def generate_bcode(filepath):
     """
        Uses the pseudo-random code file to generate the binary code for signal matching
@@ -265,22 +320,17 @@ def ssmf(meas, code, averages, nrang, fdec, codelen):
           on the GPU.
         * 'check' input of __fmed is 0 which indicates a single antenna is being processed.
     """
-
     nfreq = int(codelen / fdec)
     measlen = codelen * averages + nrang
     result_size = nfreq * nrang
-
     code = code.astype(np.complex64)
     result = np.zeros((nrang, nfreq), dtype=np.complex64)
-
     m_p = meas.ctypes.data_as(C.POINTER(C.c_float))
     c_p = code.ctypes.data_as(C.POINTER(C.c_float))
     r_p = result.ctypes.data_as(C.POINTER(C.c_float))
-
     __fmed(m_p, c_p, r_p, measlen, codelen, result_size, averages, 0)
 
-    S = abs2(result)
-    return S
+    return abs2(result)
 
 
 def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen):
@@ -305,30 +355,24 @@ def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen):
           on the GPU.
         * 'check' input of __fmed is 1 which indicates a pair of antennas is being processed.
     """
-
-    measlen0 = len(meas0)
-    measlen1 = len(meas1)
     nfreq = int(codelen / fdec)
     result_size = nfreq * nrang
-
     code = code.astype(np.complex64)
     result = np.zeros((nrang, nfreq), dtype=np.complex64)
-    var = np.zeros((nrang, nt), dtype=np.complex64)
+    variance = np.zeros((nrang, nt), dtype=np.complex64)
     # Create pointers to convert python tpyes to C types
     m_p0 = meas0.ctypes.data_as(C.POINTER(C.c_float))
     m_p1 = meas1.ctypes.data_as(C.POINTER(C.c_float))
     c_p = code.ctypes.data_as(C.POINTER(C.c_float))
     r_p = result.ctypes.data_as(C.POINTER(C.c_float))
-    v_p = var.ctypes.data_as(C.POINTER(C.c_float))
+    v_p = variance.ctypes.data_as(C.POINTER(C.c_float))
     # Runs ssmf.cu on data set using defined pointers
-    __fmed(m_p0, m_p1, c_p, r_p, v_p, measlen0, codelen, result_size, averages, 1)
+    __fmed(m_p0, m_p1, c_p, r_p, v_p, len(meas0), codelen, result_size, averages, 1)
 
-    S = result
-    return S, var
+    return result, variance
 
 
-def decx(b_code, data, codelen, complex_corr, averages, fdec, nrang, second, minute, hour, day, month, year, plot_num,
-         plot_spacing, sample_rate, i, j):
+def decx(config, time, data, bcode, channel1, channel2, correction1, correction2):
     """
       Performs cross-correlation and decimation for inputed baseline from the radar data
 
@@ -336,56 +380,15 @@ def decx(b_code, data, codelen, complex_corr, averages, fdec, nrang, second, min
         does not appear to affect the output of the script. Issue may be in h5py or digital_rf.
         Note: This error only appears when using python3
     """
-    # Initialize Array
-    val = int(20000 / fdec)
-    xspec = Xdata(np.zeros((val, nrang), dtype=np.complex64), i, j)
-
-    # Script executes a portion of time averaging on GPU and CPU
-    # if range for avg_num is 1, all averaging for variable averages is done on the GPU
-    # if range for avg_num is averages, all averaging is done on the CPU
-    # divide the averaging appropriately for the task
-    seconds = second + (plot_num * (averages * 0.1 + plot_spacing))
-
-    # Calculate the hour and minute from seconds
-    minutes = minute + int(seconds / 60.0)
-    seconds = seconds % 60.0
-    hours = hour + int(minutes / 60.0)
-    minutes = minutes % 60.0
-
-    time_tuple = (year, month, day, hours, minutes, seconds, -1, -1, 0)
-
-    # Calculate the start sample
-    start_sample = int((calendar.timegm(time_tuple)) * sample_rate) - 30
-
-    # Generate antenna strings
-    antenna1 = 'antenna' + str(i)
-    antenna2 = 'antenna' + str(j)
-
+    start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
+    step_sample = config.code_length * config.incoherent_averages + config.number_ranges
     try:
-        antenna_data1 = (data.read_vector_c81d(start_sample, codelen * averages + nrang, antenna1)) * complex_corr[i]
-        antenna_data2 = (data.read_vector_c81d(start_sample, codelen * averages + nrang, antenna2)) * complex_corr[j]
+        data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
+        data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
+        result, variance = ssmfx(data1, data2, bcode, config.incoherent_averages, config.number_ranges,
+                                 config.decimation_rate, config.code_length)
+        return np.transpose(result), np.transpose(variance)
     except IOError:
-        print('Read number %i or %i went beyond existing data and raised an IOError' % (i, j))
+        print('Read number went beyond existing channels or data and raised an IOError')
+        exit()
 
-    # n, bins, patches = plt.hist(np.real(antenna_data1),log=True)
-    # n, bins, patches = plt.hist(np.imag(antenna_data1),log=True)
-    # plt.show()
-
-    # Perform cross correlation
-    S, var = ssmfx(antenna_data1, antenna_data2, b_code, averages, nrang, fdec, codelen)
-    xspec.data = np.transpose(S)
-    var = np.transpose(var)
-
-    seconds = second + (plot_num * (averages * 0.1 + plot_spacing)) + (averages * 0.1)
-
-    # Calculate the hour and minute from the seconds for the final time
-    minutes = minute + int(seconds / 60.0)
-    seconds = seconds % 60.0
-    hours = hour + int(minutes / 60.0)
-    minutes = minutes % 60.0
-
-    # For quick wave study
-    # implement total abs(power) for array for each average
-    # take fft after and plot power vs freq
-
-    return xspec, var, hours, minutes, seconds
