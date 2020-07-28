@@ -31,22 +31,23 @@ def generate_level1(config):
     if not config.processing_step:
         config.processing_step = [0, 0, 0, config.incoherent_averages * config.time_resolution, 0]
     time = icebear.utils.Time(config.processing_start, config.processing_stop, config.processing_step)
-    if config.incoherent_averages * config.time_resolution >= time.step_epoch:
-        print("WARNING: averaging time length is greater than step time length")
+    if config.incoherent_averages * config.time_resolution > time.step_epoch:
+        print(f'WARNING: averaging time length {config.incoherent_averages * config.time_resolution}s'
+              f' is greater than step time length {time.step_epoch}s')
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
-        spectra = np.array([])
-        spectra_variance = np.array([])
-        xspectra = np.array([])
-        xspectra_variance = np.array([])
-        power = np.array([])
+        spectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
+        spectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
+        xspectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex128)
+        xspectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex128)
+        power = np.zeros(shape=(int(config.code_length / config.decimation_rate), config.number_ranges), dtype=np.complex128)
 
         # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
-            filename = f'level1/{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
+            filename = f'{config.processing_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
                 f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
-                f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_' \
+                f'{int(config.snr_cutoff):02d}dB_{int(config.incoherent_averages):02d}00ms_' \
                 f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
             print(f'\t-created level 1 HDf5: {filename}')
             filenames.append(filename)
@@ -57,18 +58,21 @@ def generate_level1(config):
         for antenna_num in range(0, 10):
             result, variance = decx(config, t, level0_data, bcode, channels[antenna_num], channels[antenna_num],
                                     complex_correction[antenna_num], complex_correction[antenna_num])
-            spectra = np.append(spectra, result[:, :][:, :, np.newaxis], axis=2)
-            spectra_variance = np.append(spectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
-            power += result
+            #print(result.shape, variance.shape)
+            spectra[:, :, antenna_num]  = result #np.append(spectra, result[:, :][:, :, np.newaxis], axis=2)
+            spectra_variance[:, :, antenna_num]  = variance #np.append(spectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
+            power[:, :] += result[:, :]
 
         # Perform cross-spectra for each desired baseline or correlation
+        cnt = 0
         for j in range(len(channels)-1):
             for i in range(j + 1, len(channels)):
                 result, variance = decx(config, t, level0_data, bcode, channels[j], channels[i],
                                         complex_correction[j], complex_correction[i])
-                xspectra = np.append(xspectra, result[:, :][:, :, np.newaxis], axis=2)
-                xspectra_variance = np.append(xspectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
-
+                xspectra[:, :, cnt]  = result #np.append(xspectra, result[:, :][:, :, np.newaxis], axis=2)
+                xspectra_variance[:, :, cnt] = variance #np.append(xspectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
+                cnt += 1
+                
         noise = np.median(power)
         snr = (power - noise) / noise
         snr = np.ma.masked_where(snr < 0.0, snr)
@@ -82,18 +86,18 @@ def generate_level1(config):
             data_flag = False
 
         # Calculate the spectra noise value.
-        spectra_median = np.zeros(10, dtype=np.complex64)
-        spectra_clutter_corr = np.zeros(10, dtype=np.complex64)
+        spectra_median = np.zeros(total_spectras, dtype=np.complex64)
+        spectra_clutter_corr = np.zeros(total_spectras, dtype=np.complex64)
         for num_spec in range(total_spectras):
             spectra_median[num_spec] = np.median(spectra[:, :, num_spec])
             spectra_clutter_corr[num_spec] = np.mean(spectra[:, 0:config.clutter_gates, num_spec])
 
         # calculate the xspectra 'noise' value
-        xspectra_median = np.zeros(45, dtype=np.complex64)
-        xspectra_clutter_corr = np.zeros(45, dtype=np.complex64)
+        xspectra_median = np.zeros(total_xspectras, dtype=np.complex64)
+        xspectra_clutter_corr = np.zeros(total_xspectras, dtype=np.complex64)
         for num_xspec in range(total_xspectras):
-            xspectra_median[num_xspec] = np.median(xspectra[:, :, num_xspec + 1])
-            xspectra_clutter_corr[num_xspec] = np.mean(xspectra[:, 0:config.clutter_gates, num_xspec + 1])
+            xspectra_median[num_xspec] = np.median(xspectra[:, :, num_xspec])
+            xspectra_clutter_corr[num_xspec] = np.mean(xspectra[:, 0:config.clutter_gates, num_xspec])
 
         # Calculate noise, range and Doppler values
         doppler = fft_freq[snr_indices[:, 0]]
@@ -129,7 +133,7 @@ def create_level1_hdf5(config, filename, year, month, day):
     """
     # general information
     f = h5py.File(filename, 'w')
-    f.create_dataset('config_updated', data=np.array(config.date))
+    f.create_dataset('config_updated', data=np.array(config.config_updated))
     f.create_dataset('date', data=np.array([year, month, day]))
     f.create_dataset('processing_method', data=config.processing_method)
     # transmitter site information
@@ -288,10 +292,11 @@ def func():
        * Wrapped function is ssmf.cu is denoted by extern "C" {} tag
        * Inputs are (cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftComplex *result, size_t measlen, size_t codelen, size_t size, ing avg, ing check)
     """
-    dll = C.CDLL('./libssmf.so', mode=C.RTLD_GLOBAL)
+    #dll = C.CDLL('./libssmf.so', mode=C.RTLD_GLOBAL)
+    dll = C.CDLL('./icebear/processing/libssmf.so', mode=C.RTLD_GLOBAL)
     func = dll.ssmf
-    func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.c_size_t,
-                     C.c_size_t, C.c_size_t, C.c_int, C.c_int]
+    func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float),
+                     C.POINTER(C.c_float), C.c_size_t, C.c_size_t, C.c_size_t, C.c_int, C.c_int]
     return func
 
 
@@ -363,7 +368,7 @@ def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen):
     result_size = nfreq * nrang
     code = code.astype(np.complex64)
     result = np.zeros((nrang, nfreq), dtype=np.complex64)
-    variance = np.zeros((nrang, nt), dtype=np.complex64)
+    variance = np.zeros((nrang, nfreq), dtype=np.complex64)
     # Create pointers to convert python tpyes to C types
     m_p0 = meas0.ctypes.data_as(C.POINTER(C.c_float))
     m_p1 = meas1.ctypes.data_as(C.POINTER(C.c_float))
@@ -393,6 +398,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                                  config.decimation_rate, config.code_length)
         return np.transpose(result), np.transpose(variance)
     except IOError:
-        print('Read number went beyond existing channels or data and raised an IOError')
+        print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
+              f'(start {start_sample}, step {step_sample}) and raised an IOError')
         exit()
 

@@ -28,7 +28,7 @@ Note: The first two commands only need to be run once per session.
 To compile:
 ################################################################################################################################################
 #                                                                                                                                              #
-#           nvcc -Xcompiler -fPIC -shared -o libssmf.so ssmf.cu -I/usr/local/cuda-9.1/include -L/usr/local/cuda-9.1/lib64 -lcufft              #
+#           nvcc -Xcompiler -fPIC -shared -o libssmf.so ssmf.cu -I/usr/local/cuda/include -L/usr/local/cuda/lib64 -lcufft              #
 #                                                                                                                                              #
 ################################################################################################################################################
 */
@@ -114,8 +114,8 @@ __global__ void ssmf_kernel(cufftComplex *meas, cufftComplex *code, cufftComplex
 
 
 // Perfrom conjugate multiplication between two matricies ie: arr1 * conj(arr2)
-// This is cross correlation of arr1 and arr2 are fourier transforms
-__global__ void conj_kernel(cufftComplex *arr1, cufftComplex *arr2, cufftComplex *res){
+// This is cross correlation of arr1 and arr2 in fourier space
+__global__ void conj_kernel(cufftComplex *arr1, cufftComplex *arr2, cufftComplex *res, cufftComplex *var_temp, int a_shift, int avg){
 
    //Define thread variable i and intermediate float variables
    int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -141,23 +141,45 @@ __global__ void conj_kernel(cufftComplex *arr1, cufftComplex *arr2, cufftComplex
       //The following if statements attempt to correct for these errors by checking ratios
       if(abs(x/xr)<0.000001 && abs(x/xi)<0.000001){
          res[i].x += 0;
+	 var_temp[i+a_shift*200000].x = 0;
       }else{
-         res[i].x += x;//arr1[i].x * arr2[i].x + arr1[i].y * arr2[i].y;
+         res[i].x += x/avg;//arr1[i].x * arr2[i].x + arr1[i].y * arr2[i].y;
+	 var_temp[i+a_shift*200000].x = x;
       }
 
       if(abs(y/yir)<0.000001 && abs(y/yri)<0.000001){
          res[i].y += 0;
+	 var_temp[i+a_shift*200000].y = 0;
       }else{
-         res[i].y += y;//arr1[i].y * arr2[i].x - arr1[i].x * arr2[i].y;
+         res[i].y += y/avg;//arr1[i].y * arr2[i].x - arr1[i].x * arr2[i].y;
+	 var_temp[i+a_shift*200000].y = y;
       }
    }
+}
+
+
+__global__ void var_kernel( cufftComplex *res, cufftComplex *var_temp, cufftComplex *var, int avg){
+
+   //Define thread variable i and intermediate float variables
+   int i = blockIdx.x * blockDim.x + threadIdx.x;
+   float tempx = 0.0;
+   float tempy = 0.0;
+
+   for (int a_shift=0; a_shift<avg; a_shift++){
+      tempx += (var_temp[i+a_shift*200000].x - res[i].x) * (var_temp[i+a_shift*200000].x - res[i].x);
+      tempy += (var_temp[i+a_shift*200000].y - res[i].y) * (var_temp[i+a_shift*200000].y - res[i].y);
+   }
+
+   var[i].x = sqrtf(tempx/avg);
+   var[i].y = sqrtf(tempy/avg);
+
 }
 
 
 /* Main - Prepares Cuda memory and launches Kernel */
 
 extern "C" {
-void ssmf(cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftComplex *result, size_t measlen, size_t codelen, size_t size, int avg, int check)
+void ssmf(cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftComplex *result, cufftComplex *var, size_t measlen, size_t codelen, size_t size, int avg, int check)
 {
    // Memory management for the kernnels
    cufftHandle plan;
@@ -166,18 +188,21 @@ void ssmf(cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftCom
    size_t size_m = measlen * sizeof(cufftComplex);
    size_t size_c = codelen * sizeof(cufftComplex);
    size_t size_out = size * sizeof(cufftComplex);
+   size_t var_arr = avg*size * sizeof(cufftComplex);
    int n[1];
 
    n[0] = 100;
 
    // Build device pointers
-   cufftComplex *d_meas1, *d_meas2, *d_temp1, *d_temp2, *d_code, *d_res, *smeas;
+   cufftComplex *d_meas1, *d_meas2, *d_temp1, *d_temp2, *d_code, *d_res, *d_var, *d_var_temp, *smeas;
    cudaMalloc((void **) &d_meas1, size_m);
    cudaMalloc((void **) &d_meas2, size_m);
    cudaMalloc((void **) &d_temp1, size_out);
    cudaMalloc((void **) &d_temp2, size_out);
    cudaMalloc((void **) &d_code, size_c);
    cudaMalloc((void **) &d_res, size_out);
+   cudaMalloc((void **) &d_var, size_out);
+   cudaMalloc((void **) &d_var_temp, var_arr);
    cudaMalloc((void **) &smeas, 100*sizeof(cufftComplex));
    
    // Assign device pointer values
@@ -185,7 +210,8 @@ void ssmf(cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftCom
    cudaMemcpy(d_meas2, meas2, size_m, cudaMemcpyHostToDevice);
    cudaMemcpy(d_code, code, size_c, cudaMemcpyHostToDevice);
    cudaMemcpy(d_res, result, size_out, cudaMemcpyHostToDevice);
-  
+   cudaMemcpy(d_var, var, size_out, cudaMemcpyHostToDevice); 
+
    // Threads must be base 2, 128 is fist factor greater than 100
    // For thread block limits, see CUDA Toolkit Documentation
    dim3 threadsPerBlock(128, 1, 1);
@@ -214,13 +240,16 @@ void ssmf(cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftCom
          cufftExecC2C(plan, d_temp2, d_temp2, CUFFT_FORWARD);
 
          //Perform Cross Correlation
-         conj_kernel<<<512,391>>>(d_temp1, d_temp2, d_res);
+         conj_kernel<<<512,391>>>(d_temp1, d_temp2, d_res, d_var_temp, i, avg);
       }
+
+      //Calculate Variance
+      var_kernel<<<512,391>>>(d_res, d_var_temp, d_var, avg);
    }
 
    // Retreive result data
    cudaMemcpy(result, d_res, size_out, cudaMemcpyDeviceToHost);
-
+   cudaMemcpy(var, d_var, size_out, cudaMemcpyDeviceToHost);
    
    // Free up Device memory
    cudaFree(d_meas1);
@@ -229,6 +258,8 @@ void ssmf(cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftCom
    cudaFree(d_temp2);
    cudaFree(d_code);
    cudaFree(d_res);
+   cudaFree(d_var);
+   cudaFree(d_var_temp);
    cudaFree(smeas);
    cufftDestroy(plan);
 }
