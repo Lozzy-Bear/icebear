@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
+import h5py
 import numpy as np
 
 
-def ib3d_4plot(filepath, title, datetime, doppler, rng, snr, az, el):
+def imaging_4plot(filepath, title, datetime, doppler, rng, snr, az, el):
     """
 
     Parameters
@@ -89,86 +90,80 @@ def ib3d_4plot(filepath, title, datetime, doppler, rng, snr, az, el):
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.savefig(filepath + str(title + datetime).replace(' ', '_').replace(':', '') + '.png')
     plt.close()
-    return
+
+    return None
 
 
-# Quick look plots Devin stuff
-import h5py
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib as mpl
-mpl.rcParams.update({'font.size': 22})
-mpl.rcParams['figure.figsize'] = 20, 10
-#plt.rcParams['axes.facecolor'] = 'black'
+def quick_look(config, time):
+    """
+    Creates a standard Quick Look plot of level 1 data for the specified time frame.
 
-#cmap = colors.LinearSegmentedColormap.from_list(
-#        'incr_alpha', [(0, (*colors.to_rgb('RdYlBu'),0)), (1, 'RdYlBu')])
+    Parameters
+    ----------
+        config : Class Object
+            Config class instantiation which contains plotting settings.
+        time : Class Object
+            Time class instantiation for start, stop, step deceleration.
 
-year=2019
-month=12
-day=18
-hour=0
-minute=0
-second=0
+    Returns
+    -------
+        None
 
-if second==0:
-        second+=1
+    Notes
+    -----
+        * Typically a Quick Look plot should be one day of data with a step size equal to the incoherent averages
+          time length used to generate the level 1 data used.
 
-for temp_days in range(31):
-    days=temp_days+day
-    for temp_hours in range(24-hour):
-        hours = hour+temp_hours
+    """
+    plt.figure(1, figsize=[20, 10])
+    plt.rcParams.update({'font.size': 22})
+
+    temp_hour = [-1, -1, -1, -1]
+    for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
+        now = time.get_date(t)
+        if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
+            try:
+                filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
+                              f'{config.tx_name}_{config.rx_name}_{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_'
+                              f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5', 'r')
+            except:
+                continue
+            temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+
         try:
-            ib_file = h5py.File(f'{year:04d}_{month:02d}_{days:02d}/icebear_linear_01dB_1000ms_vis_{year:02d}_{month:02d}_{days:02d}_{hours:02d}_prelate_bakker.h5','r')
+            moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
+            if filename[f'{moment}/data_flag'][:]:
+                tau = int((now.hour * 60 * 60 + now.minute * 60 + now.seconds / 1000) / 3600)
+                snr_db = np.abs(filename[f'{moment}/snr_db'][:])
+                doppler_shift = filename[f'{moment}/doppler_shift'][:]
+                rf_distance = np.abs(filename[f'{moment}/rf_distance'][:])
+                plt.subplot(2, 1, 1)
+                plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=doppler_shift * 3.03,
+                            vmin=-900.0, vmax=900.0, s=3, cmap='jet_r')
+                plt.subplot(2, 1, 2)
+                plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=snr_db, vmin=0.0,
+                            vmax=20.0, s=3, cmap='plasma_r')
         except:
             continue
-        print(hours)
-        #print(ib_file.keys())
 
-        for temp_minutes in range(60-minute):
-            minutes = minute+temp_minutes
-            for temp_seconds in range(60-second):
-                seconds=(second+temp_seconds)*1000
-
-                try:
-                    if (ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/data_flag'][:]==True):
-                        #example to plot a spectra
-                        icebear_time = (hours*60*60+minutes*60+(seconds/1000))/(60*60)
-                        logsnr = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/snr_dB'][:])
-                        doppler = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/doppler_shift'][:]
-                        range_values = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/rf_distance'][:])
-                        xspectra_values = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/antenna_xspectra'][:]
-                        spectra_values = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/antenna_spectra'][:]
-
-                        plt.subplot(2,1,1)
-                        plt.scatter(np.ones(len(range_values))*icebear_time,range_values,c=doppler*3.03,vmin=-900.0,vmax=900.0,s=3,cmap='jet_r')#,alpha=(logsnr/60+0.5))
-                        plt.subplot(2,1,2)
-                        plt.scatter(np.ones(len(range_values))*icebear_time,range_values,c=logsnr,vmin=0.0,vmax=20.0,s=3,cmap='plasma_r')#,alpha=(logsnr/60+0.5))
-                except:
-                    break
-            second=0
-        minute=0
-    hour=0
-
-    plt.subplot(2,1,1)
-    cbar = plt.colorbar()
-    cbar.set_label('Doppler (m/s)')
-    plt.title(f'{year:04d}-{month:02d}-{days:02d} ICEBEAR Summary Plot')
+    plt.subplot(2, 1, 1)
+    plt.title(f'{int(time.start_human.year):04d}-{int(time.start_human.month):02d}-{int(time.start_human.day):02d}'
+              f' {radar_name} Quick Look Plot')
     plt.ylabel('RF Distance (km)')
-    plt.ylim(0,2500)
-    plt.xlim(0,24.0)
+    plt.colorbar(label='Doppler (m/s)')
+    plt.ylim(0, 2500)
+    plt.xlim(0, 24.0)
     plt.grid()
 
-    plt.subplot(2,1,2)
-    cbar = plt.colorbar()
-    cbar.set_label('SNR (dB)')
-    plt.ylabel('RF Distance (km)')
-    plt.ylim(0,2500)
-    plt.xlim(0,24.0)
-    plt.grid()
+    plt.subplot(2, 1, 2)
     plt.xlabel('Time (hours)')
+    plt.ylabel('RF Distance (km)')
+    plt.colorbar(label='SNR (dB')
+    plt.ylim(0, 2500)
+    plt.xlim(0, 24.0)
+    plt.grid()
 
-    plt.savefig(f'{year:04d}_{month:02d}_{days:02d}.png')
+    plt.savefig(f'{config.plotting_destination}quicklook_{radar_name}_{year:04d}_{month:02d}_{day:02d}.png')
     plt.close()
-    print('plot saved')
 
+    return None

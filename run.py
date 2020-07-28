@@ -26,10 +26,15 @@ class Imaging:
         return None
 
 
+class Plotting:
+    def __init__(self, config):
+        
+        
+
 class Config:
-    def __init__(self, args):
-        self.cfg_file = args.configuration
-        self.set_file = args.settings
+    def __init__(self, configuration, settings):
+        self.cfg_file = configuration
+        self.set_file = settings
         with open(self.cfg_file, 'r') as stream:
             cfg = yaml.full_load(stream)
             for key, value in cfg.items():
@@ -114,7 +119,7 @@ def main():
 
 
 def run(args):
-    config = Config(args)
+    config = Config(args.configuration, args.settings)
     config.print_attrs()
 
     if args.processing:
@@ -127,9 +132,21 @@ def run(args):
         Processing(config)
 
     if args.imaging:
+        if args.start:
+            config.update_attr('imaging_start', args.start)
+        if args.stop:
+            config.update_attr('imaging_stop', args.stop)
+        if args.step:
+            config.update_attr('imaging_step', args.step)
         Imaging(config)
 
     if args.plotting:
+        if args.start:
+            config.update_attr('plotting_start', args.start)
+        if args.stop:
+            config.update_attr('plotting_stop', args.stop)
+        if args.step:
+            config.update_attr('plotting_step', args.step)
         Plotting(config)
 
     return None

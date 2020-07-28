@@ -219,11 +219,11 @@ class Time:
         Parameters
         ----------
             start : list int
-                Start point of time series in format [year, month, day, hour, minute, second, micro-second]
+                Start point of time series in format [year, month, day, hour, minute, second, microsecond]
             stop : list int
-                Stop point of time series in format [year, month, day, hour, minute, second, micro-second]
+                Stop point of time series in format [year, month, day, hour, minute, second, microsecond]
             step : list int
-                Step size of time series in format [day, hour, minute, second, micro-second]
+                Step size of time series in format [day, hour, minute, second, microsecond]
         """
         if len(start) != 7:
             raise ValueError('Must include [year, month, day, hour, minute, second, microsecond]')
