@@ -29,7 +29,7 @@ rx_z: [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] #
 rx_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0,...] binary mask of which antennas were used
 rx_phase: [0.0,-13.95,-6.345,-5.89,-3.14,16.86,10.2,-1.25,5.72,3.015] #
 rx_magnitude: [6.708204,6.4031243,6.0827622,6.3245554,6.4031243,6.0827622,6.708204,6.0827622,5.830952,6.0]
-rx_sample_rate: 0 #
+rx_sample_rate: 0  #
 rx_antenna_type: Cushcraft 50MHz Superboomer # brand and model of antenna used
 rx_rf_path: Ant->feed->bulk->BPF->LNA->LNA->X300 # RF hardware path chain, eg. antenna->feedline->bulkhead->...
 
@@ -48,34 +48,25 @@ timestamp_correction: 30
 time_resolution: 0.1
 clutter_gates: 100
 snr_cutoff: 1.0 # signal-to-noise ratio cutoff in dB
-spectra_descriptors: [spec00,spec11,spec22,spec33,spec44,spec55,spec66,spec77,spec88,spec99]
+spectra_descriptors: [spec00,spec11,spec22,spec33spec44,spec55,spec66,spec77,spec88,spec99]
 xspectra_descriptors: [xspec01,xspec02,xspec03,xspec04,xspec05,xspec06,xspec07, xspec08,xspec09,xspec12,
                        xspec13,xspec14,xspec15,xspec16,xspec17,xspec18,xspec19,xspec23,xspec24,xspec25,
                        xspec26,xspec27,xspec28,xspec29,xspec34,xspec35,xspec36,xspec37,xspec38,xspec39,
                        xspec45,xspec46,xspec47,xspec48,xspec49,xspec56,xspec57,xspec58,xspec59,xspec67,
                        xspec68,xspec69,xspec78,xspec79,xspec89]
 processing_source: '/ext_data3/icebear_3d_test/'
-processing_destination: '../level1/'
-processing_start:
-processing_stop:
-processing_step:
+processing_destination: '/home/icebear-processing/package/level1/'
+processing_start: [2019,11,20,3,0,0,0]
+processing_stop: [2019,11,20,23,0,0,0]
+processing_step: [0,0,0,1,0]
 
 # Imaging Settings
 swht_coeffs: #'swhtcoeffs_ib3d_2020-7-20_360-090-10-85'
-azimuth: [-45, 45]
-elevation: [0, 30]
+azimuth: [-45,45]
+elevation: [0,30]
 resolution: 1.0
 lmax: 85
 fov:
-imaging_source:
-imaging_destination:
-imaging_start:
-imaging_stop:
-imaging_step:
 
 # Plotting Settings
-plotting_source:
-plotting_destination:
-plotting_start:
-plotting_stop:
-plotting_step:
+plotting:

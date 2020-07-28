@@ -37,11 +37,11 @@ def generate_level1(config):
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
-        spectra = np.array([])
-        spectra_variance = np.array([])
-        xspectra = np.array([])
-        xspectra_variance = np.array([])
-        power = np.array([])
+        spectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
+        spectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
+        xspectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex128)
+        xspectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex128)
+        power = np.zeros(shape=(int(config.code_length / config.decimation_rate), config.number_ranges), dtype=np.complex128)
 
         # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
@@ -55,21 +55,23 @@ def generate_level1(config):
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
 
         # calculate the self-spectra
-        for antenna_num in range(0, 10):
+        for antenna_num in range(total_spectras):
             result, variance = decx(config, t, level0_data, bcode, channels[antenna_num], channels[antenna_num],
                                     complex_correction[antenna_num], complex_correction[antenna_num])
-            spectra = np.append(spectra, result[:, :][:, :, np.newaxis], axis=2)
-            spectra_variance = np.append(spectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
-            power += result
+            spectra[:, :, antenna_num] = result
+            spectra_variance[:, :, antenna_num] = variance
+            power[:, :] += result[:, :]
 
         # Perform cross-spectra for each desired baseline or correlation
+        cnt = 0
         for j in range(len(channels)-1):
             for i in range(j + 1, len(channels)):
                 result, variance = decx(config, t, level0_data, bcode, channels[j], channels[i],
                                         complex_correction[j], complex_correction[i])
-                xspectra = np.append(xspectra, result[:, :][:, :, np.newaxis], axis=2)
-                xspectra_variance = np.append(xspectra_variance, variance[:, :][:, :, np.newaxis], axis=2)
-
+                xspectra[:, :, cnt] = result
+                xspectra_variance[:, :, cnt] = variance
+                cnt += 1
+                
         noise = np.median(power)
         snr = (power - noise) / noise
         snr = np.ma.masked_where(snr < 0.0, snr)
@@ -83,18 +85,18 @@ def generate_level1(config):
             data_flag = False
 
         # Calculate the spectra noise value.
-        spectra_median = np.zeros(10, dtype=np.complex64)
-        spectra_clutter_corr = np.zeros(10, dtype=np.complex64)
+        spectra_median = np.zeros(total_spectras, dtype=np.complex64)
+        spectra_clutter_corr = np.zeros(total_spectras, dtype=np.complex64)
         for num_spec in range(total_spectras):
             spectra_median[num_spec] = np.median(spectra[:, :, num_spec])
             spectra_clutter_corr[num_spec] = np.mean(spectra[:, 0:config.clutter_gates, num_spec])
 
         # calculate the xspectra 'noise' value
-        xspectra_median = np.zeros(45, dtype=np.complex64)
-        xspectra_clutter_corr = np.zeros(45, dtype=np.complex64)
+        xspectra_median = np.zeros(total_xspectras, dtype=np.complex64)
+        xspectra_clutter_corr = np.zeros(total_xspectras, dtype=np.complex64)
         for num_xspec in range(total_xspectras):
-            xspectra_median[num_xspec] = np.median(xspectra[:, :, num_xspec + 1])
-            xspectra_clutter_corr[num_xspec] = np.mean(xspectra[:, 0:config.clutter_gates, num_xspec + 1])
+            xspectra_median[num_xspec] = np.median(xspectra[:, :, num_xspec])
+            xspectra_clutter_corr[num_xspec] = np.mean(xspectra[:, 0:config.clutter_gates, num_xspec])
 
         # Calculate noise, range and Doppler values
         doppler = fft_freq[snr_indices[:, 0]]
@@ -289,7 +291,8 @@ def func():
        * Wrapped function is ssmf.cu is denoted by extern "C" {} tag
        * Inputs are (cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftComplex *result, size_t measlen, size_t codelen, size_t size, ing avg, ing check)
     """
-    dll = C.CDLL('./libssmf.so', mode=C.RTLD_GLOBAL)
+    #dll = C.CDLL('./libssmf.so', mode=C.RTLD_GLOBAL)
+    dll = C.CDLL('./icebear/processing/libssmf.so', mode=C.RTLD_GLOBAL)
     func = dll.ssmf
     func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float),
                      C.POINTER(C.c_float), C.c_size_t, C.c_size_t, C.c_size_t, C.c_int, C.c_int]
@@ -396,3 +399,5 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
     except IOError:
         print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
               f'(start {start_sample}, step {step_sample}) and raised an IOError')
+        exit()
+
