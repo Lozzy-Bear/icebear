@@ -28,6 +28,7 @@ class Imaging:
 
 class Plotting:
     def __init__(self, config):
+        pass
 
 
 def main():

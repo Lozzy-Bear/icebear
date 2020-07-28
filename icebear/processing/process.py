@@ -17,9 +17,9 @@ def generate_level1(config):
         print(f'ERROR: No data channels found in {config.processing_source}')
         exit()
     else:
-        print('\tchannels acquired:')
+        print('channels acquired:')
         for i in range(len(channels)):
-            print(f'\t\t-{str(channels[i])}')
+            print(f'\t-{str(channels[i])}')
 
     total_xspectras = int(len(channels)*(len(channels) - 1) / 2)
     total_spectras = int(len(channels))
@@ -111,6 +111,7 @@ def generate_level1(config):
                            xspectra[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_median, xspectra_clutter_corr)
+        print(f'\t-appended {int(now.hour)}{int(now.minute)}{int(now.second * 1000)}')
 
     return filenames
 
