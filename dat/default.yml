@@ -29,7 +29,7 @@ rx_z: [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] #
 rx_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0,...] binary mask of which antennas were used
 rx_phase: [0.0,-13.95,-6.345,-5.89,-3.14,16.86,10.2,-1.25,5.72,3.015] #
 rx_magnitude: [6.708204,6.4031243,6.0827622,6.3245554,6.4031243,6.0827622,6.708204,6.0827622,5.830952,6.0]
-rx_sample_rate: #
+rx_sample_rate: 0 #
 rx_antenna_type: Cushcraft 50MHz Superboomer # brand and model of antenna used
 rx_rf_path: Ant->feed->bulk->BPF->LNA->LNA->X300 # RF hardware path chain, eg. antenna->feedline->bulkhead->...
 
@@ -37,7 +37,7 @@ rx_rf_path: Ant->feed->bulk->BPF->LNA->LNA->X300 # RF hardware path chain, eg. a
 processing_method: normal
 wavelength: 6.05641329 # radar wavelength in meters
 center_frequency: 49500000.0 # radar center frequency in Hz
-prn_code_file: pseudo_random_code_test_8_lpf.txt # name of pseudo-random code file used
+prn_code_file: 'dat/pseudo_random_code_test_8_lpf.txt' # name of pseudo-random code file used
 code_length: 20000 #
 raw_sample_rate: 200000 #
 decimation_rate: 200
@@ -55,7 +55,7 @@ xspectra_descriptors: [xspec01,xspec02,xspec03,xspec04,xspec05,xspec06,xspec07, 
                        xspec45,xspec46,xspec47,xspec48,xspec49,xspec56,xspec57,xspec58,xspec59,xspec67,
                        xspec68,xspec69,xspec78,xspec79,xspec89]
 processing_source: '/ext_data3/icebear_3d_test/'
-processing_destination: '../package_testing/'
+processing_destination: '../level1/'
 processing_start:
 processing_stop:
 processing_step:

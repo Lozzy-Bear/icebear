@@ -243,3 +243,64 @@ class Time:
 
     def get_date(self, timestamp):
         return datetime.datetime.fromtimestamp(timestamp, tz=tzutc())
+
+
+class Config:
+    def __init__(self, configuration, settings):
+        self.cfg_file = configuration
+        self.set_file = settings
+        with open(self.cfg_file, 'r') as stream:
+            cfg = yaml.full_load(stream)
+            for key, value in cfg.items():
+                setattr(self, key, value)
+        if self.set_file:
+            with open(self.set_file, 'r') as stream:
+                cfg = yaml.full_load(stream)
+                for key, value in cfg.items():
+                    setattr(self, key, value)
+
+    def print_attrs(self):
+        print("Experiment attributes loaded: ")
+        for item in vars(self).items():
+            print(f"\t-{item}")
+        return None
+
+    def update_attr(self, key, value):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            setattr(self, key, value)
+        return None
+
+    def check_attr(self, key):
+        if hasattr(self, key):
+            return True
+        else:
+            return False
+
+    def compare_attr(self, key, value):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            if getattr(self, key) == value:
+                return True
+            else:
+                return False
+
+    def add_attr(self, key, value):
+        if self.check_attr(key):
+            print(f'ERROR: Attribute {key} already exists')
+            exit()
+        else:
+            setattr(self, key, value)
+        return None
+
+    def remove_attr(self, key):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            delattr(self, key)
+        return None

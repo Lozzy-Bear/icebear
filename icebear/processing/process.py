@@ -31,8 +31,9 @@ def generate_level1(config):
     if not config.processing_step:
         config.processing_step = [0, 0, 0, config.incoherent_averages * config.time_resolution, 0]
     time = icebear.utils.Time(config.processing_start, config.processing_stop, config.processing_step)
-    if config.incoherent_averages * config.time_resolution >= time.step_epoch:
-        print("WARNING: averaging time length is greater than step time length")
+    if config.incoherent_averages * config.time_resolution > time.step_epoch:
+        print(f'WARNING: averaging time length {config.incoherent_averages * config.time_resolution}s'
+              f' is greater than step time length {time.step_epoch}s')
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
@@ -44,9 +45,9 @@ def generate_level1(config):
 
         # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
-            filename = f'level1/{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
+            filename = f'{config.processing_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
                 f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
-                f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_' \
+                f'{int(config.snr_cutoff):02d}dB_{int(config.incoherent_averages):02d}00ms_' \
                 f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
             print(f'\t-created level 1 HDf5: {filename}')
             filenames.append(filename)
@@ -129,7 +130,7 @@ def create_level1_hdf5(config, filename, year, month, day):
     """
     # general information
     f = h5py.File(filename, 'w')
-    f.create_dataset('config_updated', data=np.array(config.date))
+    f.create_dataset('config_updated', data=np.array(config.config_updated))
     f.create_dataset('date', data=np.array([year, month, day]))
     f.create_dataset('processing_method', data=config.processing_method)
     # transmitter site information
@@ -290,8 +291,8 @@ def func():
     """
     dll = C.CDLL('./libssmf.so', mode=C.RTLD_GLOBAL)
     func = dll.ssmf
-    func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.c_size_t,
-                     C.c_size_t, C.c_size_t, C.c_int, C.c_int]
+    func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float),
+                     C.POINTER(C.c_float), C.c_size_t, C.c_size_t, C.c_size_t, C.c_int, C.c_int]
     return func
 
 
@@ -363,7 +364,7 @@ def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen):
     result_size = nfreq * nrang
     code = code.astype(np.complex64)
     result = np.zeros((nrang, nfreq), dtype=np.complex64)
-    variance = np.zeros((nrang, nt), dtype=np.complex64)
+    variance = np.zeros((nrang, nfreq), dtype=np.complex64)
     # Create pointers to convert python tpyes to C types
     m_p0 = meas0.ctypes.data_as(C.POINTER(C.c_float))
     m_p1 = meas1.ctypes.data_as(C.POINTER(C.c_float))
@@ -393,6 +394,5 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                                  config.decimation_rate, config.code_length)
         return np.transpose(result), np.transpose(variance)
     except IOError:
-        print('Read number went beyond existing channels or data and raised an IOError')
-        exit()
-
+        print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
+              f'(start {start_sample}, step {step_sample}) and raised an IOError')
