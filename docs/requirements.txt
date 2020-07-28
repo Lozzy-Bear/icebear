@@ -7,3 +7,12 @@ pyfftw
 numba
 sphinxcontrib-napoleon
 pyyaml
+ctypes
+digital_rf
+argparse
+time
+datetime
+dateutil.tz
+
+
+
