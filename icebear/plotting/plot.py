@@ -124,8 +124,12 @@ def quick_look(config, time):
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
             try:
                 filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
-                              f'{config.tx_name}_{config.rx_name}_{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_'
-                              f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5', 'r')
+                                     f'{config.tx_name}_{config.rx_name}_'
+                                     f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_'
+                                     f'{int(now.year):04d}_'
+                                     f'{int(now.month):02d}_'
+                                     f'{int(now.day):02d}_'
+                                     f'{int(now.hour):02d}.h5', 'r')
             except:
                 continue
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
@@ -148,7 +152,7 @@ def quick_look(config, time):
 
     plt.subplot(2, 1, 1)
     plt.title(f'{int(time.start_human.year):04d}-{int(time.start_human.month):02d}-{int(time.start_human.day):02d}'
-              f' {radar_name} Quick Look Plot')
+              f' {config.radar_name} Quick Look Plot')
     plt.ylabel('RF Distance (km)')
     plt.colorbar(label='Doppler (m/s)')
     plt.ylim(0, 2500)
@@ -163,7 +167,10 @@ def quick_look(config, time):
     plt.xlim(0, 24.0)
     plt.grid()
 
-    plt.savefig(f'{config.plotting_destination}quicklook_{radar_name}_{year:04d}_{month:02d}_{day:02d}.png')
+    plt.savefig(f'{config.plotting_destination}quicklook_{config.radar_name}_'
+                f'{int(time.start_human.year):04d}-'
+                f'{int(time.start_human.month):02d}-'
+                f'{int(time.start_human.day):02d}.png')
     plt.close()
 
     return None
