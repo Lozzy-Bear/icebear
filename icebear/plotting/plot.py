@@ -115,6 +115,9 @@ def quick_look(config, time):
           time length used to generate the level 1 data used.
 
     """
+    x = np.array([])
+    y = np.array([])
+    z = np.array([])
     plt.figure(1, figsize=[20, 10])
     plt.rcParams.update({'font.size': 22})
 
@@ -125,7 +128,7 @@ def quick_look(config, time):
             try:
                 filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
                                      f'{config.tx_name}_{config.rx_name}_'
-                                     f'{config.snr_cutoff:02d}dB_{config.averages:02d}00ms_'
+                                     f'{int(config.snr_cutoff):02d}dB_{config.incoherent_averages:02d}00ms_'
                                      f'{int(now.year):04d}_'
                                      f'{int(now.month):02d}_'
                                      f'{int(now.day):02d}_'
@@ -136,41 +139,52 @@ def quick_look(config, time):
 
         try:
             moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
-            if filename[f'{moment}/data_flag'][:]:
-                tau = int((now.hour * 60 * 60 + now.minute * 60 + now.seconds / 1000) / 3600)
+            if bool(filename[f'{moment}/data_flag']):
+                tau = int((now.hour * 60 * 60 + now.minute * 60 + now.second / 1000) / 3600)
+                x = np.append(x, filename[f'{moment}/doppler_shift'][:])
+                y = np.append(y, np.abs(filename[f'{moment}/rf_distance'][:]))
+                z = np.append(z, np.abs(filename[f'{moment}/snr_db'][:]))
                 snr_db = np.abs(filename[f'{moment}/snr_db'][:])
                 doppler_shift = filename[f'{moment}/doppler_shift'][:]
                 rf_distance = np.abs(filename[f'{moment}/rf_distance'][:])
-                plt.subplot(2, 1, 1)
+                print(rf_distance.shape, snr_db.shape, doppler_shift.shape)
+                plt.subplot(211)
                 plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=doppler_shift * 3.03,
                             vmin=-900.0, vmax=900.0, s=3, cmap='jet_r')
-                plt.subplot(2, 1, 2)
+                #plt.colorbar(label='Doppler (m/s)')
+                plt.subplot(212)
                 plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=snr_db, vmin=0.0,
-                            vmax=20.0, s=3, cmap='plasma_r')
+                            vmax=100.0, s=3, cmap='plasma_r')
+                #plt.colorbar(label='SNR (dB')
         except:
             continue
 
-    plt.subplot(2, 1, 1)
+    plt.subplot(211)
     plt.title(f'{int(time.start_human.year):04d}-{int(time.start_human.month):02d}-{int(time.start_human.day):02d}'
               f' {config.radar_name} Quick Look Plot')
     plt.ylabel('RF Distance (km)')
-    plt.colorbar(label='Doppler (m/s)')
     plt.ylim(0, 2500)
-    plt.xlim(0, 24.0)
+    plt.xlim(0.0, 24.0)
     plt.grid()
 
-    plt.subplot(2, 1, 2)
+    plt.subplot(212)
     plt.xlabel('Time (hours)')
     plt.ylabel('RF Distance (km)')
-    plt.colorbar(label='SNR (dB')
     plt.ylim(0, 2500)
-    plt.xlim(0, 24.0)
+    plt.xlim(0.0, 24.0)
     plt.grid()
-
+    """
     plt.savefig(f'{config.plotting_destination}quicklook_{config.radar_name}_'
                 f'{int(time.start_human.year):04d}-'
                 f'{int(time.start_human.month):02d}-'
                 f'{int(time.start_human.day):02d}.png')
-    plt.close()
+    """
+    d = np.argmax(z)
+    print(f'doppler {x[d]}, distance {y[d]}, snr {z[d]}')
+    plt.close(1)
+    #plt.scatter(x,y,c=z)
+    #plt.colorbar()
+    #plt.show()
+    #plt.close()
 
     return None

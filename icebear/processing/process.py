@@ -102,9 +102,10 @@ def generate_level1(config):
         doppler = fft_freq[snr_indices[:, 0]]
         rf_distance = config.range_resolution * (snr_indices[:, 1] - config.timestamp_correction)
         noise /= total_spectras
+        snr_db = logsnr[snr_indices[:, 0], snr_indices[:, 1]]
 
         append_level1_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000),
-                           data_flag, doppler, rf_distance, logsnr, noise,
+                           data_flag, doppler, rf_distance, snr_db, noise,
                            spectra[snr_indices[:, 0], snr_indices[:, 1], :],
                            spectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
                            spectra_median, spectra_clutter_corr,
@@ -390,13 +391,30 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
         Note: This error only appears when using python3
     """
     start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
-    step_sample = config.code_length * config.incoherent_averages + config.number_ranges
+    step_sample = config.code_length * config.incoherent_averages + 2000,#config.number_ranges
     try:
         data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
         data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
-        result, variance = ssmfx(data1, data2, bcode, config.incoherent_averages, config.number_ranges,
+        result, variance = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,#config.number_ranges,
                                  config.decimation_rate, config.code_length)
+        #return np.transpose(result), np.transpose(variance)
+
+        # Everything here
+        for i in range(2000, 20000, 2000):
+            try:
+                start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction + i
+                data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
+                data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
+                r, v = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,#config.number_ranges,
+                                         config.decimation_rate, config.code_length)
+                result = np.append(result, r, axis=0)
+                variance = np.append(variance, v, axis=0)
+            except IOError:
+                print("This is not working")
+                exit()
         return np.transpose(result), np.transpose(variance)
+        # To here needs to be removed.
+
     except IOError:
         print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
               f'(start {start_sample}, step {step_sample}) and raised an IOError')

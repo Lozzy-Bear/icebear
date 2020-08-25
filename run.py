@@ -28,6 +28,8 @@ class Imaging:
 
 class Plotting:
     def __init__(self, config):
+        time = icebear.utils.Time(config.plotting_start, config.plotting_stop, config.plotting_step)
+        icebear.quick_look(config, time)
         pass
 
 
@@ -51,9 +53,9 @@ def main():
                         help="data step size, [year, month, day, hour, minute, second], overrides -c and -s")
     parser.set_defaults(func=run)
     args = parser.parse_args()
-    if (args.processing or args.imaging or args.plotting) and not args.settings:
-        print('ERROR: No settings file -s set to configure -prc, -img, or -plt options')
-        exit()
+    #if (args.processing or args.imaging or args.plotting) and not args.settings:
+    #    print('ERROR: No settings file -s set to configure -prc, -img, or -plt options')
+    #    exit()
     args.func(args)
 
 
