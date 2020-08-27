@@ -39,7 +39,7 @@ wavelength: 6.05641329 # radar wavelength in meters
 center_frequency: 49500000.0 # radar center frequency in Hz
 prn_code_file: 'dat/pseudo_random_code_test_8_lpf.txt' # name of pseudo-random code file used
 code_length: 20000 #
-raw_sample_rate: 2000 #
+raw_sample_rate: 200000 #
 decimation_rate: 200
 incoherent_averages: 10
 number_ranges: 20000
@@ -71,6 +71,6 @@ fov:
 # Plotting Settings
 plotting_source: 'E:/icebear/code/'
 plotting_destination: 'E:/icebear/figures/vehicle_test/'
-plotting_start: [2020,8,21,20,20,0,0]
+plotting_start: [2020,8,21,20,21,0,0]
 plotting_stop: [2020,8,21,20,22,0,0]
 plotting_step: [0,0,0,1,0]

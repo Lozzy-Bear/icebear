@@ -29,7 +29,7 @@ class Imaging:
 class Plotting:
     def __init__(self, config):
         time = icebear.utils.Time(config.plotting_start, config.plotting_stop, config.plotting_step)
-        icebear.quick_look(config, time)
+        icebear.range_doppler_snr(config, time)
         pass
 
 

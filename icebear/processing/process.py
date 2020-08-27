@@ -112,7 +112,7 @@ def generate_level1(config):
                            xspectra[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_median, xspectra_clutter_corr)
-        print(f'\t-appended {int(now.hour)}{int(now.minute)}{int(now.second * 1000)}')
+        print(f'\t-appended {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):04d}')
 
     return filenames
 
@@ -384,39 +384,53 @@ def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen):
 
 def decx(config, time, data, bcode, channel1, channel2, correction1, correction2):
     """
-      Performs cross-correlation and decimation for inputed baseline from the radar data
+    Performs cross-correlation and decimation for inputed baseline from the radar data
 
-        Currently the rea_vector command is resulting in an error at the end of execution. This
-        does not appear to affect the output of the script. Issue may be in h5py or digital_rf.
-        Note: This error only appears when using python3
+    Notes:
+    ------
+    -ssmfx CUDA can only handle number_ranges = 2000 exactly. For farther ranges we loop at step size 2000.
+    -Currently the rea_vector command is resulting in an error at the end of execution. This
+    does not appear to affect the output of the script. Issue may be in h5py or digital_rf.
+    Note: This error only appears when using python3
     """
-    start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
-    step_sample = config.code_length * config.incoherent_averages + 2000,#config.number_ranges
-    try:
-        data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
-        data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
-        result, variance = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,#config.number_ranges,
-                                 config.decimation_rate, config.code_length)
-        #return np.transpose(result), np.transpose(variance)
 
-        # Everything here
-        for i in range(2000, 20000, 2000):
-            try:
-                start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction + i
-                data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
-                data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
-                r, v = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,#config.number_ranges,
-                                         config.decimation_rate, config.code_length)
-                result = np.append(result, r, axis=0)
-                variance = np.append(variance, v, axis=0)
-            except IOError:
-                print("This is not working")
-                exit()
-        return np.transpose(result), np.transpose(variance)
-        # To here needs to be removed.
+    if config.number_ranges <= 2000:
+        start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
+        step_sample = config.code_length * config.incoherent_averages + config.number_ranges
+        try:
+            data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
+            data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
+            result, variance = ssmfx(data1, data2, bcode, config.incoherent_averages, config.number_ranges,
+                                     config.decimation_rate, config.code_length)
+            return np.transpose(result), np.transpose(variance)
+        except IOError:
+            print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
+                  f'(start {start_sample}, step {step_sample}) and raised an IOError')
+            exit()
 
-    except IOError:
-        print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
-              f'(start {start_sample}, step {step_sample}) and raised an IOError')
-        exit()
-
+    else:
+        start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
+        step_sample = config.code_length * config.incoherent_averages + 2000
+        try:
+            data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
+            data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
+            result, variance = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,
+                                     config.decimation_rate, config.code_length)
+            for i in range(2000, config.number_ranges, 2000):
+                try:
+                    start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction + i
+                    data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
+                    data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
+                    r, v = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,
+                                             config.decimation_rate, config.code_length)
+                    result = np.append(result, r, axis=0)
+                    variance = np.append(variance, v, axis=0)
+                except IOError:
+                    print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
+                          f'(start {start_sample}, step {step_sample}) and raised an IOError')
+                    exit()
+            return np.transpose(result), np.transpose(variance)
+        except IOError:
+            print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
+                  f'(start {start_sample}, step {step_sample}) and raised an IOError')
+            exit()
