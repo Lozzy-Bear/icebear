@@ -112,7 +112,7 @@ def generate_level1(config):
                            xspectra[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_median, xspectra_clutter_corr)
-        print(f'\t-appended {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):04d}')
+        print(f'\t-appended {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
 
     return filenames
 
@@ -224,6 +224,7 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
     f.create_dataset(f'data/{time}/xspectra_clutter_correction', data=xspectra_clutter_corr)
     f.create_dataset(f'data/{time}/data_flag', data=data_flag)
     # only write data if there are measurements above the SNR threshold
+    print(f'\t-data_flag = {data_flag}')
     if data_flag:
         f.create_dataset(f'data/{time}/doppler_shift', data=doppler)
         f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
