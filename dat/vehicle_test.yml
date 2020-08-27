@@ -47,7 +47,7 @@ range_resolution: 1.5 # km
 timestamp_correction: 30
 time_resolution: 0.1
 clutter_gates: 100
-snr_cutoff: 1.0 # signal-to-noise ratio cutoff in dB
+snr_cutoff: 12.0 # signal-to-noise ratio cutoff in dB
 spectra_descriptors: [spec00,spec11,spec22,spec33,spec44,spec55,spec66,spec77,spec88,spec99]
 xspectra_descriptors: [xspec01,xspec02,xspec03,xspec04,xspec05,xspec06,xspec07, xspec08,xspec09,xspec12,
                        xspec13,xspec14,xspec15,xspec16,xspec17,xspec18,xspec19,xspec23,xspec24,xspec25,

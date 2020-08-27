@@ -260,7 +260,7 @@ class Config:
                     setattr(self, key, value)
 
     def print_attrs(self):
-        print("Experiment attributes loaded: ")
+        print("experiment attributes loaded: ")
         for item in vars(self).items():
             print(f"\t-{item}")
         return None

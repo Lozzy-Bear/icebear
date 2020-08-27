@@ -20,7 +20,7 @@ def imaging_4plot(filepath, title, datetime, doppler, rng, snr, az, el):
     Returns
     -------
 
-    todo
+    Todo
         * this will break when i move level 2 data to hdf5 format.
     """
     az *= -1
@@ -114,6 +114,9 @@ def quick_look(config, time):
         * Typically a Quick Look plot should be one day of data with a step size equal to the incoherent averages
           time length used to generate the level 1 data used.
 
+    Todo
+        * The plt.colorbar() is currently not working.
+
     """
     plt.figure(1, figsize=[20, 10])
     plt.rcParams.update({'font.size': 22})
@@ -150,7 +153,7 @@ def quick_look(config, time):
                 plt.subplot(212)
                 plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=snr_db, vmin=0.0,
                             vmax=100.0, s=3, cmap='plasma_r')
-                plt.colorbar(label='SNR (dB')
+                plt.colorbar(label='SNR (dB)')
         except:
             continue
 
@@ -173,7 +176,6 @@ def quick_look(config, time):
                 f'{int(time.start_human.year):04d}-'
                 f'{int(time.start_human.month):02d}-'
                 f'{int(time.start_human.day):02d}.png')
-
     plt.close(1)
 
     return None
@@ -203,8 +205,6 @@ def range_doppler_snr(config, time):
     dop = np.array([])
     rng = np.array([])
     snr = np.array([])
-    plt.figure(1, figsize=[20, 10])
-    plt.rcParams.update({'font.size': 22})
 
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
@@ -232,15 +232,28 @@ def range_doppler_snr(config, time):
             continue
 
     d = np.argmax(snr)
-    print(f'doppler {dop[d]}, distance {rng[d]}, snr {snr[d]}')
+    print(f'\t-doppler {dop[d]}, distance {rng[d]}, snr {snr[d]}')
+
+    # Add functionality to set a snr_cutoff higher than level1 file to clean up data products.
+    # dop = np.where(snr < config.snr_cutoff, np.nan, dop)
+    # rng = np.where(snr < config.snr_cutoff, np.nan, rng)
+    # snr = np.where(snr < config.snr_cutoff, np.nan, snr)
+
     plt.figure()
-    plt.scatter(dop, rng, c=snr)
-    plt.colorbar()
+    plt.title(f'{int(time.start_human.year):04d}-{int(time.start_human.month):02d}-{int(time.start_human.day):02d}'
+              f''
+              f' {config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff')
+    plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
+    plt.colorbar(label='SNR (dB)')
+    plt.xlabel('Doppler (Hz)')
+    plt.ylabel('RF Distance (km)')
+    plt.ylim(0, config.number_ranges)
+    plt.xlim(-500, 500)
+
     plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
-                f'{int(time.start_human.rngear):04d}-'
+                f'{int(time.start_human.year):04d}-'
                 f'{int(time.start_human.month):02d}-'
-                f'{int(time.start_human.darng):02d}.png')
-    plt.show()
+                f'{int(time.start_human.day):02d}.png')
     plt.close()
 
     return None

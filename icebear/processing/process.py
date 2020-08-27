@@ -21,6 +21,8 @@ def generate_level1(config):
         for i in range(len(channels)):
             print(f'\t-{str(channels[i])}')
 
+    print('processing start:')
+
     total_xspectras = int(len(channels)*(len(channels) - 1) / 2)
     total_spectras = int(len(channels))
     bcode = generate_bcode(config.prn_code_file)
@@ -387,12 +389,19 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
     """
     Performs cross-correlation and decimation for inputed baseline from the radar data
 
-    Notes:
-    ------
-    -ssmfx CUDA can only handle number_ranges = 2000 exactly. For farther ranges we loop at step size 2000.
-    -Currently the rea_vector command is resulting in an error at the end of execution. This
-    does not appear to affect the output of the script. Issue may be in h5py or digital_rf.
-    Note: This error only appears when using python3
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
+
+    Notes
+    -----
+        * ssmfx CUDA can only handle number_ranges = 2000 exactly. For farther ranges we loop at step size 2000.
+        * Currently the rea_vector command is resulting in an error at the end of execution. This oes not appear to
+          affect the output of the script. Issue may be in h5py or digital_rf. This error only appears when using python3
     """
 
     if config.number_ranges <= 2000:
