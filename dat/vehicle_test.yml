@@ -71,6 +71,6 @@ fov:
 # Plotting Settings
 plotting_source: 'E:/icebear/code/'
 plotting_destination: 'E:/icebear/figures/vehicle_test/'
-plotting_start: [2020,8,21,20,21,0,0]
-plotting_stop: [2020,8,21,20,22,0,0]
+plotting_start: [2020,8,21,20,21,30,0]
+plotting_stop: [2020,8,21,20,21,31,0]
 plotting_step: [0,0,0,1,0]
