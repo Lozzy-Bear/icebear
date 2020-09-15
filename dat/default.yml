@@ -61,9 +61,9 @@ processing_stop: [2019,11,20,23,0,0,0]
 processing_step: [0,0,0,1,0]
 
 # Imaging Settings
-swht_coeffs: #'swhtcoeffs_ib3d_2020-7-20_360-090-10-85'
-azimuth: [-45,45]
-elevation: [0,30]
+swht_coeffs: #'swhtcoeffs_ib3d_2020-07-17_090-040-10-85'
+azimuth: [0,360]
+elevation: [0,180]
 resolution: 1.0
 lmax: 85
 fov:

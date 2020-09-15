@@ -6,16 +6,28 @@ import multiprocessing as mp
 import cv2
 import h5py
 import PIL
+import pickle
 
 
-def unpackage_factors(filename):
+def unpackage_factors_hdf5(filename):
     """
     factors:	Array to be saved into pickle file.
     filename:	Name of the pickle file to store the SWHT Factors array.
     """
     f = h5py.File(filename, 'r')
-    factors = np.array(f['coeffs']['85'])
-    print(factors.shape)
+    factors = np.array(f['coeffs']['85'], dtype=np.complex64)
+    print('hdf5 factors:', factors.shape)
+    return factors
+
+
+def unpackage_factors_pickle(filename):
+    """
+    factors:	Array to be saved into pickle file.
+    filename:	Name of the pickle file to store the SWHT Factors array.
+    """
+    with open(filename, 'rb') as w:
+        factors = pickle.load(w)
+    print('pickle factors:', factors.shape)
     return factors
 
 
@@ -26,19 +38,22 @@ def swht(V, factors):
     """
     F = np.copy(factors)
     G = np.matmul(F, V)
-    return	G
+    return G
 
 
-#gaussian shape in image space
+# gaussian shape in image space
 def gaussian_fit(x,peak,variance,mean):
     return peak*np.exp(-(x-mean)**2/(2.0*variance*variance))
 
-#need to integrate this function over theta and phi, with u,v,w,theta_mean,theta_spread,phi_mean,phi_spread known
+
+# need to integrate this function over theta and phi, with u,v,w,theta_mean,theta_spread,phi_mean,phi_spread known
 def real_image_pre_integration(theta,phi,u_in,v_in,w_in,theta_mean,theta_spread,phi_mean,phi_spread):
     return 2*np.real(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-phi_mean)**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))#np.real(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-(phi_mean-np.deg2rad(5)))**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))
 
+
 def imag_image_pre_integration(theta,phi,u_in,v_in,w_in,theta_mean,theta_spread,phi_mean,phi_spread):
     return 2*np.imag(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-phi_mean)**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))# np.imag(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-(phi_mean-np.deg2rad(5)))**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))
+
 
 def visibility_calculation(x,u_in1,v_in1,w_in1,theta_mean,theta_spread,phi_mean,phi_spread, output):
     real_vis = dblquad(real_image_pre_integration, -mat.pi/2, mat.pi/2,lambda phi: -mat.pi, lambda phi: mat.pi,args=(u_in1,v_in1,w_in1,theta_mean,theta_spread,phi_mean,phi_spread))[0]
@@ -65,15 +80,15 @@ if __name__ == '__main__':
     antenna_num_coh_index = 1
     for first_antenna in range(9):
         for second_antenna in range(first_antenna + 1, 10):
-            xspectra_x_diff[antenna_num_coh_index] = -x_antenna_loc[first_antenna] + x_antenna_loc[second_antenna]
-            xspectra_y_diff[antenna_num_coh_index] = -y_antenna_loc[first_antenna] + y_antenna_loc[second_antenna]
-            xspectra_z_diff[antenna_num_coh_index] = -z_antenna_loc[first_antenna] + z_antenna_loc[second_antenna]
+            xspectra_x_diff[antenna_num_coh_index] = x_antenna_loc[first_antenna] - x_antenna_loc[second_antenna]
+            xspectra_y_diff[antenna_num_coh_index] = y_antenna_loc[first_antenna] - y_antenna_loc[second_antenna]
+            xspectra_z_diff[antenna_num_coh_index] = z_antenna_loc[first_antenna] - z_antenna_loc[second_antenna]
             antenna_num_coh_index += 1
     azimuth_lags = 1000
     elevation_lags = 1000
 
-    spreadx = 3
-    spready = 3
+    spreadx = 1
+    spready = 1
     azi_rad_location_array = np.array([np.deg2rad(0)])
     azi_rad_extent_array = np.array([np.deg2rad(spreadx)])
     ele_rad_location_array = np.array([np.deg2rad(10)])
@@ -82,9 +97,6 @@ if __name__ == '__main__':
     azi_rad_extent_number = 0
     ele_rad_location_number = 0
     ele_rad_extent_number = 0
-    # u and v values are with respect to the radar wavelength
-    u_range = 20
-    v_range = 35
 
     u = xspectra_x_diff / lambda_radar
     v = xspectra_y_diff / lambda_radar
@@ -123,7 +135,12 @@ if __name__ == '__main__':
     visibility_dist = visibility_dist / np.abs(visibility_dist[0])
 
     visibility_dist = np.real(visibility_dist) + np.imag(visibility_dist) * 1.0j
-    factors = unpackage_factors(f'X:\PythonProjects\icebear\swhtcoeffs_ib3d_2020-7-20_360-090-10-85')
+
+    #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_090-040-10-85')
+    #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_360-090-10-85')
+    #factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/fine_coeffs_85.pickle')
+    factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/ccw_lowres_full_85.pickle')
+
     V = np.concatenate((visibility_dist[:, azi_rad_location_number, azi_rad_extent_number, ele_rad_location_number,
                         ele_rad_extent_number], np.conjugate(visibility_dist[:, azi_rad_location_number,
                         azi_rad_extent_number, ele_rad_location_number, ele_rad_extent_number])))
@@ -159,13 +176,15 @@ if __name__ == '__main__':
     cv2.drawContours(im, contours[index], 0, (255, 255, 255), 3)
 
     plt.figure()
-    plt.subplot(311)
-    plt.imshow(B)
+    plt.pcolormesh(B)
+    plt.colorbar()
+    #plt.subplot(311)
+    #plt.imshow(B)
 
-    plt.subplot(312)
-    plt.imshow(P)
+    #plt.subplot(312)
+    #plt.imshow(P)
 
-    plt.subplot(313)
-    plt.imshow(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
+    #plt.subplot(313)
+    #plt.imshow(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
 
     plt.show()
