@@ -202,6 +202,78 @@ def range_doppler_snr(config, time):
           time length used to generate the level 1 data used.
 
     """
+    temp_hour = [-1, -1, -1, -1]
+    for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
+        now = time.get_date(t)
+        if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
+            try:
+                filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
+                                     f'{config.tx_name}_{config.rx_name}_'
+                                     f'{int(config.snr_cutoff):02d}dB_{config.incoherent_averages:02d}00ms_'
+                                     f'{int(now.year):04d}_'
+                                     f'{int(now.month):02d}_'
+                                     f'{int(now.day):02d}_'
+                                     f'{int(now.hour):02d}.h5', 'r')
+            except:
+                continue
+            temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+
+        try:
+            moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
+            if bool(filename[f'{moment}/data_flag']):
+                dop = filename[f'{moment}/doppler_shift'][:]
+                rng = np.abs(filename[f'{moment}/rf_distance'][:])
+                snr = np.abs(filename[f'{moment}/snr_db'][:])
+                plt.figure()
+                plt.title(f'{config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff '
+                          f'{int(now.year):04d}-'
+                          f'{int(now.month):02d}-'
+                          f'{int(now.day):02d} '
+                          f'{int(now.hour):02d}:'
+                          f'{int(now.minute):02d}:'
+                          f'{int(now.second):02d}')
+                plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
+                plt.colorbar(label='SNR (dB)')
+                plt.xlabel('Doppler (Hz)')
+                plt.ylabel('RF Distance (km)')
+                plt.ylim(0, config.number_ranges)
+                plt.xlim(-500, 500)
+
+                plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
+                            f'{int(now.year):04d}-'
+                            f'{int(now.month):02d}-'
+                            f'{int(now.day):02d}_'
+                            f'{int(now.hour):02d}-'
+                            f'{int(now.minute):02d}-'
+                            f'{int(now.second):02d}.png')
+                plt.close()
+
+        except:
+            continue
+    return None
+
+
+def range_doppler_snr_sum(config, time):
+    """
+    Creates a standard range-Doppler SNR plot of level 1 data for the specified time frame.
+
+    Parameters
+    ----------
+        config : Class Object
+            Config class instantiation which contains plotting settings.
+        time : Class Object
+            Time class instantiation for start, stop, step deceleration.
+
+    Returns
+    -------
+        None
+
+    Notes
+    -----
+        * Typically a Quick Look plot should be one day of data with a step size equal to the incoherent averages
+          time length used to generate the level 1 data used.
+
+    """
     dop = np.array([])
     rng = np.array([])
     snr = np.array([])
@@ -240,9 +312,13 @@ def range_doppler_snr(config, time):
     # snr = np.where(snr < config.snr_cutoff, np.nan, snr)
 
     plt.figure()
-    plt.title(f'{int(time.start_human.year):04d}-{int(time.start_human.month):02d}-{int(time.start_human.day):02d}'
-              f''
-              f' {config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff')
+    plt.title(f'{config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff '
+              f'{int(time.start_human.year):04d}-'
+              f'{int(time.start_human.month):02d}-'
+              f'{int(time.start_human.day):02d} to '
+              f'{int(now.year):04d}-'
+              f'{int(now.month):02d}-'
+              f'{int(now.day):02d}')
     plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
     plt.colorbar(label='SNR (dB)')
     plt.xlabel('Doppler (Hz)')
