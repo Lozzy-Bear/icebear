@@ -1,7 +1,7 @@
 # General Information
 radar_name: ib3d # human readable radar name
 version: 1.0 # version of radar if needed
-config_updated: [2020, 07, 20] # [year, month, day] file creation date
+config_updated: [2020, 9, 22] # [year, month, day] file creation date
 
 # Transmitter Information
 tx_name: prelate # human readable site name
@@ -62,9 +62,9 @@ processing_step: [0,0,0,1,0]
 
 # Imaging Settings
 swht_coeffs: #'swhtcoeffs_ib3d_2020-07-17_090-040-10-85'
-azimuth: [0,360]
-elevation: [0,180]
-resolution: 1.0
+azimuth: [225,315]
+elevation: [70,110]
+resolution: 0.1
 lmax: 85
 fov:
 

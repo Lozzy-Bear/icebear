@@ -62,6 +62,13 @@ def visibility_calculation(x,u_in1,v_in1,w_in1,theta_mean,theta_spread,phi_mean,
 
 
 if __name__ == '__main__':
+    factors1 = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_090-040-01-85')
+    #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_360-090-10-85')
+    #factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/fine_coeffs_85.pickle')
+    factors2 = unpackage_factors_pickle(f'X:/PythonProjects/icebear/ccw_lowres_full_85.pickle')
+    print(np.allclose(factors1, factors2))
+    exit()
+
     output = mp.Queue()
     print("Number of processors: ", mp.cpu_count())
 
@@ -136,10 +143,10 @@ if __name__ == '__main__':
 
     visibility_dist = np.real(visibility_dist) + np.imag(visibility_dist) * 1.0j
 
-    #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_090-040-10-85')
+    factors1 = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_090-040-10-85')
     #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_360-090-10-85')
     #factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/fine_coeffs_85.pickle')
-    factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/ccw_lowres_full_85.pickle')
+    factors2 = unpackage_factors_pickle(f'X:/PythonProjects/icebear/ccw_lowres_full_85.pickle')
 
     V = np.concatenate((visibility_dist[:, azi_rad_location_number, azi_rad_extent_number, ele_rad_location_number,
                         ele_rad_extent_number], np.conjugate(visibility_dist[:, azi_rad_location_number,
