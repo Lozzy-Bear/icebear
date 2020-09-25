@@ -9,13 +9,13 @@ import PIL
 import pickle
 
 
-def unpackage_factors_hdf5(filename):
+def unpackage_factors_hdf5(filename, ind):
     """
     factors:	Array to be saved into pickle file.
     filename:	Name of the pickle file to store the SWHT Factors array.
     """
     f = h5py.File(filename, 'r')
-    factors = np.array(f['coeffs']['85'], dtype=np.complex64)
+    factors = np.array(f['coeffs'][f'{ind:02d}'], dtype=np.complex64)
     print('hdf5 factors:', factors.shape)
     return factors
 
@@ -62,13 +62,6 @@ def visibility_calculation(x,u_in1,v_in1,w_in1,theta_mean,theta_spread,phi_mean,
 
 
 if __name__ == '__main__':
-    factors1 = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_090-040-01-85')
-    #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_360-090-10-85')
-    #factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/fine_coeffs_85.pickle')
-    factors2 = unpackage_factors_pickle(f'X:/PythonProjects/icebear/ccw_lowres_full_85.pickle')
-    print(np.allclose(factors1, factors2))
-    exit()
-
     output = mp.Queue()
     print("Number of processors: ", mp.cpu_count())
 
@@ -94,9 +87,9 @@ if __name__ == '__main__':
     azimuth_lags = 1000
     elevation_lags = 1000
 
-    spreadx = 1
-    spready = 1
-    azi_rad_location_array = np.array([np.deg2rad(0)])
+    spreadx = 3
+    spready = 3
+    azi_rad_location_array = np.array([np.deg2rad(-30)])
     azi_rad_extent_array = np.array([np.deg2rad(spreadx)])
     ele_rad_location_array = np.array([np.deg2rad(10)])
     ele_rad_extent_array = np.array([np.deg2rad(spready)])
@@ -134,7 +127,7 @@ if __name__ == '__main__':
 
     visibility_dist_temp.sort()
     visibility_dist[:, azi_rad_location_number, azi_rad_extent_number, ele_rad_location_number,
-    ele_rad_extent_number] = [r[1] for r in visibility_dist_temp]
+                    ele_rad_extent_number] = [r[1] for r in visibility_dist_temp]
 
     for p in processes:
         p.close()
@@ -143,16 +136,19 @@ if __name__ == '__main__':
 
     visibility_dist = np.real(visibility_dist) + np.imag(visibility_dist) * 1.0j
 
-    factors1 = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_090-040-10-85')
-    #factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-7-20_360-090-10-85')
-    #factors = unpackage_factors_pickle(f'X:/PythonProjects/icebear/fine_coeffs_85.pickle')
-    factors2 = unpackage_factors_pickle(f'X:/PythonProjects/icebear/ccw_lowres_full_85.pickle')
-
     V = np.concatenate((visibility_dist[:, azi_rad_location_number, azi_rad_extent_number, ele_rad_location_number,
                         ele_rad_extent_number], np.conjugate(visibility_dist[:, azi_rad_location_number,
                         azi_rad_extent_number, ele_rad_location_number, ele_rad_extent_number])))
 
-    B = swht(V, factors[:, :, 0:len(V)])
+    factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 5)
+    B = swht(V, factors[:, :, 0:len(V)])s
+
+    for i in range(15, 95, 10):
+        factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', i)
+        #factors *= f
+        B *= swht(V, factors[:, :, 0:len(V)])
+
+    #B = swht(V, factors[:, :, 0:len(V)])
     B = np.abs(B / np.max(B))
 
     P = np.copy(B)

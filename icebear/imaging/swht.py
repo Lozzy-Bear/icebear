@@ -60,6 +60,7 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
     az_step = int(np.abs(azimuth[0] - azimuth[1]) / resolution)
     el_step = int(np.abs(elevation[0] - elevation[1]) / resolution)
     r, t, p = utils.uvw_to_rtp(u, v, w)
+    r *= config.wavelength
     az = np.radians(np.linspace(azimuth[0], azimuth[1], az_step))
     el = np.radians(np.linspace(elevation[0], elevation[1], el_step))
     config_name = f"{int(np.round(np.abs(azimuth[0] - azimuth[1]))):03d}-" \
