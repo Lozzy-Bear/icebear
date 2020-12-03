@@ -5,7 +5,6 @@ from scipy.integrate import dblquad
 import multiprocessing as mp
 import cv2
 import h5py
-import PIL
 import pickle
 
 
@@ -48,11 +47,11 @@ def gaussian_fit(x,peak,variance,mean):
 
 # need to integrate this function over theta and phi, with u,v,w,theta_mean,theta_spread,phi_mean,phi_spread known
 def real_image_pre_integration(theta,phi,u_in,v_in,w_in,theta_mean,theta_spread,phi_mean,phi_spread):
-    return 2*np.real(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-phi_mean)**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))#np.real(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-(phi_mean-np.deg2rad(5)))**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))
+    return 2*np.real(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-phi_mean)**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi))))) #+ np.real(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-(phi_mean-np.deg2rad(5)))**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))
 
 
 def imag_image_pre_integration(theta,phi,u_in,v_in,w_in,theta_mean,theta_spread,phi_mean,phi_spread):
-    return 2*np.imag(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-phi_mean)**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))# np.imag(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-(phi_mean-np.deg2rad(5)))**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))
+    return 2*np.imag(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-phi_mean)**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi))))) #+ np.imag(np.exp(-(theta-theta_mean)**2/(2.0*theta_spread*theta_spread))*np.exp(-(phi-(phi_mean-np.deg2rad(5)))**2/(2.0*phi_spread*phi_spread))*np.cos(phi)*np.exp(-2.0j*mat.pi*((u_in*np.sin(theta)*np.cos(phi))+(v_in*np.cos(theta)*np.cos(phi))+(w_in*np.sin(phi)))))
 
 
 def visibility_calculation(x,u_in1,v_in1,w_in1,theta_mean,theta_spread,phi_mean,phi_spread, output):
@@ -141,7 +140,7 @@ if __name__ == '__main__':
                         azi_rad_extent_number, ele_rad_location_number, ele_rad_extent_number])))
 
     factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 5)
-    B = swht(V, factors[:, :, 0:len(V)])s
+    B = swht(V, factors[:, :, 0:len(V)])
 
     for i in range(15, 95, 10):
         factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', i)
@@ -153,19 +152,18 @@ if __name__ == '__main__':
 
     P = np.copy(B)
     P[P < 0.6] = 0.0
-    im = np.array(P * 255, dtype=np.uint8)
-    rgb = PIL.Image.fromarray(im)
+    im = np.array(P * 255.0, dtype=np.uint8)
+    print(im.shape)
     threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
     contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     ind = np.unravel_index(np.argmax(P, axis=None), P.shape)
     az = (ind[1])# - np.ceil(P.shape[1]) / 2)
     el = (ind[0])# - np.ceil(P.shape[0]) / 2)
-    print("ELAZ", el, az)
     area = 0
     index = 0
     for idx, c in enumerate(contours):
-        temp_area  = cv2.contourArea(c)
+        temp_area = cv2.contourArea(c)
         if temp_area > area:
             area = temp_area
             index = idx

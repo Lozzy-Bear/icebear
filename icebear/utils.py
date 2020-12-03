@@ -3,6 +3,8 @@ import h5py
 import yaml
 import datetime
 from dateutil.tz import tzutc
+import sys
+import os
 
 
 def uvw_to_rtp(u, v, w):
@@ -304,3 +306,61 @@ class Config:
         else:
             delattr(self, key)
         return None
+
+
+def get_all_data_files(directory, start_subdir='nodate', stop_subdir='nodate'):
+    """
+    Given a directory, reads all sub directories to find hdf5 files and returns paths, start times, and stop times.
+
+    Parameters
+    ----------
+        directory :
+        start_subdir :
+        stop_subdir :
+
+    Returns
+    -------
+        times :
+
+    Note
+    ----
+        This is intended to be used for batching large data sets.
+    """
+    filepaths = []
+    start_flag = False
+    stop_flag = False
+    if start_subdir == 'nodate':
+        start_flag = True
+
+    for path, subdirs, files in os.walk(directory):
+        if start_subdir in path:
+            start_flag = True
+        if start_flag and not stop_flag:
+            for file in files:
+                if 'plots' in path:
+                    continue
+                else:
+                    filepaths.append(os.path.join(path, file))
+        if stop_subdir in path:
+            stop_flag = True
+
+    return filepaths
+
+
+def get_data_file_times(filepath):
+    """
+    Given an HDF5 file path this return the start and stop times.
+
+    Parameters
+    ----------
+    filepath
+
+    Returns
+    -------
+
+    """
+
+    #[year, month, day, hour, minute, second, ]
+    #start: [2019, 11, 20, 3, 0, 0, 0]
+    #stop: [2019, 11, 20, 23, 0, 0, 0]
+    return start, stop, step

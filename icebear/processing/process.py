@@ -133,6 +133,9 @@ def create_level1_hdf5(config, filename, year, month, day):
     -------
         None
 
+    Todo
+        Make sure everything is put into numpy arrays
+
     """
     # general information
     f = h5py.File(filename, 'w')
@@ -212,6 +215,8 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
     Returns
     -------
 
+    Todo
+        Make sure everything is put into numpy arrays
     """
     # append a new group for the current measurement
     time = f'{hour:02d}{minute:02d}{second:05d}'
@@ -224,7 +229,7 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
     f.create_dataset(f'data/{time}/xspectra_median', data=xspectra_median)
     f.create_dataset(f'data/{time}/spectra_clutter_correction', data=spectra_clutter_corr)
     f.create_dataset(f'data/{time}/xspectra_clutter_correction', data=xspectra_clutter_corr)
-    f.create_dataset(f'data/{time}/data_flag', data=data_flag)
+    f.create_dataset(f'data/{time}/data_flag', data=[data_flag])
     # only write data if there are measurements above the SNR threshold
     print(f'\t-data_flag = {data_flag}')
     if data_flag:
