@@ -359,8 +359,24 @@ def get_data_file_times(filepath):
     -------
 
     """
+    f = h5py.File(filepath, 'r')
 
-    #[year, month, day, hour, minute, second, ]
-    #start: [2019, 11, 20, 3, 0, 0, 0]
-    #stop: [2019, 11, 20, 23, 0, 0, 0]
-    return start, stop, step
+    # Year, month, day
+    date = f['date'].value
+    start = date
+    stop = date
+
+    # Hour, minute, seconds
+    data_keys = list(f['data'].keys())
+    start_hms = f[f'data/{data_keys[0]}/time'].value
+    stop_hms = f[f'data/{data_keys[-1]}/time'].value
+    start_hms[2] = int(start_hms[2]/1000)
+    stop_hms[2] = int(stop_hms[2]/1000)
+    start = np.append(start, start_hms)
+    stop = np.append(stop, stop_hms)
+
+    # Millisecond
+    start = np.append(start, 0)
+    stop = np.append(stop, 0)
+
+    return start, stop

@@ -145,12 +145,12 @@ def quick_look(config, time):
                 doppler_shift = filename[f'{moment}/doppler_shift'][:]
                 rf_distance = np.abs(filename[f'{moment}/rf_distance'][:])
 
-                plt.subplot(211)
+                plt.subplot(212)
                 plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=doppler_shift * 3.03,
                             vmin=-900.0, vmax=900.0, s=3, cmap='jet_r')
                 plt.colorbar(label='Doppler (m/s)')
 
-                plt.subplot(212)
+                plt.subplot(211)
                 plt.scatter(np.ones(len(rf_distance)) * tau, rf_distance, c=snr_db, vmin=0.0,
                             vmax=100.0, s=3, cmap='plasma_r')
                 plt.colorbar(label='SNR (dB)')
@@ -181,7 +181,7 @@ def quick_look(config, time):
     return None
 
 
-def range_doppler_snr(config, time):
+def range_doppler_snr(config, time, spacing):
     """
     Creates a standard range-Doppler SNR plot of level 1 data for the specified time frame.
 
@@ -203,6 +203,7 @@ def range_doppler_snr(config, time):
 
     """
     temp_hour = [-1, -1, -1, -1]
+    spacing_counter = 0
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
@@ -218,38 +219,44 @@ def range_doppler_snr(config, time):
                 continue
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
 
-        try:
-            moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
-            if bool(filename[f'{moment}/data_flag']):
-                dop = filename[f'{moment}/doppler_shift'][:]
-                rng = np.abs(filename[f'{moment}/rf_distance'][:])
-                snr = np.abs(filename[f'{moment}/snr_db'][:])
-                plt.figure()
-                plt.title(f'{config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff '
-                          f'{int(now.year):04d}-'
-                          f'{int(now.month):02d}-'
-                          f'{int(now.day):02d} '
-                          f'{int(now.hour):02d}:'
-                          f'{int(now.minute):02d}:'
-                          f'{int(now.second):02d}')
-                plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
-                plt.colorbar(label='SNR (dB)')
-                plt.xlabel('Doppler (Hz)')
-                plt.ylabel('RF Distance (km)')
-                plt.ylim(0, config.number_ranges)
-                plt.xlim(-500, 500)
+        spacing_counter += 1
+        plt.figure(1)
+        if spacing_counter > spacing:
+            spacing_counter = 1
+            plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
+                        f'{int(now.year):04d}-'
+                        f'{int(now.month):02d}-'
+                        f'{int(now.day):02d}_'
+                        f'{int(now.hour):02d}-'
+                        f'{int(now.minute):02d}-'
+                        f'{int(now.second):02d}.png')
+            plt.close(1)
+            plt.figure(1)
+        if spacing_counter == 1:
+            plt.scatter(0, 0, c=0, vmin=0.0, vmax=20, s=3, cmap='plasma_r')
+            plt.title(f'{config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff '
+                      f'{int(now.year):04d}-'
+                      f'{int(now.month):02d}-'
+                      f'{int(now.day):02d} '
+                      f'{int(now.hour):02d}:'
+                      f'{int(now.minute):02d}:'
+                      f'{int(now.second):02d}')
+            plt.colorbar(label='SNR (dB)')
+            plt.xlabel('Doppler (Hz)')
+            plt.ylabel('Total RF Distance (km)')
+            plt.ylim(0, config.number_ranges * config.range_resolution)
+            plt.xlim(-500, 500)
+        if spacing_counter <= spacing:
+            try:
+                moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
+                if bool(filename[f'{moment}/data_flag']):
+                    dop = filename[f'{moment}/doppler_shift'][:]
+                    rng = np.abs(filename[f'{moment}/rf_distance'][:])
+                    snr = np.abs(filename[f'{moment}/snr_db'][:])
+                    plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
+            except:
+                continue
 
-                plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
-                            f'{int(now.year):04d}-'
-                            f'{int(now.month):02d}-'
-                            f'{int(now.day):02d}_'
-                            f'{int(now.hour):02d}-'
-                            f'{int(now.minute):02d}-'
-                            f'{int(now.second):02d}.png')
-                plt.close()
-
-        except:
-            continue
     return None
 
 

@@ -1,9 +1,10 @@
 import icebear
 import icebear.utils as util
-
+import os
 
 # Set plotting step size
 plotting_step = [0, 0, 0, 1, 0]
+plotting_spacing = 5
 
 # Load the config file
 configuration = 'X:/PythonProjects/icebear/dat/default.yml'
@@ -13,12 +14,13 @@ config.print_attrs()
 
 # Gather all the level1 data file paths
 filepath = 'E:/icebear/level1/'
-files = util.get_all_data_files(filepath, '2019_10_24', '2020_07_14')
-
+files = util.get_all_data_files(filepath, '2019_10_24', '2020_10_26')
 # Create plots
 for file in files:
     config.plotting_source = file.split('\\')[0] + '/'
-    print(config.plotting_source)
+    os.makedirs(config.plotting_source + 'plots/5sec', exist_ok=True)
+    config.plotting_destination = config.plotting_source + 'plots/5sec/'
     plotting_start, plotting_stop = util.get_data_file_times(file)
-    #time = util.Time(plotting_start, plotting_stop, plotting_step)
-    #icebear.range_doppler_snr(config, time)
+    print(config.plotting_destination, plotting_start, plotting_stop)
+    time = util.Time(plotting_start, plotting_stop, plotting_step)
+    icebear.range_doppler_snr(config, time, plotting_spacing)
