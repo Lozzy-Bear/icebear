@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import h5py
 import numpy as np
+import imageio
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 
 def imaging_4plot(filepath, title, datetime, doppler, rng, snr, az, el):
@@ -191,6 +193,8 @@ def range_doppler_snr(config, time, spacing):
             Config class instantiation which contains plotting settings.
         time : Class Object
             Time class instantiation for start, stop, step deceleration.
+        spacing : int
+            The amount of time in seconds to plot in one image.
 
     Returns
     -------
@@ -204,58 +208,83 @@ def range_doppler_snr(config, time, spacing):
     """
     temp_hour = [-1, -1, -1, -1]
     spacing_counter = 0
-    for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
-        now = time.get_date(t)
-        if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
-            try:
-                filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
-                                     f'{config.tx_name}_{config.rx_name}_'
-                                     f'{int(config.snr_cutoff):02d}dB_{config.incoherent_averages:02d}00ms_'
-                                     f'{int(now.year):04d}_'
-                                     f'{int(now.month):02d}_'
-                                     f'{int(now.day):02d}_'
-                                     f'{int(now.hour):02d}.h5', 'r')
-            except:
-                continue
-            temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+    data_flag = False
+    with imageio.get_writer(f'{config.plotting_destination}'
+                            f'{spacing}sec_movie_'
+                            f'{int(time.start_human.year):04d}_'
+                            f'{int(time.start_human.month):02d}_'
+                            f'{int(time.start_human.day):02d}'
+                            f'.gif', mode='I') as writer:
+        for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
+            now = time.get_date(t)
+            if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
+                try:
+                    filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
+                                         f'{config.tx_name}_{config.rx_name}_'
+                                         f'{int(config.snr_cutoff):02d}dB_{config.incoherent_averages:02d}00ms_'
+                                         f'{int(now.year):04d}_'
+                                         f'{int(now.month):02d}_'
+                                         f'{int(now.day):02d}_'
+                                         f'{int(now.hour):02d}.h5', 'r')
+                except:
+                    continue
+                temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
 
-        spacing_counter += 1
-        plt.figure(1)
-        if spacing_counter > spacing:
-            spacing_counter = 1
-            plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
-                        f'{int(now.year):04d}-'
-                        f'{int(now.month):02d}-'
-                        f'{int(now.day):02d}_'
-                        f'{int(now.hour):02d}-'
-                        f'{int(now.minute):02d}-'
-                        f'{int(now.second):02d}.png')
-            plt.close(1)
+            spacing_counter += 1
             plt.figure(1)
-        if spacing_counter == 1:
-            plt.scatter(0, 0, c=0, vmin=0.0, vmax=20, s=3, cmap='plasma_r')
-            plt.title(f'{config.radar_name} range-Doppler {config.snr_cutoff} dB SNR Cutoff '
-                      f'{int(now.year):04d}-'
-                      f'{int(now.month):02d}-'
-                      f'{int(now.day):02d} '
-                      f'{int(now.hour):02d}:'
-                      f'{int(now.minute):02d}:'
-                      f'{int(now.second):02d}')
-            plt.colorbar(label='SNR (dB)')
-            plt.xlabel('Doppler (Hz)')
-            plt.ylabel('Total RF Distance (km)')
-            plt.ylim(0, config.number_ranges * config.range_resolution)
-            plt.xlim(-500, 500)
-        if spacing_counter <= spacing:
-            try:
-                moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
-                if bool(filename[f'{moment}/data_flag']):
-                    dop = filename[f'{moment}/doppler_shift'][:]
-                    rng = np.abs(filename[f'{moment}/rf_distance'][:])
-                    snr = np.abs(filename[f'{moment}/snr_db'][:])
-                    plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
-            except:
-                continue
+            if spacing_counter > spacing:
+                spacing_counter = 1
+                if data_flag:
+                    plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
+                                f'{int(now.year):04d}-'
+                                f'{int(now.month):02d}-'
+                                f'{int(now.day):02d}_'
+                                f'{int(now.hour):02d}-'
+                                f'{int(now.minute):02d}-'
+                                f'{int(now.second):02d}.pdf')
+
+                fig = plt.figure(1)
+                canvas = FigureCanvas(fig)
+                canvas.draw()
+                writer.append_data(np.asarray(canvas.buffer_rgba()))
+                # plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
+                #            f'{int(now.year):04d}-'
+                #            f'{int(now.month):02d}-'
+                #            f'{int(now.day):02d}_'
+                #            f'{int(now.hour):02d}-'
+                #            f'{int(now.minute):02d}-'
+                #            f'{int(now.second):02d}.png')
+                plt.close(1)
+                plt.figure(1)
+                data_flag = False
+            if spacing_counter == 1:
+                plt.scatter(0, -1, c=0, vmin=0.0, vmax=30, s=3, cmap='plasma_r')
+                plt.title(f'{config.radar_name} at {config.snr_cutoff} dB SNR Cutoff: '
+                          f'{int(now.year):04d}-'
+                          f'{int(now.month):02d}-'
+                          f'{int(now.day):02d} '
+                          f'{int(now.hour):02d}:'
+                          f'{int(now.minute):02d}:'
+                          f'{int(now.second):02d}')
+                plt.colorbar(label='SNR (dB)')
+                plt.xlabel('Doppler (Hz)')
+                plt.ylabel('Total RF Distance (km)')
+                plt.ylim(0, config.number_ranges * config.range_resolution)
+                plt.xlim(-500, 500)
+                plt.xticks(np.arange(-500, 500 + 100, 100))
+                plt.yticks(np.arange(0, int(config.number_ranges * config.range_resolution + 500), 500))
+                plt.grid(linestyle=':')
+            if spacing_counter <= spacing:
+                try:
+                    moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
+                    if bool(filename[f'{moment}/data_flag']):
+                        dop = filename[f'{moment}/doppler_shift'][:]
+                        rng = np.abs(filename[f'{moment}/rf_distance'][:])
+                        snr = np.abs(filename[f'{moment}/snr_db'][:])
+                        plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
+                        data_flag = True
+                except:
+                    continue
 
     return None
 

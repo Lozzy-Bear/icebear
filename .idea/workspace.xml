@@ -8,7 +8,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/etc/scripts/quick_plot_all.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/scripts/quick_plot_all.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/icebear/plotting/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/plotting/plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icebear/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/icebear/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -56,8 +55,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/etc/scripts/quick_plot_all.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="442">
-                  <caret line="26" selection-start-line="26" selection-end-line="26" />
+                <state relative-caret-position="340">
+                  <caret line="20" column="66" selection-start-line="20" selection-start-column="66" selection-end-line="20" selection-end-column="66" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -72,7 +71,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3638">
+                <state relative-caret-position="-329">
                   <caret line="221" column="48" selection-start-line="221" selection-start-column="16" selection-end-line="221" selection-end-column="48" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
@@ -93,10 +92,22 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/icebear/plotting/plot.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="414">
-                  <caret line="228" column="23" selection-start-line="228" selection-start-column="23" selection-end-line="228" selection-end-column="23" />
+                <state relative-caret-position="4335">
+                  <caret line="255" column="58" lean-forward="true" selection-start-line="255" selection-start-column="58" selection-end-line="255" selection-end-column="58" />
                   <folding>
                     <element signature="e#0#31#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/icebear/utils.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="2221">
+                  <caret line="339" column="34" lean-forward="true" selection-start-line="339" selection-start-column="16" selection-end-line="339" selection-end-column="34" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -243,14 +254,14 @@
         <option value="$PROJECT_DIR$/etc/scripts/simulation.py" />
         <option value="$PROJECT_DIR$/dat/default.yml" />
         <option value="$PROJECT_DIR$/icebear/utils.py" />
-        <option value="$PROJECT_DIR$/etc/scripts/quick_plot_all.py" />
         <option value="$PROJECT_DIR$/icebear/plotting/plot.py" />
+        <option value="$PROJECT_DIR$/etc/scripts/quick_plot_all.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="222" />
-    <option name="y" value="-8" />
+    <option name="x" value="783" />
+    <option name="y" value="-22" />
     <option name="width" value="459" />
     <option name="height" value="1056" />
   </component>
@@ -259,7 +270,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -302,6 +312,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -311,7 +322,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/etc/tests" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.editor" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -488,13 +499,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
-    </task>
-    <task id="LOCAL-00031" summary="fixed some __init__.py issues">
-      <created>1594242845684</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1594242845684</updated>
     </task>
     <task id="LOCAL-00032" summary="fixed some __init__.py issues">
       <created>1594243232096</created>
@@ -832,7 +836,14 @@
       <option name="project" value="LOCAL" />
       <updated>1607027458436</updated>
     </task>
-    <option name="localTasksCounter" value="80" />
+    <task id="LOCAL-00080" summary="fixing plots">
+      <created>1607247830925</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1607247830926</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TodoView">
@@ -848,12 +859,12 @@
     <frame x="-8" y="-8" width="2576" height="1416" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.27659574" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.112687156" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3295519" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.25184345" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2517537" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3990647" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -928,7 +939,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="trying to fix autodoc" />
     <MESSAGE value="test summary" />
     <MESSAGE value="Come on whats the issue!?" />
     <MESSAGE value="fixed requirements.txt" />
@@ -953,7 +963,8 @@
     <MESSAGE value="updated for range-doppler summary and time plots" />
     <MESSAGE value="fixed swht coeffs wavelength bug" />
     <MESSAGE value="so much stuff in the works." />
-    <option name="LAST_COMMIT_MESSAGE" value="so much stuff in the works." />
+    <MESSAGE value="fixing plots" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing plots" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1221,16 +1232,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="607">
-          <caret line="339" column="34" lean-forward="true" selection-start-line="339" selection-start-column="16" selection-end-line="339" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/run.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="425">
@@ -1288,26 +1289,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/etc/scripts/quick_plot_all.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="26" selection-start-line="26" selection-end-line="26" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3638">
-          <caret line="221" column="48" selection-start-line="221" selection-start-column="16" selection-end-line="221" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/dat/default.yml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="765">
@@ -1315,12 +1296,42 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2221">
+          <caret line="339" column="34" lean-forward="true" selection-start-line="339" selection-start-column="16" selection-end-line="339" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-329">
+          <caret line="221" column="48" selection-start-line="221" selection-start-column="16" selection-end-line="221" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/plotting/plot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="228" column="23" selection-start-line="228" selection-start-column="23" selection-end-line="228" selection-end-column="23" />
+        <state relative-caret-position="4335">
+          <caret line="255" column="58" lean-forward="true" selection-start-line="255" selection-start-column="58" selection-end-line="255" selection-end-column="58" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/etc/scripts/quick_plot_all.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="20" column="66" selection-start-line="20" selection-start-column="66" selection-end-line="20" selection-end-column="66" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
