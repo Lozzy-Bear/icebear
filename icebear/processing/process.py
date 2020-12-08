@@ -38,6 +38,7 @@ def generate_level1(config):
               f' is greater than step time length {time.step_epoch}s')
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
+        # todo : Should this stop actually be stop + step so it ends correctly?
         now = time.get_date(t)
         spectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
         spectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)

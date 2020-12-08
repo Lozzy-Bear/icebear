@@ -213,8 +213,9 @@ def range_doppler_snr(config, time, spacing):
                             f'{spacing}sec_movie_'
                             f'{int(time.start_human.year):04d}_'
                             f'{int(time.start_human.month):02d}_'
-                            f'{int(time.start_human.day):02d}'
-                            f'.gif', mode='I') as writer:
+                            f'{int(time.start_human.day):02d}_'
+                            f'{int(time.start_human.hour)}'
+                            f'.mp4', fps=10, mode='I') as writer:
         for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
             now = time.get_date(t)
             if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
@@ -259,14 +260,15 @@ def range_doppler_snr(config, time, spacing):
                 data_flag = False
             if spacing_counter == 1:
                 plt.scatter(0, -1, c=0, vmin=0.0, vmax=30, s=3, cmap='plasma_r')
-                plt.title(f'{config.radar_name} at {config.snr_cutoff} dB SNR Cutoff: '
+                plt.title(f'ICEBEAR-3D Range-Doppler-SNR Plot\n'
                           f'{int(now.year):04d}-'
                           f'{int(now.month):02d}-'
                           f'{int(now.day):02d} '
                           f'{int(now.hour):02d}:'
                           f'{int(now.minute):02d}:'
                           f'{int(now.second):02d}')
-                plt.colorbar(label='SNR (dB)')
+                cb = plt.colorbar(label='SNR (dB)')
+                cb.ax.plot([-500, 500], [config.snr_cutoff, config.snr_cutoff], 'k')
                 plt.xlabel('Doppler (Hz)')
                 plt.ylabel('Total RF Distance (km)')
                 plt.ylim(0, config.number_ranges * config.range_resolution)
@@ -274,6 +276,9 @@ def range_doppler_snr(config, time, spacing):
                 plt.xticks(np.arange(-500, 500 + 100, 100))
                 plt.yticks(np.arange(0, int(config.number_ranges * config.range_resolution + 500), 500))
                 plt.grid(linestyle=':')
+                props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
+                plt.text(-450, 150, f'{config.snr_cutoff} dB SNR Cutoff', bbox=props)
+                plt.text(250, 150, f'{spacing} s Interval', bbox=props)
             if spacing_counter <= spacing:
                 try:
                     moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
@@ -285,7 +290,7 @@ def range_doppler_snr(config, time, spacing):
                         data_flag = True
                 except:
                     continue
-
+    writer.close()
     return None
 
 
