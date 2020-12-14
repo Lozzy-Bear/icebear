@@ -13,9 +13,9 @@ ctypes
 pyfftw
 numba
 
-================================  =====================  ===============================================================
-Original Name                     Changed Name           Description
---------------------------------  ---------------------  ---------------------------------------------------------------
+================================  ===========================  =========================================================
+Original Name                     Changed Name                 Description
+--------------------------------  ---------------------------  ---------------------------------------------------------
                                   config_updated
 experiment_name                   processing_method
 date                              date
@@ -50,20 +50,37 @@ tx_pointing_dir                   tx_pointing
 tx_sample_rate                    tx_sample_rate
 xspectra_descriptors              xspectra_descriptors
 data                              data
-antenna_spectra                   spectra
-antenna_spectra_var               spectra_variance
-antenna_xspectra                  xspectra
-antenna_xspectra_var              xspectra_variance
-avg_spectra_noise_value           avg_spectra_noise
-data_flag                         data_flag
-doppler_shift                     doppler_shift
-rf_distance                       rf_distance
-snr_dB                            snr_db
-spectra_clutter_correction        spectra_clutter_correction
-spectra_noise_value               spectra_median
-time                              time
-spectra_clutter_correction        xspectra_clutter_correction
-xspectra_noise_value              xspectra_median
+data/{time}/antenna_spectra                   spectra
+data/{time}/antenna_spectra_var               spectra_variance
+data/{time}/antenna_xspectra                  xspectra
+data/{time}/antenna_xspectra_var              xspectra_variance
+data/{time}/avg_spectra_noise_value           avg_spectra_noise
+data/{time}/data_flag                         data_flag
+data/{time}/doppler_shift                     doppler_shift
+data/{time}/rf_distance                       rf_distance
+data/{time}/snr_dB                            snr_db
+data/{time}/spectra_clutter_correction        spectra_clutter_correction
+data/{time}/spectra_noise_value               spectra_median
+data/{time}/time                              time
+data/{time}/spectra_clutter_correction        xspectra_clutter_correction
+data/{time}/xspectra_noise_value              xspectra_median
                                   wavelength
 center_freq                       center_frequency
 dB_SNR_cutoff                     snr_cutoff
+clean
+center
+classify
+swht_coeffs
+fov
+fov_center
+resolution
+lmax
+data/{time}/velocity
+data/{time}/snr_db
+data/{time}/spread
+data/{time}/distance
+data/{time}/azimuth
+data/{time}/elevation
+data/{time}/area
+data/{time}/type
+================================  ===========================  =========================================================
