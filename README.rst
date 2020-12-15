@@ -18,14 +18,14 @@ ATTRIBUTE INFORMATION
 ======================================  ===========================  =========================================================
 Original Name                           Changed Name                 Description
 ======================================  ===========================  =========================================================
-                                        config_updated
+x                                       config_updated
 experiment_name                         processing_method
 date                                    date
-                                        radar_name
+x                                       radar_name
 incoherent_averages                     incoherent_averages
 raw_recorded_sample_rate                raw_sample_rate
-                                        rx_updated
-                                        rx_sample_rate
+x                                       rx_updated
+x                                       rx_sample_rate
 rx_RF_path                              rx_rf_path
 rx_antenna_locations_x_y_z              rx_x, rx_y, rx_z
 rx_antenna_type                         rx_antenna_type
@@ -34,11 +34,11 @@ rx_magnitude_corrections_applied        rx_magnitude
 rx_name                                 rx_name
 rx_phase_corrections_applied            rx_phase
 rx_pointing_dir                         rx_pointing
-                                        rx_mask
+x                                       rx_mask
 software_decimation_rate                decimation_rate
 spectra_descriptors                     spectra_descriptors
 time_resolution                         time_resolution
-                                        tx_updated
+x                                       tx_updated
 tx_RF_path                              tx_rf_path
 tx_antenna_locations_x_y_z              tx_x, tx_y, tx_z
 tx_antenna_type                         tx_antenna_type
@@ -66,23 +66,23 @@ data/{time}/spectra_noise_value         spectra_median
 data/{time}/time                        time
 data/{time}/spectra_clutter_correction  xspectra_clutter_correction
 data/{time}/xspectra_noise_value        xspectra_median
-                                        wavelength
+x                                       wavelength
 center_freq                             center_frequency
 dB_SNR_cutoff                           snr_cutoff
-clean
-center
-classify
-swht_coeffs
-fov
-fov_center
-resolution
-lmax
-data/{time}/velocity
-data/{time}/snr_db
-data/{time}/spread
-data/{time}/distance
-data/{time}/azimuth
-data/{time}/elevation
-data/{time}/area
-data/{time}/type
+x                                       clean
+x                                       center
+x                                       classify
+x                                       swht_coeffs
+x                                       fov
+x                                       fov_center
+x                                       resolution
+x                                       lmax
+x                                       data/{time}/velocity
+x                                       data/{time}/snr_db
+x                                       data/{time}/spread
+x                                       data/{time}/distance
+x                                       data/{time}/azimuth
+x                                       data/{time}/elevation
+x                                       data/{time}/area
+x                                       data/{time}/type
 ======================================  ===========================  =========================================================
