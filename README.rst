@@ -17,10 +17,8 @@ ATTRIBUTE INFORMATION
 =====================
 ======================================  ===========================  =========================================================
 Original Name                           Changed Name                 Description
-------------------------------------------------------------------------------------------------------------------------------
 General Attributes (Level 0)
 ------------------------------------------------------------------------------------------------------------------------------
-======================================  ===========================  =========================================================
 x                                       config_updated               [year, month, day] date the config file used was last updated
 experiment_name                         processing_method            name of the processing method used
 date                                    date                         [year, month, day] date of the data
@@ -55,7 +53,6 @@ tx_pointing_dir                         tx_pointing
 tx_sample_rate                          tx_sample_rate
 xspectra_descriptors                    xspectra_descriptors
 data                                    data
-------------------------------------------------------------------------------------------------------------------------------
 Processing Attributes (Level 1)
 ------------------------------------------------------------------------------------------------------------------------------
 data/{time}/antenna_spectra             spectra
@@ -75,7 +72,6 @@ data/{time}/xspectra_noise_value        xspectra_median
 x                                       wavelength
 center_freq                             center_frequency
 dB_SNR_cutoff                           snr_cutoff
-------------------------------------------------------------------------------------------------------------------------------
 Imaging Attributes (Level 2)
 ------------------------------------------------------------------------------------------------------------------------------
 x                                       clean
