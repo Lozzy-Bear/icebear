@@ -1,8 +1,19 @@
 import h5py
-import matplotlib.pyplot as plt
 import numpy as np
 import time
 import multiprocessing as mp
+
+print("Number of processors: ", mp.cpu_count())
+
+#how many parallel imaging processes to do in a batch.  More than 250 seems to cause errors, though this may be OS/computer hardware dependent.
+loop_processes_value = 250
+
+#queue for parallel processing implementation
+output = mp.Queue()
+
+#pre-set quantized values for azimuth and azimuth width to fit measured data to
+azi_values_gauss = np.pi*(np.arange(300)-150)/(150)
+azi_width_values_gauss = (np.pi*(np.arange(800)/3)/(600))**2
 
 #determine the expected spatial coherence of the incoming signal between the baselines for the antennas arranged in a linear array
 def coherence_calc_gauss(lambda_r,distance,imag_azi,imag_width):
@@ -54,7 +65,7 @@ def level2_hdf5_file_write(year,month,day,hours,level1_icebear_file):
     tx_name = 'prelate'
     rx_name = 'bakker'
 
-    imag_values_file = h5py.File(f"prototype_imag_values/{year:04d}_{month:02d}_{day:02d}/icebear_3d_linear_imag_{year:04d}_{month:02d}_{day:02d}_{hours:02d}_{tx_name}_{rx_name}.h5", 'w')
+    imag_values_file = h5py.File(f"/ib_data/prototype_image_values/{year:04d}_{month:02d}_{day:02d}/icebear_3d_linear_imag_{year:04d}_{month:02d}_{day:02d}_{hours:02d}_{tx_name}_{rx_name}.h5", 'w')
 
     # date and experiment
     imag_values_file.create_dataset('date', data=[year,month,day])
@@ -106,7 +117,7 @@ def level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,avera
     rx_name = 'bakker'
 
     # append a new group for the current measurement
-    imag_values_file = h5py.File(f'prototype_imag_values/{year:04d}_{month:02d}_{day:02d}/icebear_3d_linear_imag_{year:04d}_{month:02d}_{day:02d}_{hours:02d}_{tx_name}_{rx_name}.h5', 'a')
+    imag_values_file = h5py.File(f'/ib_data/prototype_image_values/{year:04d}_{month:02d}_{day:02d}/icebear_3d_linear_imag_{year:04d}_{month:02d}_{day:02d}_{hours:02d}_{tx_name}_{rx_name}.h5', 'a')
     imag_values_file.create_group(f'data/{hours:02d}{minutes:02d}{seconds:05d}')
 
     imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/time',\
@@ -127,14 +138,6 @@ def level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,avera
     imag_values_file.close
 
 def generate_azimuth_data():
-
-    print("Number of processors: ", mp.cpu_count())
-
-    #how many parallel imaging processes to do in a batch.  More than 250 seems to cause errors, though this may be OS/computer hardware dependent.
-    loop_processes_value = 250
-
-    #queue for parallel processing implementation
-    output = mp.Queue()
 
     #set date of data to look at
     year=2020
@@ -157,16 +160,12 @@ def generate_azimuth_data():
     if second==0:
 	    second+=1
 
-    #pre-set quantized values for azimuth and azimuth width to fit measured data to
-    azi_values_gauss = np.pi*(np.arange(300)-150)/(150)
-    azi_width_values_gauss = (np.pi*(np.arange(800)/3)/(600))**2
-
     #start of imaging
     for temp_days in range(31):
         days=temp_days+day
         for temp_hours in range(24-hour):
             hours = hour+temp_hours
-            ib_file = h5py.File(f'data/{year:04d}_{month:02d}_{days:02d}/icebear_3d_01dB_1000ms_vis_{year:04d}_{month:02d}_{days:02d}_{hours:02d}_prelate_bakker.h5','r')
+            ib_file = h5py.File(f'/ib_data/{year:04d}_{month:02d}_{days:02d}/icebear_3d_01dB_1000ms_vis_{year:04d}_{month:02d}_{days:02d}_{hours:02d}_prelate_bakker.h5','r')
             level2_hdf5_file_write(year,month,day,hours,ib_file)
             for temp_minutes in range(60-minute):
                 minutes = minute+temp_minutes
