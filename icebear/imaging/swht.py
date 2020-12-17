@@ -173,6 +173,17 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
     return None
 
 
+def unpackage_factors_hdf5(filename, ind):
+    """
+    factors:	Array to be saved into pickle file.
+    filename:	Name of the pickle file to store the SWHT Factors array.
+    """
+    f = h5py.File(filename, 'r')
+    factors = np.array(f['coeffs'][f'{ind:02d}'], dtype=np.complex64)
+    print('hdf5 factors:', factors.shape)
+    return factors
+
+
 def swht_py(visibilities, coeffs):
     """
     Apply a spherical wave harmonic transforms (Carozzi, 2015) to the given

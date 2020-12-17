@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
+import icebear.utils
 
 
-def generate_level2(config, time, clean='beamform', center='centroid', classify='normal'):
+def generate_level2(config, clean='beamform', center='centroid', classify='normal'):
     # Set the image cleaning method to be used.
     if clean == 'beamform':
         clean_function = frequency_difference_beamform
@@ -30,27 +31,15 @@ def generate_level2(config, time, clean='beamform', center='centroid', classify=
 
     print('imaging start')
 
+    file = h5py.File('E:/icebear/level1/2019_10_24/ib3d_normal_prelate_bakker_01dB_1000ms_2019_10_24_00.h5', 'r')
+    time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
-        spectra = np.empty(
-            shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras),
-            dtype=np.complex128)
-        spectra_variance = np.empty(
-            shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras),
-            dtype=np.complex128)
-        xspectra = np.empty(
-            shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras),
-            dtype=np.complex128)
-        xspectra_variance = np.empty(
-            shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras),
-            dtype=np.complex128)
-        power = np.zeros(shape=(int(config.code_length / config.decimation_rate), config.number_ranges),
-                         dtype=np.complex128)
 
         # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
-            filename = f'{config.processing_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
+            filename = f'{config.imaging_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
                 f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
                 f'{int(config.snr_cutoff):02d}dB_{int(config.incoherent_averages):02d}00ms_' \
                 f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
@@ -143,13 +132,17 @@ def append_level2_hdf5(filename, ):
     f.create_dataset(f'data/{time}/distance', data=distance)
     f.create_dataset(f'data/{time}/azimuth', data=azimuth)
     f.create_dataset(f'data/{time}/elevation', data=elevation)
+    f.create_dataset(f'data/{time}/azimuth_spread', data=azimuth_spread)
+    f.create_dataset(f'data/{time}/elevation_spread', data=elevation_spread)
     f.create_dataset(f'data/{time}/area', data=area)
     f.create_dataset(f'data/{time}/type', data=scatter_type)
     f.close()
     return None
 
 
-def calculate_image():
+def calculate_image(clean_function, center_function, classify_function):
+    factors = icebear.imaging.swht.unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 85)
+    swht_py(visibilities, coeffs)
     return
 
 

@@ -1,0 +1,9 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import icebear
+import icebear.utils as util
+
+
+config = util.Config('level2_test.yml', '')
+icebear.generate_level2(config, clean='3db', center='max', classify='normal')
+
