@@ -20,7 +20,7 @@ Install Instructions:
 It is recommended to use a virtual environment for the ICEBEAR software.  Navigate to the package directory and run:
 
 ```
-pip3 install virtualenv  
+pip3 install virtualenv <br />
 virtualenv icebear_devel
 ```
 
