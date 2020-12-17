@@ -4,14 +4,6 @@ import numpy as np
 import time
 import multiprocessing as mp
 
-print("Number of processors: ", mp.cpu_count())
-
-#how many parallel imaging processes to do in a batch.  More than 250 seems to cause errors, though this may be OS/computer hardware dependent.
-loop_processes_value = 250
-
-#queue for parallel processing implementation
-output = mp.Queue()
-
 #determine the expected spatial coherence of the incoming signal between the baselines for the antennas arranged in a linear array
 def coherence_calc_gauss(lambda_r,distance,imag_azi,imag_width):
 
@@ -55,31 +47,6 @@ def fit_results(x,spectra_values_antennas,xspectra_values,logsnr_single,coherenc
 
     #return the values for azimuth and azimuth width corresponding to the minimum least squares fit
     output.put((x,gauss_angle,gauss_width,lsf_gauss_value))
-
-#set date of data to look at
-year=2020
-month=5
-day=6
-hour=4
-minute=0
-second=0
-
-#initialize some variables
-dif_azi_values_exp_ind = 0
-dif_azi_width_ind = 0
-max_azi = 0
-max_azi_width = 0
-max_fit_value = 0
-
-#can set a higher snr threshold than provided in the initial spectra data
-snr_cutoff=1.0
-
-if second==0:
-	second+=1
-
-#pre-set quantized values for azimuth and azimuth width to fit measured data to
-azi_values_gauss = np.pi*(np.arange(300)-150)/(150)
-azi_width_values_gauss = (np.pi*(np.arange(800)/3)/(600))**2
 
 #create HDF5 File
 def level2_hdf5_file_write(year,month,day,hours,level1_icebear_file):
@@ -159,146 +126,181 @@ def level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,avera
     
     imag_values_file.close
 
-#start of imaging
-for temp_days in range(31):
-    days=temp_days+day
-    for temp_hours in range(24-hour):
-        hours = hour+temp_hours
-        ib_file = h5py.File(f'data/{year:04d}_{month:02d}_{days:02d}/icebear_3d_01dB_1000ms_vis_{year:04d}_{month:02d}_{days:02d}_{hours:02d}_prelate_bakker.h5','r')
-        level2_hdf5_file_write(year,month,day,hours,ib_file)
-        for temp_minutes in range(60-minute):
-            minutes = minute+temp_minutes
-            time_start = time.time()
-            for temp_seconds in range(60-second):
-                seconds=(second+temp_seconds)*1000
-                
-                if (ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/data_flag'][:]==False):
-                        data_flag = False
-                        averages = 10
-                        level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
-                else:
-                    #read in the data to be fit
-                    logsnr = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/snr_dB'][:])
-                    doppler = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/doppler_shift'][:]
-                    range_values = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/rf_distance'][:])
-                    xspectra_values = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/antenna_xspectra'][:]
-                    spectra_values = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/antenna_spectra'][:]
-                    xspectra_clutter = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/xspectra_clutter_correction'][:]
-                    spectra_clutter = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/spectra_clutter_correction'][:]
-                    rx_antenna_location = ib_file[f'rx_antenna_locations_x_y_z'][:]
-                    
-                    #re-sort the xspectra and spectra values for ease of passing into azimuth fitting routine
-                    #need antenna 0,1,3,7,9 (antennas in the linear array)
-                    ant_indices = [0,1,3,7,9]
-                    spectra_values = spectra_values[:,ant_indices]
-                    spectra_clutter = spectra_clutter[ant_indices]
-                    #corresponds to indicies (0,2,6,8),(10,14,16),(27,29),(43) in the xpsectra array
-                    new_indices = [0,2,6,8,10,14,16,27,29,43]
-                    xspectra_values = xspectra_values[:,new_indices]
-                    xspectra_clutter = xspectra_clutter[new_indices]
-                    #baselines can be calculated from antenna positions
-                    baseline_lengths = np.zeros(10)
-                    base_tmp_ind = 0
-                    for first_antenna in range(4):
-                        for second_antenna in range(first_antenna+1,5):
-                            baseline_lengths[base_tmp_ind] = rx_antenna_location[0,ant_indices[first_antenna]]-rx_antenna_location[0,ant_indices[second_antenna]]
-                            base_tmp_ind+=1
-                            
-                    #calculate the expected gaussian fits based on the antenna positions
-                    #need to change the calculated Gauss values to match the new baselines
-                    coherence_values_calc_gauss = coherence_calc_gauss(6.06,baseline_lengths,azi_values_gauss,azi_width_values_gauss)
+def generate_azimuth_data():
 
+    print("Number of processors: ", mp.cpu_count())
 
-                    indices = np.where(logsnr>snr_cutoff)
-                    print(len(indices[0]))
+    #how many parallel imaging processes to do in a batch.  More than 250 seems to cause errors, though this may be OS/computer hardware dependent.
+    loop_processes_value = 250
+
+    #queue for parallel processing implementation
+    output = mp.Queue()
+
+    #set date of data to look at
+    year=2020
+    month=5
+    day=6
+    hour=4
+    minute=0
+    second=0
+
+    #initialize some variables
+    dif_azi_values_exp_ind = 0
+    dif_azi_width_ind = 0
+    max_azi = 0
+    max_azi_width = 0
+    max_fit_value = 0
+
+    #can set a higher snr threshold than provided in the initial spectra data
+    snr_cutoff=1.0
+
+    if second==0:
+	    second+=1
+
+    #pre-set quantized values for azimuth and azimuth width to fit measured data to
+    azi_values_gauss = np.pi*(np.arange(300)-150)/(150)
+    azi_width_values_gauss = (np.pi*(np.arange(800)/3)/(600))**2
+
+    #start of imaging
+    for temp_days in range(31):
+        days=temp_days+day
+        for temp_hours in range(24-hour):
+            hours = hour+temp_hours
+            ib_file = h5py.File(f'data/{year:04d}_{month:02d}_{days:02d}/icebear_3d_01dB_1000ms_vis_{year:04d}_{month:02d}_{days:02d}_{hours:02d}_prelate_bakker.h5','r')
+            level2_hdf5_file_write(year,month,day,hours,ib_file)
+            for temp_minutes in range(60-minute):
+                minutes = minute+temp_minutes
+                time_start = time.time()
+                for temp_seconds in range(60-second):
+                    seconds=(second+temp_seconds)*1000
                     
-                    #determine if there are any data above the snr cutoff
-                    if (len(indices[0])==0):
-                        #if no data above threshold, write blanks to imaging hdf5 file
-                        data_flag = False
-                        averages = 10
-                        level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
+                    if (ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/data_flag'][:]==False):
+                            data_flag = False
+                            averages = 10
+                            level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
                     else:
-                        #rudimentary check for dropped samples.  Potential area for improvement in future iterations
-                        if not any((range_values[indices[0][ind_loop]]<100.0 or (range_values[indices[0][ind_loop]]>2900.0)) for ind_loop in indices[0][:]):
-                            
-                            data_flag = True
-                            averages=10
-                            doppler_t = np.zeros(len(indices[0]))
-                            range_values_t = np.zeros(len(indices[0]))
-                            logsnr_t = np.zeros(len(indices[0]))
-                            azimuth_t = np.zeros(len(indices[0]))
-                            azimuth_extent_t = np.zeros(len(indices[0]))
-                            least_squares_fit_t = np.zeros(len(indices[0]))
-                            
-                            num=0
+                        #read in the data to be fit
+                        logsnr = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/snr_dB'][:])
+                        doppler = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/doppler_shift'][:]
+                        range_values = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/rf_distance'][:])
+                        xspectra_values = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/antenna_xspectra'][:]
+                        spectra_values = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/antenna_spectra'][:]
+                        xspectra_clutter = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/xspectra_clutter_correction'][:]
+                        spectra_clutter = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/spectra_clutter_correction'][:]
+                        rx_antenna_location = ib_file[f'rx_antenna_locations_x_y_z'][:]
+                        
+                        #re-sort the xspectra and spectra values for ease of passing into azimuth fitting routine
+                        #need antenna 0,1,3,7,9 (antennas in the linear array)
+                        ant_indices = [0,1,3,7,9]
+                        spectra_values = spectra_values[:,ant_indices]
+                        spectra_clutter = spectra_clutter[ant_indices]
+                        #corresponds to indicies (0,2,6,8),(10,14,16),(27,29),(43) in the xpsectra array
+                        new_indices = [0,2,6,8,10,14,16,27,29,43]
+                        xspectra_values = xspectra_values[:,new_indices]
+                        xspectra_clutter = xspectra_clutter[new_indices]
+                        #baselines can be calculated from antenna positions
+                        baseline_lengths = np.zeros(10)
+                        base_tmp_ind = 0
+                        for first_antenna in range(4):
+                            for second_antenna in range(first_antenna+1,5):
+                                baseline_lengths[base_tmp_ind] = rx_antenna_location[0,ant_indices[first_antenna]]-rx_antenna_location[0,ant_indices[second_antenna]]
+                                base_tmp_ind+=1
+                                
+                        #calculate the expected gaussian fits based on the antenna positions
+                        #need to change the calculated Gauss values to match the new baselines
+                        coherence_values_calc_gauss = coherence_calc_gauss(6.06,baseline_lengths,azi_values_gauss,azi_width_values_gauss)
 
-                            #use parallel processing to speed up the data analysis
-                            #currently only processes subsets at a time, as errors occurred with too many at once
-                            for num in range(int(len(indices[0])/loop_processes_value)):
-                                #fit the measured spatial coherence to the expected values assuming a Gaussian brightness distribution
-                                processes = [mp.Process(target=fit_results, args=(x,spectra_values[indices[0][x],:]-spectra_clutter,xspectra_values[indices[0][x],:]-xspectra_clutter,logsnr[indices[0][x]],coherence_values_calc_gauss,baseline_lengths)) for x in range((num)*loop_processes_value,(num+1)*loop_processes_value)]
+
+                        indices = np.where(logsnr>snr_cutoff)
+                        print(len(indices[0]))
+                        
+                        #determine if there are any data above the snr cutoff
+                        if (len(indices[0])==0):
+                            #if no data above threshold, write blanks to imaging hdf5 file
+                            data_flag = False
+                            averages = 10
+                            level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
+                        else:
+                            #rudimentary check for dropped samples.  Potential area for improvement in future iterations
+                            if not any((range_values[indices[0][ind_loop]]<100.0 or (range_values[indices[0][ind_loop]]>2900.0)) for ind_loop in indices[0][:]):
+                                
+                                data_flag = True
+                                averages=10
+                                doppler_t = np.zeros(len(indices[0]))
+                                range_values_t = np.zeros(len(indices[0]))
+                                logsnr_t = np.zeros(len(indices[0]))
+                                azimuth_t = np.zeros(len(indices[0]))
+                                azimuth_extent_t = np.zeros(len(indices[0]))
+                                least_squares_fit_t = np.zeros(len(indices[0]))
+                                
+                                num=0
+
+                                #use parallel processing to speed up the data analysis
+                                #currently only processes subsets at a time, as errors occurred with too many at once
+                                for num in range(int(len(indices[0])/loop_processes_value)):
+                                    #fit the measured spatial coherence to the expected values assuming a Gaussian brightness distribution
+                                    processes = [mp.Process(target=fit_results, args=(x,spectra_values[indices[0][x],:]-spectra_clutter,xspectra_values[indices[0][x],:]-xspectra_clutter,logsnr[indices[0][x]],coherence_values_calc_gauss,baseline_lengths)) for x in range((num)*loop_processes_value,(num+1)*loop_processes_value)]
+                                    for p in processes:
+                                        p.start()
+                                    # Exit the completed processes
+                                    for p in processes:
+                                        p.join()
+                                    
+                                    # Get process results from the output queue
+                                    ind_temp = [output.get() for p in processes]
+
+                                    #gather the values from the parallel processing
+                                    ind_temp.sort()
+                                    x_values = [r[0] for r in ind_temp]
+                                    gauss_angle = [r[1] for r in ind_temp]
+                                    gauss_width = [r[2] for r in ind_temp] 
+                                    lsf_gauss_value = [r[3] for r in ind_temp]
+                                    
+                                    for counter in range(len(x_values)):
+                                        doppler_t[x_values[counter]] = doppler[indices[0][x_values[counter]]]
+                                        logsnr_t[x_values[counter]] = logsnr[indices[0][x_values[counter]]]
+                                        range_values_t[x_values[counter]] = range_values[indices[0][x_values[counter]]]
+                                        azimuth_t[x_values[counter]] = gauss_angle[counter]
+                                        azimuth_extent_t[x_values[counter]] = gauss_width[counter]
+                                        least_squares_fit_t[x_values[counter]] = lsf_gauss_value[counter]
+
+                                #repeat the process above for the last portion of the subset of data
+                                x_value_corr = (int(len(indices[0])/loop_processes_value)*loop_processes_value)
+                                processes = [mp.Process(target=fit_results, args=(x,spectra_values[indices[0][x],:]-spectra_clutter,xspectra_values[indices[0][x],:]-xspectra_clutter,logsnr[indices[0][x]],coherence_values_calc_gauss,baseline_lengths)) for x in range(0,len(indices[0])%loop_processes_value)]
                                 for p in processes:
                                     p.start()
                                 # Exit the completed processes
                                 for p in processes:
                                     p.join()
-                                
+
                                 # Get process results from the output queue
                                 ind_temp = [output.get() for p in processes]
 
-                                #gather the values from the parallel processing
                                 ind_temp.sort()
                                 x_values = [r[0] for r in ind_temp]
                                 gauss_angle = [r[1] for r in ind_temp]
                                 gauss_width = [r[2] for r in ind_temp] 
                                 lsf_gauss_value = [r[3] for r in ind_temp]
-                                
+
                                 for counter in range(len(x_values)):
-                                    doppler_t[x_values[counter]] = doppler[indices[0][x_values[counter]]]
-                                    logsnr_t[x_values[counter]] = logsnr[indices[0][x_values[counter]]]
-                                    range_values_t[x_values[counter]] = range_values[indices[0][x_values[counter]]]
-                                    azimuth_t[x_values[counter]] = gauss_angle[counter]
-                                    azimuth_extent_t[x_values[counter]] = gauss_width[counter]
-                                    least_squares_fit_t[x_values[counter]] = lsf_gauss_value[counter]
+                                        doppler_t[x_value_corr+x_values[counter]] = doppler[indices[0][x_value_corr+x_values[counter]]]
+                                        logsnr_t[x_value_corr+x_values[counter]] = logsnr[indices[0][x_value_corr+x_values[counter]]]
+                                        range_values_t[x_value_corr+x_values[counter]] = range_values[indices[0][x_value_corr+x_values[counter]]]
+                                        azimuth_t[x_value_corr+x_values[counter]] = gauss_angle[counter]
+                                        azimuth_extent_t[x_value_corr+x_values[counter]] = gauss_width[counter]
+                                        least_squares_fit_t[x_value_corr+x_values[counter]] = lsf_gauss_value[counter]
 
-                            #repeat the process above for the last portion of the subset of data
-                            x_value_corr = (int(len(indices[0])/loop_processes_value)*loop_processes_value)
-                            processes = [mp.Process(target=fit_results, args=(x,spectra_values[indices[0][x],:]-spectra_clutter,xspectra_values[indices[0][x],:]-xspectra_clutter,logsnr[indices[0][x]],coherence_values_calc_gauss,baseline_lengths)) for x in range(0,len(indices[0])%loop_processes_value)]
-                            for p in processes:
-                                p.start()
-                            # Exit the completed processes
-                            for p in processes:
-                                p.join()
+                                #write the fitted imaged data to the hdf5 file
+                                level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,doppler_t,range_values_t,logsnr_t,azimuth_t,azimuth_extent_t,least_squares_fit_t)
 
-                            # Get process results from the output queue
-                            ind_temp = [output.get() for p in processes]
-
-                            ind_temp.sort()
-                            x_values = [r[0] for r in ind_temp]
-                            gauss_angle = [r[1] for r in ind_temp]
-                            gauss_width = [r[2] for r in ind_temp] 
-                            lsf_gauss_value = [r[3] for r in ind_temp]
-
-                            for counter in range(len(x_values)):
-                                    doppler_t[x_value_corr+x_values[counter]] = doppler[indices[0][x_value_corr+x_values[counter]]]
-                                    logsnr_t[x_value_corr+x_values[counter]] = logsnr[indices[0][x_value_corr+x_values[counter]]]
-                                    range_values_t[x_value_corr+x_values[counter]] = range_values[indices[0][x_value_corr+x_values[counter]]]
-                                    azimuth_t[x_value_corr+x_values[counter]] = gauss_angle[counter]
-                                    azimuth_extent_t[x_value_corr+x_values[counter]] = gauss_width[counter]
-                                    least_squares_fit_t[x_value_corr+x_values[counter]] = lsf_gauss_value[counter]
-
-                            #write the fitted imaged data to the hdf5 file
-                            level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,doppler_t,range_values_t,logsnr_t,azimuth_t,azimuth_extent_t,least_squares_fit_t)
-
-                        #if there is a significant amount of clutter, dropped samples, and/or noise in the data
-                        else:
-                            data_flag = False
-                            averages = 10
-                            level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
-                                           
-            second=0
-            print('One minute process time: ',time.time()-time_start)
-        minute=0
-        ib_file.close
-    hour=0
+                            #if there is a significant amount of clutter, dropped samples, and/or noise in the data
+                            else:
+                                data_flag = False
+                                averages = 10
+                                level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
+                                               
+                second=0
+                print('One minute process time: ',time.time()-time_start)
+            minute=0
+            ib_file.close
+        hour=0
