@@ -20,7 +20,9 @@ Install Instructions:
 It is recommended to use a virtual environment for the ICEBEAR software.  Navigate to the package directory and run:
 
 ```
-pip3 install virtualenv  
+pip3 install virtualenv
+```
+```
 virtualenv icebear_devel
 ```
 
@@ -34,5 +36,7 @@ This then activates the virtual environment.  The packages that are installed ar
 
 ```
 pip3 install numpy h5py scipy pyyaml python-dateutil matplotlib install-qt-binding imageio
+```
+```
 pip3 install .
 ```
