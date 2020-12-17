@@ -1,6 +1,7 @@
 from icebear.imaging.swht import generate_coeffs
 from icebear.imaging.swht import swht_py
 from icebear.imaging.swht import swht_cuda
+from icebear.imaging.icebear_3d_linear_mapping import generate_azimuth_data
 #from icebear.imaging.image import generate_level2
 
 #from icebear.processing.process import generate_level1
