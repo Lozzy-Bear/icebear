@@ -2,9 +2,6 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import matplotlib as mpl
-mpl.rcParams.update({'font.size': 22})
-mpl.rcParams['figure.figsize'] = 20, 10
 import multiprocessing as mp
 
 print("Number of processors: ", mp.cpu_count())
@@ -12,14 +9,6 @@ print("Number of processors: ", mp.cpu_count())
 loop_processes_value = 250
 
 output = mp.Queue()
-
-import csv
-
-def coherence_calc_exp(lambda_r,distance,imag_azi,imag_width):
-    coherence_values = np.zeros((len(imag_azi),len(imag_width),len(distance)),dtype=np.complex64)
-    for x in range(9):
-        coherence_values[:,:,x] = np.matmul(np.exp(1.0j*imag_azi*distance[x]/lambda_r).reshape(len(imag_azi),1),np.exp(-imag_width*distance[x]/lambda_r).reshape(1,len(imag_width)))   
-    return coherence_values
 
 def coherence_calc_gauss(lambda_r,distance,imag_azi,imag_width):
     coherence_values = np.zeros((len(imag_azi),len(imag_width),len(distance)),dtype=np.complex64)
@@ -42,26 +31,19 @@ def fit_results(x,spectra_values_antennas,xspectra_values_baselines,logsnr_singl
                 antenna_coherence[int(np.abs(first_antenna-second_antenna))] += (xspectra_values_baselines[temp_ind]/np.sqrt(spectra_values_antennas[first_antenna]*spectra_values_antennas[second_antenna]))
             temp_ind+=1
     for coherence_divider in range(8):
-        antenna_coherence[coherence_divider+1] = antenna_coherence[coherence_divider+1]/np.abs(8-coherence_divider)#/(np.abs(np.power(10,logsnr_single/10))/(np.abs(np.power(10,logsnr_single/10))+1))
+        antenna_coherence[coherence_divider+1] = antenna_coherence[coherence_divider+1]/np.abs(8-coherence_divider)
 
     weights = np.abs(np.arange(9)-9)
     weights[0]=1.0
 
-    #lsf_calc_exp = linear_least_square_fit(antenna_coherence,coherence_values_calc_exp,weights)
-
     lsf_calc_gauss = linear_least_square_fit(antenna_coherence,coherence_values_calc_gauss,weights)
-
-    #ind_exp = np.unravel_index(np.argmin(lsf_calc_exp, axis=None), lsf_calc_exp.shape)
 
     ind_gauss = np.unravel_index(np.argmin(lsf_calc_gauss, axis=None), lsf_calc_gauss.shape)
 
-    #exp_angle = np.arcsin(-azi_values_exp[ind_exp[0]]/(2*np.pi))*180/np.pi
     gauss_angle = np.arcsin(-azi_values_gauss[ind_gauss[0]]/(2*np.pi))*180/np.pi
 
-    #exp_width = np.abs(np.arcsin((-azi_values_exp[ind_exp[0]]-azi_width_values_exp[ind_exp[1]])/(2*np.pi))-np.arcsin((-azi_values_exp[ind_exp[0]]+azi_width_values_exp[ind_exp[1]])/(2*np.pi)))*180/np.pi
     gauss_width = np.abs(np.arcsin((-azi_values_gauss[ind_gauss[0]]-np.sqrt(4*azi_width_values_gauss[ind_gauss[1]]*np.log(2)))/(2*np.pi))-np.arcsin((-azi_values_gauss[ind_gauss[0]]+np.sqrt(4*azi_width_values_gauss[ind_gauss[1]]*np.log(2)))/(2*np.pi)))*180.0/np.pi
 
-    #lsf_exp_value = lsf_calc_exp[ind_exp[0],ind_exp[1]]
     lsf_gauss_value = lsf_calc_gauss[ind_gauss[0],ind_gauss[1]]
 
     output.put((x,gauss_angle,gauss_width,lsf_gauss_value))
@@ -78,6 +60,8 @@ dif_azi_width_ind = 0
 max_azi = 0
 max_azi_width = 0
 max_fit_value = 0
+
+snr_cutoff=1.0
 
 if second==0:
 	second+=1
@@ -170,8 +154,6 @@ def level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,avera
     
     imag_values_file.close
 
-snr_cutoff=1.0
-
 #start of imaging
 for temp_days in range(31):
     days=temp_days+day
@@ -190,7 +172,6 @@ for temp_days in range(31):
                         averages = 10
                         level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
                 else:
-                    #example to plot a spectra
                     logsnr = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/snr_dB'][:])
                     doppler = ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/doppler_shift'][:]
                     range_values = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/rf_distance'][:])
@@ -218,7 +199,7 @@ for temp_days in range(31):
                     
                             num=0
 
-                            #only processes subsets at a time.  Could be improved to determine the number of cores that are available and split based on that
+                            #only processes subsets at a time
                             for num in range(int(len(indices[0])/loop_processes_value)):
                                 processes = [mp.Process(target=fit_results, args=(x,spectra_values[indices[0][x],:]-spectra_clutter,xspectra_values[indices[0][x],:]-xspectra_clutter,logsnr[indices[0][x]])) for x in range((num)*loop_processes_value,(num+1)*loop_processes_value)]
                                 for p in processes:
@@ -227,7 +208,6 @@ for temp_days in range(31):
                                 for p in processes:
                                     p.join()
                                 
-                                #moved this to within loop due to hanging.  Might be due to overfilling queue.
                                 # Get process results from the output queue
                                 ind_temp = [output.get() for p in processes]
 
