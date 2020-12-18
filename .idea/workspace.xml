@@ -15,7 +15,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.45547676">
+    <splitter split-orientation="horizontal" split-proportion="0.77304965">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
@@ -51,11 +51,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/etc/tests/level2_test.yml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1065">
-                  <caret line="72" column="8" selection-start-line="72" selection-start-column="8" selection-end-line="72" selection-end-column="8" />
+                <state relative-caret-position="610">
+                  <caret line="51" column="19" selection-start-line="51" selection-start-column="1" selection-end-line="51" selection-end-column="19" />
                 </state>
               </provider>
             </entry>
@@ -72,10 +72,10 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="945">
+                <state relative-caret-position="-1601">
                   <caret line="65" column="30" lean-forward="true" selection-start-line="65" selection-start-column="30" selection-end-line="65" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
@@ -290,8 +290,8 @@
         <option value="$PROJECT_DIR$/icebear/imaging/swht.py" />
         <option value="$PROJECT_DIR$/etc/tests/level2_test" />
         <option value="$PROJECT_DIR$/icebear/imaging/image.py" />
-        <option value="$PROJECT_DIR$/etc/tests/level2_test.yml" />
         <option value="$PROJECT_DIR$/etc/scripts/quick_plot_all.py" />
+        <option value="$PROJECT_DIR$/etc/tests/level2_test.yml" />
         <option value="$PROJECT_DIR$/README.rst" />
       </list>
     </option>
@@ -487,20 +487,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
-    </task>
-    <task id="LOCAL-00041" summary="trying to fix napoleon">
-      <created>1594247297063</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1594247297063</updated>
-    </task>
-    <task id="LOCAL-00042" summary="trying to fix napoleon">
-      <created>1594247964493</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1594247964493</updated>
     </task>
     <task id="LOCAL-00043" summary="trying to fix napoleon">
       <created>1594248715534</created>
@@ -831,7 +817,21 @@
       <option name="project" value="LOCAL" />
       <updated>1608312818752</updated>
     </task>
-    <option name="localTasksCounter" value="90" />
+    <task id="LOCAL-00090" summary="adding documentation">
+      <created>1608314098888</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1608314098888</updated>
+    </task>
+    <task id="LOCAL-00091" summary="adding documentation">
+      <created>1608315206533</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1608315206533</updated>
+    </task>
+    <option name="localTasksCounter" value="92" />
     <servers />
   </component>
   <component name="TodoView">
@@ -1326,20 +1326,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/etc/tests/level2_test.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1065">
-          <caret line="72" column="8" selection-start-line="72" selection-start-column="8" selection-end-line="72" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/icebear/processing/process.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="945">
+        <state relative-caret-position="-1601">
           <caret line="65" column="30" lean-forward="true" selection-start-line="65" selection-start-column="30" selection-end-line="65" selection-end-column="30" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/etc/tests/level2_test.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="610">
+          <caret line="51" column="19" selection-start-line="51" selection-start-column="1" selection-end-line="51" selection-end-column="19" />
         </state>
       </provider>
     </entry>

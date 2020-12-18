@@ -36,7 +36,7 @@ rx_magnitude_corrections_applied        rx_feed_corr                   [[ant 0 m
 x                                       rx_feed_corr_date              [year, month, day] date the feedline corrections were determined
 x                                       rx_feed_corr_type              [magnitude type, phase type] (ex; [data median, instrumental])
 rx_phase_corrections_applied            x                              REMOVE
-x                                       rx_ant_mask                    [0, 1, ...] mask indicating which receiver antennas were used
+x                                       rx_ant_mask                    [0, 1, ...] mask indicating which receiver antennas were used and/or available
 raw_recorded_sample_rate                rx_sample_rate                 the raw recorded sample rate at the receiver in Hz
 tx_name                                 tx_site_name                   name of the transmitter site
 tx_location_lat_lon                     tx_site_lat_long               [latitude, longitude] coordinates of the transmitter antenna array
@@ -77,9 +77,9 @@ data/{time}/doppler_shift               doppler_shift
 data/{time}/rf_distance                 rf_distance
 data/{time}/snr_dB                      snr_db
 data/{time}/spectra_clutter_correction  spectra_clutter_corr
-data/{time}/spectra_noise_value         spectra_median
-data/{time}/spectra_clutter_correction  xspectra_clutter_correction
-data/{time}/xspectra_noise_value        xspectra_median
+data/{time}/spectra_noise_value         spectra_noise                  spectra noise value determined by the median spectra before cutoff
+data/{time}/spectra_clutter_correction  xspectra_clutter_corr
+data/{time}/xspectra_noise_value        xspectra_noise
 Imaging Attributes (Level 2)
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 x                                       imaging_source                 file path to directory holding level1 hdf5 files to be imaged
@@ -96,16 +96,22 @@ x                                       fov                            [[az min,
 x                                       fov_center                     [az, el] angles in image which coincide with boresight
 x                                       resolution                     pixel resolution in degrees
 x                                       lmax                           maximum harmonic degree the coefficients were calculated
-x                                       wavelength                     radar signal wavelength
-x                                       data/{time}/velocity           target velocity along bistatic bisector
+x                                       data/{time}/data_flag
+x                                       data/{time}/doppler_shift
 x                                       data/{time}/snr_db             target signal strength in dB
-x                                       data/{time}/distance
+x                                       data/{time}/rf_distance
 x                                       data/{time}/azimuth
 x                                       data/{time}/elevation
 x                                       data/{time}/azimuth_spread
 x                                       data/{time}/elevation_spread
 x                                       data/{time}/area
-x                                       data/{time}/type
+x                                       data/{time}/type               target type; meteor trail, direct feed through, or scatter
 Plotting Attributes (Level 3)
 ----------------------------------------------------------------------------------------------------------------------------------------------------
+velocity                                                               speed of target
+position                                                               [lat, long, alt]
+time                                                                   time of data point
+snr_db                                                                 signal strength
+spatial_spread                                                         [lat spread, long spread, alt spread]
+spatial_spread_function                                                function to determine spreading
 ======================================  ============================  ==============================================================================
