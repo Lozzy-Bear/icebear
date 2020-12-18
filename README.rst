@@ -22,9 +22,9 @@ General Attributes (Level 0)
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 x                                       date_created                   [year, month, day] date this file was created
 date                                    date                           [year, month, day, hour] date of the data
-experiment_name                         radar_name                     name of the radar the data was collected with (ex, ib, ib3d, lofar, ibsimo)
-center_freq                             center_frequency               radar signal center frequency in Hz
-incoherent_averages                     incoherent_averages            number of samples to average over
+experiment_name                         experiment_name                name of experiment (ex; normal,
+x                                       radar_name                     name of the radar the data was collected with (ex, ib, ib3d, lofar, ibsimo)
+center_freq                             center_freq                    radar signal center frequency in Hz
 rx_name                                 rx_name                        name of receiver site
 rx_location_lat_lon                     rx_site_lat_long               [latitude, longitude] coordinates of the receiver antenna array
 rx_pointing_dir                         rx_heading                     receiver array boresight pointing direction in degrees east of north
@@ -56,6 +56,8 @@ x                                       processing_stop                [year, mo
 x                                       processing_step                [day, hour, minute, second, millisecond] step size for processing
 software_decimation_rate                decimation_rate
 time_resolution                         time_resolution
+x                                       coherent_integration_time
+incoherent_averages                     incoherent_averages            number of samples to average over
 dB_SNR_cutoff                           snr_cutoff_db
 spectra_descriptors                     spectra_descriptors
 xspectra_descriptors                    xspectra_descriptors
