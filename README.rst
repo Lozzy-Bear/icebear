@@ -14,6 +14,11 @@ pyfftw
 numba
 
 
+DATA FILE NAMING CONVENTION
+===========================
+- Level 1: {radar_config}_{experiment_name}_{tx_site_name}_{rx_site_name}_{snr_cutoff_db}_{incoherent_averages}_{date}.h5
+- Level 2: {radar_config}_{experiment_name}_{tx_site_name}_{rx_site_name}_{image_method}_{fov}_{resolution}_{date}.h5
+
 ATTRIBUTE INFORMATION
 =====================
 ======================================  ============================  ==============================================================================
