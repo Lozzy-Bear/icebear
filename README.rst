@@ -21,9 +21,10 @@ Original Name                           Changed Name                   Descripti
 General Attributes (Level 0)
 ----------------------------------------------------------------------------------------------------------------------------------------------------
 x                                       date_created                   [year, month, day] date this file was created
+x                                       version                        software version used to create this file
 date                                    date                           [year, month, day, hour] date of the data
-experiment_name                         experiment_name                name of experiment (ex; normal,
-x                                       radar_name                     name of the radar the data was collected with (ex, ib, ib3d, lofar, ibsimo)
+experiment_name                         experiment_name                name of experiment (ex; normal, mobile)
+x                                       radar_config                   name of the radar the data was collected with (ex; ib, ib3d, lofar)
 center_freq                             center_freq                    radar signal center frequency in Hz
 rx_name                                 rx_name                        name of receiver site
 rx_location_lat_lon                     rx_site_lat_long               [latitude, longitude] coordinates of the receiver antenna array
@@ -32,6 +33,7 @@ rx_RF_path                              rx_rf_path                     the recei
 rx_antenna_type                         rx_ant_type                    receiver antenna type
 rx_antenna_locations_x_y_z              rx_ant_coords                  receiver antenna relative locations in meters from antenna 0
 rx_magnitude_corrections_applied        rx_feed_corr                   [[ant 0 magnitude, ...],[ant 0 phase, ...] correction per receiver antenna
+x                                       rx_feed_corr_date
 rx_phase_corrections_applied            x                              REMOVE
 x                                       rx_ant_mask                    [False, True, ...] mask indicating which receiver antennas were used
 raw_recorded_sample_rate                rx_sample_rate                 the raw recorded sample rate at the receiver in Hz
@@ -42,6 +44,7 @@ tx_RF_path                              tx_rf_path                     the trans
 tx_antenna_type                         tx_ant_type                    transmitter antenna typ
 tx_antenna_locations_x_y_z              tx_ant_coords                  transmitter antenna relative locations in meters from antenna 0
 tx_magnitude_corrections                tx_feed_corr                   [[ant 0 magnitude, ...],[ant 0 phase, ...] correction per transmitter antenna
+x                                       tx_feed_corr_date
 tx_phase_corrections                    x                              REMOVE
 tx_antennas_used                        tx_ant_mask                    [False, True, ...] mask indicating which transmitter antennas were used
 tx_code_used                            tx_cw_code                     pseudo-random noise like code transmitted (contains full sequence)
