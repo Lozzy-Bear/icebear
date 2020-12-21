@@ -17,14 +17,11 @@ numba
 DATA FILE NAMING CONVENTION
 ===========================
 Level 1: {radar_config}_{experiment_name}_{tx_site_name}_{rx_site_name}_{snr_cutoff_db}_{incoherent_averages}_{date}.h5
-Example:
-.. code-block:: python
-ib3d_normal_prelate_bakker_01dB_1000ms_2019_10_24_00.h5
+Example: ib3d_normal_prelate_bakker_01dB_1000ms_2019_10_24_00.h5
 
 Level 2: {radar_config}_{experiment_name}_{tx_site_name}_{rx_site_name}_{image_method}_{fov}_{resolution}_{date}.h5
-Example:
-.. code-block:: python
-ib3d_normal_prelate_bakker_swht_360-180deg_01deg_2019_10_24_00.h5
+Example: ib3d_normal_prelate_bakker_swht_360-180deg_01deg_2019_10_24_00.h5
+
 
 
 ATTRIBUTE INFORMATION

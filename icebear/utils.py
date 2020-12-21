@@ -248,18 +248,22 @@ class Time:
 
 
 class Config:
-    def __init__(self, configuration, settings):
-        self.cfg_file = configuration
-        self.set_file = settings
-        with open(self.cfg_file, 'r') as stream:
-            cfg = yaml.full_load(stream)
-            for key, value in cfg.items():
-                setattr(self, key, value)
-        if self.set_file:
-            with open(self.set_file, 'r') as stream:
+    def __init__(self, configuration):
+        self.update_config(configuration)
+
+    def update_config(self, file):
+        if file.split('.')[1] == 'yml':
+            with open(file, 'r') as stream:
                 cfg = yaml.full_load(stream)
                 for key, value in cfg.items():
-                    setattr(self, key, value)
+                    setattr(self, key, np.array(value))
+        if file.split('.')[1] == 'h5':
+            stream = h5py.File(file, 'r')
+            for key in list(stream.keys()):
+                if key == 'data':
+                    pass
+                else:
+                    setattr(self, key, stream[f'{key}'][()])
 
     def print_attrs(self):
         print("experiment attributes loaded: ")
@@ -331,6 +335,8 @@ def get_all_data_files(directory, start_subdir='nodate', stop_subdir='nodate'):
     stop_flag = False
     if start_subdir == 'nodate':
         start_flag = True
+    if stop_subdir == 'nodate':
+        stop_subdir = start_subdir
 
     for path, subdirs, files in os.walk(directory):
         if start_subdir in path:
@@ -362,14 +368,14 @@ def get_data_file_times(filepath):
     f = h5py.File(filepath, 'r')
 
     # Year, month, day
-    date = f['date'].value
+    date = f['date'][()]
     start = date
     stop = date
 
     # Hour, minute, seconds
     data_keys = list(f['data'].keys())
-    start_hms = f[f'data/{data_keys[0]}/time'].value
-    stop_hms = f[f'data/{data_keys[-1]}/time'].value
+    start_hms = f[f'data/{data_keys[0]}/time'][()]
+    stop_hms = f[f'data/{data_keys[-1]}/time'][()]
     start_hms[2] = int(start_hms[2]/1000)
     stop_hms[2] = int(stop_hms[2]/1000)
     start = np.append(start, start_hms)

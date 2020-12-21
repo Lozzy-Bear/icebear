@@ -4,6 +4,12 @@ import icebear
 import icebear.utils as util
 
 
-config = util.Config('level2_test.yml', '')
-icebear.generate_level2(config, clean='3db', center='max', classify='normal')
+config = util.Config('level2_test.yml')
+print(config.rx_rf_path)
+print(config.rx_rf_path.dtype)
+
+config = util.Config('E:/icebear/level1/2019_10_24/ib3d_normal_prelate_bakker_01dB_1000ms_2019_10_24_00.h5')
+print(config.rx_rf_path)
+print(config.rx_rf_path.dtype)
+#icebear.generate_level2(config, clean='3db', center='max', classify='normal')
 
