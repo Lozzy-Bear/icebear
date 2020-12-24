@@ -209,8 +209,8 @@ def range_doppler_snr(config, time, spacing):
     temp_hour = [-1, -1, -1, -1]
     spacing_counter = 0
     data_flag = False
-    with imageio.get_writer(f'{config.plotting_destination}{config.radar_name}_range_doppler_snr_'
-                            f'{spacing}sec_movie_'
+    with imageio.get_writer(f'{config.plotting_destination}{config.radar_config}_{config.experiment_name}_'
+                            f'range_doppler_snr_{spacing}sec_movie_'
                             f'{int(time.start_human.year):04d}_'
                             f'{int(time.start_human.month):02d}_'
                             f'{int(time.start_human.day):02d}_'
@@ -233,31 +233,21 @@ def range_doppler_snr(config, time, spacing):
 
             spacing_counter += 1
             plt.figure(1)
+            # Save the image if over spacing
             if spacing_counter > spacing:
                 spacing_counter = 1
                 if data_flag:
-                    plt.savefig(f'{config.plotting_destination}{config.radar_name}_range_doppler_snr_{spacing}sec_'
-                                f'{int(now.year):04d}_'
-                                f'{int(now.month):02d}_'
-                                f'{int(now.day):02d}_'
-                                f'{int(now.hour):02d}_'
-                                f'{int(now.minute):02d}_'
-                                f'{int(now.second):02d}.pdf')
-
+                    plt.savefig(save_name + '.pdf')
                 fig = plt.figure(1)
                 canvas = FigureCanvas(fig)
                 canvas.draw()
                 writer.append_data(np.asarray(canvas.buffer_rgba()))
-                # plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
-                #            f'{int(now.year):04d}-'
-                #            f'{int(now.month):02d}-'
-                #            f'{int(now.day):02d}_'
-                #            f'{int(now.hour):02d}-'
-                #            f'{int(now.minute):02d}-'
-                #            f'{int(now.second):02d}.png')
+                # plt.savefig(save_name + '.png')
                 plt.close(1)
                 plt.figure(1)
                 data_flag = False
+
+            # Start a new image
             if spacing_counter == 1:
                 plt.scatter(0, -1, c=0, vmin=0.0, vmax=30, s=3, cmap='plasma_r')
                 plt.title(f'ICEBEAR-3D Range-Doppler-SNR Plot\n'
@@ -279,6 +269,16 @@ def range_doppler_snr(config, time, spacing):
                 props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
                 plt.text(-450, 150, f'{config.snr_cutoff} dB SNR Cutoff', bbox=props)
                 plt.text(250, 150, f'{spacing} s Interval', bbox=props)
+                save_name = f'{config.plotting_destination}{config.radar_name}_{config.experiment_name}_'\
+                                f'range_doppler_snr_{spacing}sec_'\
+                                f'{int(now.year):04d}_'\
+                                f'{int(now.month):02d}_'\
+                                f'{int(now.day):02d}_'\
+                                f'{int(now.hour):02d}_'\
+                                f'{int(now.minute):02d}_'\
+                                f'{int(now.second):02d}.pdf'
+
+            # Add ti the image if under spacing
             if spacing_counter <= spacing:
                 try:
                     moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
