@@ -12,6 +12,11 @@ files = util.get_all_data_files(filepath, '2017_12_06', '2020_11_16')
 # Create plots
 for file in files:
     config = util.Config(file)
+    config.add_attr('number_ranges', 2000)
+    config.add_attr('range_resolution', 1.5)
+    config.add_attr('timestamp_correction', 30)
+    config.add_attr('clutter_gates', 100)
+    config.add_attr('code_length', 20000)
     config.plotting_source = '/'.join(file.split('/')[0:-1])+'/'
     config.plotting_destination = config.plotting_source + f'plots/{plotting_spacing}sec/'
 

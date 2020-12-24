@@ -258,7 +258,7 @@ def range_doppler_snr(config, time, spacing):
 
             # Start a new image
             if spacing_counter == 1:
-                plt.scatter(0, -1, c=0, vmin=0.0, vmax=30, s=3, cmap='plasma_r')
+                plt.scatter(0, -1, c=0.0, vmin=0.0, vmax=30.0, s=3, cmap='plasma_r')
                 plt.title(f'ICEBEAR-3D Range-Doppler-SNR Plot\n'
                           f'{int(now.year):04d}-'
                           f'{int(now.month):02d}-'
@@ -267,7 +267,7 @@ def range_doppler_snr(config, time, spacing):
                           f'{int(now.minute):02d}:'
                           f'{int(now.second):02d}')
                 cb = plt.colorbar(label='SNR (dB)')
-                cb.ax.plot([-500, 500], [config.snr_cutoff, config.snr_cutoff], 'k')
+                cb.ax.plot([-500, 500], [config.snr_cutoff_db, config.snr_cutoff_db], 'k')
                 plt.xlabel('Doppler (Hz)')
                 plt.ylabel('Total RF Distance (km)')
                 plt.ylim(0, config.number_ranges * config.range_resolution)
@@ -276,16 +276,16 @@ def range_doppler_snr(config, time, spacing):
                 plt.yticks(np.arange(0, int(config.number_ranges * config.range_resolution + 500), 500))
                 plt.grid(linestyle=':')
                 props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
-                plt.text(-450, 150, f'{config.snr_cutoff} dB SNR Cutoff', bbox=props)
+                plt.text(-450, 150, f'{config.snr_cutoff_db} dB SNR Cutoff', bbox=props)
                 plt.text(250, 150, f'{spacing} s Interval', bbox=props)
-                save_name = f'{config.plotting_destination}{config.radar_name}_{config.experiment_name}_'\
-                                f'range_doppler_snr_{spacing}sec_'\
-                                f'{int(now.year):04d}_'\
-                                f'{int(now.month):02d}_'\
-                                f'{int(now.day):02d}_'\
-                                f'{int(now.hour):02d}_'\
-                                f'{int(now.minute):02d}_'\
-                                f'{int(now.second):02d}'
+                save_name = f'{config.plotting_destination}{config.radar_config}_{config.experiment_name}_'\
+                            f'range_doppler_snr_{spacing}sec_'\
+                            f'{int(now.year):04d}_'\
+                            f'{int(now.month):02d}_'\
+                            f'{int(now.day):02d}_'\
+                            f'{int(now.hour):02d}_'\
+                            f'{int(now.minute):02d}_'\
+                            f'{int(now.second):02d}'
 
             # Add to the image if under spacing
             if spacing_counter <= spacing:
@@ -295,7 +295,7 @@ def range_doppler_snr(config, time, spacing):
                         dop = filename[f'{moment}/doppler_shift'][:]
                         rng = np.abs(filename[f'{moment}/rf_distance'][:])
                         snr = np.abs(filename[f'{moment}/snr_db'][:])
-                        plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=np.ceil(np.max(snr)), s=3, cmap='plasma_r')
+                        plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=30.0, s=3, cmap='plasma_r')
                         data_flag = True
                 except:
                     continue
