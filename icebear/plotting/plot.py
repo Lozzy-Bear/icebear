@@ -209,7 +209,7 @@ def range_doppler_snr(config, time, spacing):
     temp_hour = [-1, -1, -1, -1]
     spacing_counter = 0
     data_flag = False
-    with imageio.get_writer(f'{config.plotting_destination}'
+    with imageio.get_writer(f'{config.plotting_destination}{config.radar_name}_range_doppler_snr_'
                             f'{spacing}sec_movie_'
                             f'{int(time.start_human.year):04d}_'
                             f'{int(time.start_human.month):02d}_'
@@ -220,13 +220,13 @@ def range_doppler_snr(config, time, spacing):
             now = time.get_date(t)
             if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
                 try:
-                    filename = h5py.File(f'{config.plotting_source}{config.radar_name}_{config.processing_method}_'
-                                         f'{config.tx_name}_{config.rx_name}_'
-                                         f'{int(config.snr_cutoff):02d}dB_{config.incoherent_averages:02d}00ms_'
+                    filename = h5py.File(f'{config.plotting_source}{config.radar_config}_{config.experiment_name}_'
+                                         f'{int(config.snr_cutoff_db):02d}dB_{config.incoherent_averages:02d}00ms_'
                                          f'{int(now.year):04d}_'
                                          f'{int(now.month):02d}_'
                                          f'{int(now.day):02d}_'
-                                         f'{int(now.hour):02d}.h5', 'r')
+                                         f'{int(now.hour):02d}_'
+                                         f'{config.tx_site_name}_{config.rx_site_name}.h5', 'r')
                 except:
                     continue
                 temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
@@ -236,12 +236,12 @@ def range_doppler_snr(config, time, spacing):
             if spacing_counter > spacing:
                 spacing_counter = 1
                 if data_flag:
-                    plt.savefig(f'{config.plotting_destination}range_doppler_snr_{config.radar_name}_'
-                                f'{int(now.year):04d}-'
-                                f'{int(now.month):02d}-'
+                    plt.savefig(f'{config.plotting_destination}{config.radar_name}_range_doppler_snr_{spacing}sec_'
+                                f'{int(now.year):04d}_'
+                                f'{int(now.month):02d}_'
                                 f'{int(now.day):02d}_'
-                                f'{int(now.hour):02d}-'
-                                f'{int(now.minute):02d}-'
+                                f'{int(now.hour):02d}_'
+                                f'{int(now.minute):02d}_'
                                 f'{int(now.second):02d}.pdf')
 
                 fig = plt.figure(1)

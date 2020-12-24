@@ -6,20 +6,17 @@ import os
 plotting_step = [0, 0, 0, 1, 0]
 plotting_spacing = 5
 
-# Load the config file
-configuration = 'X:/PythonProjects/icebear/dat/default.yml'
-settings = 'X:/PythonProjects/icebear/dat/default.yml'
-config = util.Config(configuration, settings)
-config.print_attrs()
-
 # Gather all the level1 data file paths
-filepath = 'E:/icebear/level1/'
-files = util.get_all_data_files(filepath, '2019_10_25', '2020_10_25')
+filepath = '/beaver/backup/level1/'
+files = util.get_all_data_files(filepath, '2017_12_06', '2020_11_16')
 # Create plots
 for file in files:
-    config.plotting_source = file.split('\\')[0] + '/'
-    os.makedirs(config.plotting_source + f'plots/{plotting_spacing}sec', exist_ok=True)
+    config = util.Config(file)
+    config.plotting_source = '/'.join(file.split('/')[0:-1])+'/'
     config.plotting_destination = config.plotting_source + f'plots/{plotting_spacing}sec/'
+
+    os.makedirs(config.plotting_source + f'plots/{plotting_spacing}sec', exist_ok=True)
+
     plotting_start, plotting_stop = util.get_data_file_times(file)
     print(config.plotting_destination, plotting_start, plotting_stop)
     time = util.Time(plotting_start, plotting_stop, plotting_step)

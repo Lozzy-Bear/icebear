@@ -6,7 +6,7 @@ import time
 
 
 filepath = '/beaver/backup/level1/'
-files = util.get_all_data_files(filepath, '2017_012_06', '2020_11_16')
+files = util.get_all_data_files(filepath, '2017_12_06', '2020_11_16')
 rxfd = [np.nan, np.nan, np.nan]
 rxtf = ['data median', 'instrument measured']
 txfd = [np.nan, np.nan, np.nan]
