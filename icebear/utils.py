@@ -349,6 +349,7 @@ def get_all_data_files(directory, start_subdir='nodate', stop_subdir='nodate'):
                     filepaths.append(os.path.join(path, file))
         if stop_subdir in path:
             stop_flag = True
+    filepaths.sort()
 
     return filepaths
 

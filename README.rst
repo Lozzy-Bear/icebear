@@ -16,11 +16,11 @@ numba
 
 DATA FILE NAMING CONVENTION
 ===========================
-Level 1: {radar_config}_{experiment_name}_{tx_site_name}_{rx_site_name}_{snr_cutoff_db}_{incoherent_averages}_{date}.h5
-Example: ib3d_normal_prelate_bakker_01dB_1000ms_2019_10_24_00.h5
+Level 1: {radar_config}_{experiment_name}_{snr_cutoff_db}_{incoherent_averages}_{date}_{tx_site_name}_{rx_site_name}.h5
+Example: ib3d_normal_01dB_1000ms_2019_10_24_00_prelate_bakker.h5
 
-Level 2: {radar_config}_{experiment_name}_{tx_site_name}_{rx_site_name}_{image_method}_{fov}_{resolution}_{date}.h5
-Example: ib3d_normal_prelate_bakker_swht_360-180deg_01deg_2019_10_24_00.h5
+Level 2: {radar_config}_{experiment_name}_{image_method}_{fov}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5
+Example: ib3d_normal_swht_360180deg_01deg_2019_10_24_00_prelate_bakker.h5
 
 
 
@@ -32,7 +32,7 @@ General Attributes (Level 0)
 ----------------------------------------------------------------------------------------------------------------------------------------------
 date_created                        [year, month, day] date this file was created
 version                             software version used to create this file
-date                                [year, month, day, hour] date of the data
+date                                [year, month, day] date of the data
 experiment_name                     name of experiment (ex; normal, mobile)
 radar_config                        name of the radar the data was collected with (ex; ib, ib3d, lofar)
 center_freq                         radar signal center frequency in Hz
@@ -69,7 +69,7 @@ incoherent_averages                 number of samples to average over
 snr_cutoff_db
 spectra_descriptors
 xspectra_descriptors
-data/{time}/time                    [year, month, day, hour, minute, second] data time stamp
+data/{time}/time                    [hour, minute, millisecond] data time stamp
 data/{time}/spectra
 data/{time}/spectra_variance
 data/{time}/xspectra

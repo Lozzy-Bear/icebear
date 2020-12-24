@@ -3,8 +3,8 @@ import h5py
 import os
 
 
-filepath = 'E:/icebear/level1/'
-files = util.get_all_data_files(filepath, '2019_10_26')
+filepath = # Enter file path to level 1 directory
+files = util.get_all_data_files(filepath, , ) # Enter first sub directory and last
 remove_flag = False
 for file in files:
     f = h5py.File(file, 'r+')
@@ -52,9 +52,11 @@ for file in files:
         f.close()
         os.remove(file)
         print('removed:', file)
+        remove_flag = False
     else:
         start2, stop2 = util.get_data_file_times(file)
         print('file formatted:', file)
         print('before:', start1, stop1)
         print('after:', start2, stop2)
         print('=======================================================================================================')
+        f.close()
