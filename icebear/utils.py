@@ -263,14 +263,17 @@ class Config:
                 if key == 'data':
                     pass
                 # This horrible little patch fixes strings to UTF-8 from 'S' when loaded from HDF5's
+                # and removes unnecessary arrays
                 elif '|S' in str(stream[f'{key}'].dtype):
                     temp_value = stream[f'{key}'][()].astype('U')
                     if len(temp_value) == 1:
                         temp_value = temp_value[0]
                     setattr(self, key, temp_value)
                 else:
-                    setattr(self, key, stream[f'{key}'][()])
-                # Todo: Need to automatically decode strings
+                    temp_value = stream[f'{key}'][()]
+                    if len(temp_value) == 1:
+                        temp_value = temp_value[0]
+                    setattr(self, key, temp_value)
 
     def print_attrs(self):
         print("experiment attributes loaded: ")
