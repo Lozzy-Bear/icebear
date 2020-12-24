@@ -228,6 +228,7 @@ def range_doppler_snr(config, time, spacing):
                                          f'{int(now.hour):02d}_'
                                          f'{config.tx_site_name}_{config.rx_site_name}.h5', 'r')
                 except:
+                    print('ERROR: File skipped or does not exist')
                     continue
                 temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
 
@@ -237,6 +238,7 @@ def range_doppler_snr(config, time, spacing):
             if spacing_counter > spacing:
                 spacing_counter = 1
                 if data_flag:
+                    print('\tsaving image:', save_name)
                     plt.savefig(save_name + '.pdf')
                 fig = plt.figure(1)
                 canvas = FigureCanvas(fig)
@@ -276,9 +278,9 @@ def range_doppler_snr(config, time, spacing):
                                 f'{int(now.day):02d}_'\
                                 f'{int(now.hour):02d}_'\
                                 f'{int(now.minute):02d}_'\
-                                f'{int(now.second):02d}.pdf'
+                                f'{int(now.second):02d}'
 
-            # Add ti the image if under spacing
+            # Add to the image if under spacing
             if spacing_counter <= spacing:
                 try:
                     moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
