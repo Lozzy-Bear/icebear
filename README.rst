@@ -19,8 +19,8 @@ DATA FILE NAMING CONVENTION
 Level 1: {radar_config}_{experiment_name}_{snr_cutoff_db}_{incoherent_averages}_{date}_{tx_site_name}_{rx_site_name}.h5
 Example: ib3d_normal_01dB_1000ms_2019_10_24_00_prelate_bakker.h5
 
-Level 2: {radar_config}_{experiment_name}_{image_method}_{fov}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5
-Example: ib3d_normal_swht_360180deg_01deg_2019_10_24_00_prelate_bakker.h5
+Level 2: {radar_config}_{experiment_name}_{image_method}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5
+Example: ib3d_normal_swht_01deg_2019_10_24_00_prelate_bakker.h5
 
 
 
@@ -88,14 +88,12 @@ Imaging Attributes (Level 2)
 imaging_method                      imaging method used (ex; swht, linear)
 clean                               image cleaning method applied
 center                              target location method applied
-classify                            target classification method applied
 swht_coeffs                         name of swht_coeffs file used, these files are upward of 4 GB
 fov                                 [[az min, az max], [el min, el max]] image field of view
 fov_center                          [az, el] angles in image which coincide with receiver boresight
 resolution                          pixel resolution in degrees
 lmax                                maximum harmonic degree the coefficients were calculated
 data/{time}/time                    [year, month, day, hour, minute, second] data time stamp
-data/{time}/data_flag               flag indicating data above snr_cutoff exists at this time stamp
 data/{time}/doppler_shift           target doppler shift in Hz
 data/{time}/snr_db                  target signal strength in dB
 data/{time}/rf_distance             distance from transmitter to target to receiver in kilometers
@@ -104,7 +102,6 @@ data/{time}/elevation               targets elevation position from fov_center i
 data/{time}/azimuth_spread          targets spread in azimuth given in degrees
 data/{time}/elevation_spread        targets spread in elevation given in degrees
 data/{time}/area                    area of target in image, highly variant based on imaging settings
-data/{time}/type                    target type; meteor trail, direct feed through, or scatter
 Plotting Attributes (Level 3)
 ----------------------------------------------------------------------------------------------------------------------------------------------
 velocity                            speed of target

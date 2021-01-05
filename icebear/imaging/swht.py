@@ -179,7 +179,7 @@ def unpackage_factors_hdf5(filename, ind):
     filename:	Name of the pickle file to store the SWHT Factors array.
     """
     f = h5py.File(filename, 'r')
-    factors = np.array(f['coeffs'][f'{ind:02d}'], dtype=np.complex64)
+    factors = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
     print('hdf5 factors:', factors.shape)
     return factors
 
@@ -210,7 +210,7 @@ def swht_py(visibilities, coeffs):
 
     start_time = time.time()
     intensity = np.matmul(coeffs, visibilities)
-    print(f"swht_py time: \t{time.time()-start_time}")
+    #print(f"\t-swht_py time: \t{time.time()-start_time}")
     
     return intensity
 

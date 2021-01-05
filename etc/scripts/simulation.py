@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
     spreadx = 3
     spready = 3
-    azi_rad_location_array = np.array([np.deg2rad(-30)])
+    azi_rad_location_array = np.array([np.deg2rad(0)])
     azi_rad_extent_array = np.array([np.deg2rad(spreadx)])
     ele_rad_location_array = np.array([np.deg2rad(10)])
     ele_rad_extent_array = np.array([np.deg2rad(spready)])
@@ -138,11 +138,13 @@ if __name__ == '__main__':
     V = np.concatenate((visibility_dist[:, azi_rad_location_number, azi_rad_extent_number, ele_rad_location_number,
                         ele_rad_extent_number], np.conjugate(visibility_dist[:, azi_rad_location_number,
                         azi_rad_extent_number, ele_rad_location_number, ele_rad_extent_number])))
-
+    #V[0] = 1-1j
+    #V[46] = 1-1j
+    print(V)
     factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 5)
     B = swht(V, factors[:, :, 0:len(V)])
 
-    for i in range(15, 95, 10):
+    for i in range(85, 95, 10):
         factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', i)
         #factors *= f
         B *= swht(V, factors[:, :, 0:len(V)])
@@ -162,6 +164,8 @@ if __name__ == '__main__':
     el = (ind[0])# - np.ceil(P.shape[0]) / 2)
     area = 0
     index = 0
+    azs = 0
+    els = 0
     for idx, c in enumerate(contours):
         temp_area = cv2.contourArea(c)
         if temp_area > area:
@@ -170,8 +174,9 @@ if __name__ == '__main__':
             M = cv2.moments(c)
             cx = int(M['m10']/M['m00'])
             cy = int(M['m01']/M['m00'])
+            _, _, azs, els = cv2.boundingRect(c)
 
-    print("ELAZ", (el, az), "CYCX", (cy, cx), "IND", index, "Area", area)
+    print("ELAZ", (el, az), "CYCX", (cy, cx), "WH", (azs, els), "Area", area)
     if np.allclose(ind, [cy, cx], atol=5):
         print("\rCLOSE!")
     cv2.drawContours(im, contours[index], 0, (255, 255, 255), 3)

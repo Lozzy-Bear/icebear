@@ -1,115 +1,123 @@
 import cv2
 import numpy as np
-import icebear.utils
+import icebear
+import icebear.utils as util
+import h5py
 
 
-def generate_level2(config, clean='beamform', center='centroid', classify='normal'):
-    # Set the image cleaning method to be used.
-    if clean == 'beamform':
-        clean_function = frequency_difference_beamform
-    elif clean == '3db':
-        clean_function = brightness_cutoff
-    else:
-        print(f'generate_level2 clean mode {clean} does not exist.')
-        exit()
+def generate_level2(config):
+    """
 
-    # Set the center of target detection method to be used.
-    if center == 'centroid':
-        center_function = centroid_center
-    elif center == 'max':
-        center_function = max_center
-    else:
-        print(f'generate_level2 center mode {center} does not exist.')
-        exit()
+    Parameters
+    ----------
+    config
 
-    # Set the classification method to be used.
-    if classify == 'normal':
-        classify_function = classify_type
-    else:
-        print(f'generate_level2 classify mode {classify} does not exist.')
-        exit()
+    Returns
+    -------
 
-    print('imaging start')
+    """
+    print('imaging start:')
 
-    file = h5py.File('E:/icebear/level1/2019_10_24/ib3d_normal_prelate_bakker_01dB_1000ms_2019_10_24_00.h5', 'r')
+    file = h5py.File(config.imaging_source, 'r')
+    coeffs = icebear.imaging.swht.unpackage_factors_hdf5(config.swht_coeffs, int(config.lmax))
     time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
-
-        # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
             filename = f'{config.imaging_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
-                f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
-                f'{int(config.snr_cutoff):02d}dB_{int(config.incoherent_averages):02d}00ms_' \
-                f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
-            print(f'\t-created level 1 HDf5: {filename}')
-            filenames.append(filename)
-            create_level1_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
+                f'{config.radar_config}_{config.experiment_name}_{config.image_method}_{int(config.resolution * 10):02d}deg_' \
+                f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}_' \
+                f'{config.tx_site_name}_{config.rx_site_name}.h5'
+            print(f'\t-created level 2 HDf5: {filename}')
+            create_level2_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+        data = file['data'][f'{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}']
+        if data['data_flag'][()]:
+            doppler_shift = data['doppler_shift'][()]
+            # This is a little hack to check if we are seeing a dropped sample.
+            # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
+            if len(doppler_shift) >= 12000:
+                print('\t-dropped sample detected; skipped')
+                continue
+            rf_distance = data['rf_distance'][()]
+            snr_db = data['snr_db'][()]
+            visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
+            visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
+            visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
+            azimuth = np.empty_like(doppler_shift)
+            elevation = np.empty_like(doppler_shift)
+            azimuth_spread = np.empty_like(doppler_shift)
+            elevation_spread = np.empty_like(doppler_shift)
+            area = np.empty_like(doppler_shift)
+            for idx, visibility in enumerate(visibilities):
+                azimuth[idx], elevation[idx], azimuth_spread[idx], elevation_spread[idx], area[idx] = calculate_image(visibility, coeffs)
 
-        calculate_image(clean_function, center_function, classify_function)
-
-        append_level2_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000),
-                           data_flag, doppler, rf_distance, snr_db, noise,
-                           spectra[snr_indices[:, 0], snr_indices[:, 1], :],
-                           spectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
-                           spectra_median, spectra_clutter_corr,
-                           xspectra[snr_indices[:, 0], snr_indices[:, 1], :],
-                           xspectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
-                           xspectra_median, xspectra_clutter_corr)
-        print(f'\t-appended {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
+            append_level2_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000), doppler_shift,
+                               snr_db, rf_distance, azimuth, elevation, azimuth_spread, elevation_spread, area)
+            print(f'\t-appended: {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}, '
+                  f'targets: {len(doppler_shift)}')
 
     return None
 
 
 def create_level2_hdf5(config, filename, year, month, day):
+    """
+
+    Parameters
+    ----------
+    config
+    filename
+    year
+    month
+    day
+
+    Returns
+    -------
+
+    """
     # general information
     f = h5py.File(filename, 'w')
-    f.create_dataset('config_updated', data=np.array(config.config_updated))
+    f.create_dataset('date_created', data=np.array(config.date_created))
+    f.create_dataset('version', data=np.array(config.version))
     f.create_dataset('date', data=np.array([year, month, day]))
-    f.create_dataset('processing_method', data=config.processing_method)
-    # transmitter site information
-    f.create_dataset('tx_name', data=config.tx_name)
-    f.create_dataset('tx_coordinates', data=np.array(config.tx_coordinates))
-    f.create_dataset('tx_updated', data=config.tx_updated)
-    f.create_dataset('tx_pointing', data=config.tx_pointing)
-    f.create_dataset('tx_x', data=np.array(config.rx_x))
-    f.create_dataset('tx_y', data=np.array(config.rx_y))
-    f.create_dataset('tx_z', data=np.array(config.rx_z))
-    f.create_dataset('tx_mask', data=np.array(config.tx_mask))
-    f.create_dataset('tx_phase', data=np.array(config.tx_phase))
-    f.create_dataset('tx_magnitude', data=np.array(config.tx_magnitude))
-    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
-    f.create_dataset('tx_antenna_type', data=config.tx_antenna_type)
-    f.create_dataset('tx_rf_path', data=config.tx_rf_path)
+    f.create_dataset('experiment_name', data=np.array([config.experiment_name], dtype='S'))
+    f.create_dataset('radar_config', data=np.array([config.radar_config], dtype='S'))
+    f.create_dataset('center_freq', data=config.center_freq)
     # receiver site information
-    f.create_dataset('rx_name', data=config.rx_name)
-    f.create_dataset('rx_coordinates', data=np.array(config.rx_coordinates))
-    f.create_dataset('rx_updated', data=config.rx_updated)
-    f.create_dataset('rx_pointing', data=config.rx_pointing)
-    f.create_dataset('rx_x', data=np.array(config.rx_x))
-    f.create_dataset('rx_y', data=np.array(config.rx_y))
-    f.create_dataset('rx_z', data=np.array(config.rx_z))
-    f.create_dataset('rx_mask', data=np.array(config.rx_mask))
-    f.create_dataset('rx_phase', data=np.array(config.rx_phase))
-    f.create_dataset('rx_magnitude', data=np.array(config.rx_magnitude))
+    f.create_dataset('rx_site_name', data=np.array([config.rx_site_name], dtype='S'))
+    f.create_dataset('rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('rx_heading', data=config.rx_heading)
+    f.create_dataset('rx_rf_path', data=np.array([config.rx_rf_path], dtype='S'))
+    f.create_dataset('rx_ant_type', data=np.array([config.rx_ant_type], dtype='S'))
+    f.create_dataset('rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('rx_feed_corr_date', data=config.rx_feed_corr_date)
+    f.create_dataset('rx_feed_corr_type', data=np.array([config.rx_feed_corr_type], dtype='S'))
+    f.create_dataset('rx_ant_mask', data=config.rx_ant_mask)
     f.create_dataset('rx_sample_rate', data=config.rx_sample_rate)
-    f.create_dataset('rx_antenna_type', data=config.rx_antenna_type)
-    f.create_dataset('rx_rf_path', data=config.rx_rf_path)
+    # transmitter site information
+    f.create_dataset('tx_site_name', data=np.array([config.tx_site_name], dtype='S'))
+    f.create_dataset('tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('tx_heading', data=config.tx_heading)
+    f.create_dataset('tx_rf_path', data=np.array([config.tx_rf_path], dtype='S'))
+    f.create_dataset('tx_ant_type', data=np.array([config.tx_ant_type], dtype='S'))
+    f.create_dataset('tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('tx_feed_corr_date', data=config.tx_feed_corr_date)
+    f.create_dataset('tx_feed_corr_type', data=np.array([config.tx_feed_corr_type], dtype='S'))
+    f.create_dataset('tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
     # processing settings
-    f.create_dataset('wavelength', data=config.wavelength)
-    f.create_dataset('center_frequency', data=config.center_frequency)
-    f.create_dataset('prn_code_file', data=config.prn_code_file)
-    f.create_dataset('raw_sample_rate', data=config.raw_sample_rate)
     f.create_dataset('decimation_rate', data=config.decimation_rate)
-    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
     f.create_dataset('time_resolution', data=config.time_resolution)
-    f.create_dataset('snr_cutoff', data=config.snr_cutoff)
+    f.create_dataset('coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
     # imaging settings
-    f.create_dataset('clean', data=config.clean)
-    f.create_dataset('center', data=config.center)
-    f.create_dataset('classify', data=config.classify)
+    f.create_dataset('image_method', data=np.array([config.image_method], dtype='S'))
+    f.create_dataset('clean', data=np.array([config.clean], dtype='S'))
+    f.create_dataset('center', data=np.array([config.center], dtype='S'))
     f.create_dataset('swht_coeffs', data=config.swht_coeffs)
     f.create_dataset('fov', data=config.fov)
     f.create_dataset('fov_center', data=config.fov_center)
@@ -120,40 +128,76 @@ def create_level2_hdf5(config, filename, year, month, day):
     return None
 
 
-def append_level2_hdf5(filename, ):
+def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf_distance,
+                       azimuth, elevation, azimuth_spread, elevation_spread, area):
+    """
+    
+    Parameters
+    ----------
+    filename
+    hour
+    minute
+    second
+    doppler_shift
+    snr_db
+    rf_distance
+    azimuth
+    elevation
+    azimuth_spread
+    elevation_spread
+    area
+
+    Returns
+    -------
+
+    """
     # append a new group for the current measurement
     time = f'{hour:02d}{minute:02d}{second:05d}'
     f = h5py.File(filename, 'a')
     f.create_group(f'data/{time}')
     f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
-    f.create_dataset(f'data/{time}/velocity', data=velocity)
-    f.create_dataset(f'data/{time}/snr_db', data=logsnr)
-    f.create_dataset(f'data/{time}/spread', data=spread)
-    f.create_dataset(f'data/{time}/distance', data=distance)
+    f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
+    f.create_dataset(f'data/{time}/snr_db', data=snr_db)
+    f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
     f.create_dataset(f'data/{time}/azimuth', data=azimuth)
     f.create_dataset(f'data/{time}/elevation', data=elevation)
     f.create_dataset(f'data/{time}/azimuth_spread', data=azimuth_spread)
     f.create_dataset(f'data/{time}/elevation_spread', data=elevation_spread)
     f.create_dataset(f'data/{time}/area', data=area)
-    f.create_dataset(f'data/{time}/type', data=scatter_type)
     f.close()
     return None
 
 
-def calculate_image(clean_function, center_function, classify_function):
-    factors = icebear.imaging.swht.unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 85)
-    swht_py(visibilities, coeffs)
-    return
+def calculate_image(visibilities, coeffs):
+    """
+
+    Parameters
+    ----------
+    visibilities
+    coeffs
+
+    Returns
+    -------
+
+    """
+    #visibilities = visibilities / np.abs(visibilities[0])
+    brightness = icebear.swht_py(visibilities, coeffs)
+    brightness = brightness_cutoff(brightness)
+    cx, cy, cx_spread, cy_spread, area = centroid_center(brightness)
+
+    return cx, cy, cx_spread, cy_spread, area
 
 
 # Cleaning options
 def frequency_difference_beamform():
+    # This function is to be added. It provides exceptional target locating but sacrifices spread information.
+    # Todo
     return
 
 
 def brightness_cutoff(brightness, threshold=0.5):
     """
-    Given a normalized Brightness array this removes noise in the image below a power threshold.
+    Given a Brightness array this normalizes then removes noise in the image below a power threshold.
     The default threshold is 0.5 (3 dB).
 
     Parameters
@@ -165,6 +209,7 @@ def brightness_cutoff(brightness, threshold=0.5):
     -------
 
     """
+    brightness = np.abs(brightness / np.max(brightness))
     brightness[brightness < threshold] = 0.0
     return brightness
 
@@ -185,21 +230,24 @@ def centroid_center(brightness):
         area
 
     """
-    image = np.array(brightness * 255.0, dtype=np.uint8)
+    image = np.array(brightness * 255, dtype=np.uint8)
     threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
     contours, _ = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     area = 0
     cx = np.nan
     cy = np.nan
+    cx_spread = np.nan
+    cy_spread = np.nan
     for index, contour in enumerate(contours):
         temp_area = cv2.contourArea(contour)
         if temp_area > area:
             area = temp_area
-            moments = cv2.moments(c)
+            moments = cv2.moments(contour)
             cx = int(moments['m10']/moments['m00'])
             cy = int(moments['m01']/moments['m00'])
+            _, _, cx_spread, cy_spread = cv2.boundingRect(contour)
 
-    return cx, cy, area
+    return cx, cy, cx_spread, cy_spread, area
 
 
 def max_center(brightness):
@@ -221,14 +269,22 @@ def max_center(brightness):
     return index[1], index[0], np.nan
 
 
-# Classification options
-def classify_type():
-    """
-    Type 1 is classified by -
-    Returns
-    -------
-
-    """
-    # Type I, II, III, IV, Meteor, Unknown
-
-    return
+if __name__ == '__main__':
+    file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
+    config = icebear.utils.Config(file)
+    config.add_attr('imaging_destination', 'E:/icebear/level2/')
+    config.add_attr('imaging_source', file)
+    imaging_start, imaging_stop = util.get_data_file_times(file)
+    imaging_step = [0, 0, 0, 1, 0]
+    config.add_attr('imaging_start', imaging_start)
+    config.add_attr('imaging_stop', imaging_stop)
+    config.add_attr('imaging_step', imaging_step)
+    config.add_attr('lmax', 85)
+    config.add_attr('resolution', 0.1)
+    config.add_attr('image_method', 'swht')
+    config.add_attr('clean', '3db')
+    config.add_attr('center', 'centroid')
+    config.add_attr('fov', np.array([[0, 360], [0, 180]]))
+    config.add_attr('fov_center', np.array([90, 90]))
+    config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85')
+    generate_level2(config)
