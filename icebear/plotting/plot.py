@@ -29,11 +29,11 @@ def imaging_4plot(filepath, title, datetime, doppler, rng, snr, az, el):
     doppler = np.where(doppler >= 50, (doppler - 100) * 10 * 3, doppler * 10 * 3)
 
     # Method: remove the arc curvature of the earth.
-    pre_alt = np.sqrt(6378**2+(rng*0.75-200)**2 - 2*6378*(rng*0.75-200)*np.cos(np.deg2rad(90*np.abs(el))))
+    pre_alt = np.sqrt(6378**2+(rng*0.75-200)**2 - 2*6378*(rng*0.75-200)*np.cos(np.deg2rad(90 + np.abs(el))))
     gamma = np.arccos(((rng*0.75-200)**2 - (6378**2) - (pre_alt**2))/(-2*6378*pre_alt))
     el = np.abs(el) - np.abs(np.rad2deg(gamma))
     el = np.where(el > 12, np.nan, el)
-    alt = -6378+np.sqrt(6378**2+(rng*0.75-200)**2 - 2*6378*(rng*0.75-200)*np.cos(np.deg2rad(90*np.abs(el))))
+    alt = -6378+np.sqrt(6378**2+(rng*0.75-200)**2 - 2*6378*(rng*0.75-200)*np.cos(np.deg2rad(90 + np.abs(el))))
 
     # North-South and East-West determination
     rng = np.where(az >= 180, (rng * 0.75 - 200) * -1, rng * 0.75 - 200)

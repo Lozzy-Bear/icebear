@@ -133,6 +133,7 @@ if __name__ == '__main__':
 
     visibility_dist = visibility_dist / np.abs(visibility_dist[0])
 
+    #visibility_dist = np.ones_like(visibility_dist) + np.imag(visibility_dist) * 1.0j
     visibility_dist = np.real(visibility_dist) + np.imag(visibility_dist) * 1.0j
 
     V = np.concatenate((visibility_dist[:, azi_rad_location_number, azi_rad_extent_number, ele_rad_location_number,

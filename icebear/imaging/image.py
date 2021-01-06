@@ -37,7 +37,7 @@ def generate_level2(config):
             doppler_shift = data['doppler_shift'][()]
             # This is a little hack to check if we are seeing a dropped sample.
             # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
-            if len(doppler_shift) >= 12000:
+            if len(doppler_shift) >= 28000:
                 print('\t-dropped sample detected; skipped')
                 continue
             rf_distance = data['rf_distance'][()]
@@ -180,7 +180,6 @@ def calculate_image(visibilities, coeffs):
     -------
 
     """
-    #visibilities = visibilities / np.abs(visibilities[0])
     brightness = icebear.swht_py(visibilities, coeffs)
     brightness = brightness_cutoff(brightness)
     cx, cy, cx_spread, cy_spread, area = centroid_center(brightness)
