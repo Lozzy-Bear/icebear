@@ -3,7 +3,6 @@ import h5py
 import yaml
 import datetime
 from dateutil.tz import tzutc
-import sys
 import os
 
 
