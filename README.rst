@@ -18,7 +18,7 @@
     :target: https://www.python.org/downloads/release/python-370/
     :alt: Python version
 
-.. |release| image:: .. image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat-square
+.. |release| image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat-square
     :target: https://github.com/Lozzy-Bear/icebear/
     :alt: GitHub release (latest by date)
 
@@ -32,7 +32,7 @@ Version 0.1-alpha release
 Initial development release
 
 - added SWHT imaging
-- added common plotting fucntions
+- added common plotting functions
 
 
 Data Information
