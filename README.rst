@@ -18,12 +18,12 @@
     :target: https://www.python.org/downloads/release/python-370/
     :alt: Python version
 
-.. |release| image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat-square
+.. |release| image:: https://img.shields.io/github/v/release/Lozzy-Bear/icebear?style=flat-square
     :target: https://github.com/Lozzy-Bear/icebear/
     :alt: GitHub release (latest by date)
 
 
-A Python package for processing, imaging, and plotting ICEBEAR radar data
+A Python package for processing, imaging, and plotting Ionospheric Continuous-wave E region Bistatic Experimental Auroral Radar (ICEBEAR) data.
 
 Changelog
 =========
@@ -34,6 +34,19 @@ Initial development release
 - added SWHT imaging
 - added common plotting functions
 
+Getting Started
+===============
+Install Instructions
+--------------------
+Todo
+
+Running From Command Line
+-------------------------
+Todo
+
+Other Examples
+--------------
+todo
 
 Data Information
 ================
