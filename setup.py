@@ -20,7 +20,7 @@ version = match[0].strip("'")
 
 
 from setuptools import setup
-extensions = [sphinx, sphinxcontrib-napoleon]
+extensions = []
 
 packages = find_packages(exclude=['contrib', 'docs', 'tests'])
 
