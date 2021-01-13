@@ -4,10 +4,10 @@ icebear.processing package
 Submodules
 ----------
 
-icebear.processing.ssmf module
-------------------------------
+icebear.plotting.process module
+----------------------------
 
-.. automodule:: icebear.processing.ssmf
+.. automodule:: icebear.plotting.process
    :members:
    :undoc-members:
    :show-inheritance:

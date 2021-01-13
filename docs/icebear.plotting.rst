@@ -4,14 +4,6 @@ icebear.plotting package
 Submodules
 ----------
 
-icebear.plotting.igrf module
-----------------------------
-
-.. automodule:: icebear.plotting.igrf
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 icebear.plotting.plot module
 ----------------------------
 

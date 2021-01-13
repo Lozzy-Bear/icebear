@@ -7,14 +7,6 @@ ICEBEAR-3D Documentation Contents
 =================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Docstrings:
+   :maxdepth: 3
 
-   modules
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Index:
-
-   indices
-
+   icebear

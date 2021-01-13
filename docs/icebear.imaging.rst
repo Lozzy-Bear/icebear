@@ -4,10 +4,10 @@ icebear.imaging package
 Submodules
 ----------
 
-icebear.imaging.stats module
+icebear.imaging.image module
 ----------------------------
 
-.. automodule:: icebear.imaging.stats
+.. automodule:: icebear.imaging.image
    :members:
    :undoc-members:
    :show-inheritance:
