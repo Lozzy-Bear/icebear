@@ -40,9 +40,11 @@ Data Information
 Data File Naming Convention
 ---------------------------
 Level 1: {radar_config}_{experiment_name}_{snr_cutoff_db}_{incoherent_averages}_{date}_{tx_site_name}_{rx_site_name}.h5::
+
     $ ib3d_normal_01dB_1000ms_2019_10_24_00_prelate_bakker.h5
 
 Level 2: {radar_config}_{experiment_name}_{image_method}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5::
+
     $ ib3d_normal_swht_01deg_2019_10_24_00_prelate_bakker.h5
 
 
