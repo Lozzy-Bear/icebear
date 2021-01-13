@@ -1,4 +1,6 @@
 .. image:: docs/imgs/ib_logo.png
+    :width: 250
+    :align: center
 
 README
 ======
