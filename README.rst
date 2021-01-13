@@ -19,6 +19,7 @@
     :alt: Python version
 
 .. |release| image:: .. image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat-square
+    :target: https://github.com/Lozzy-Bear/icebear/
     :alt: GitHub release (latest by date)
 
 
