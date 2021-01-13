@@ -1,19 +1,4 @@
-sphinx==3.1.*
-numpy
-scipy
-matplotlib
-h5py
-pyfftw
-numba
-sphinxcontrib-napoleon
-pyyaml
-ctypes
-digital_rf
-argparse
-time
-datetime
-dateutil.tz
-ctypes
+-e .
 
 
 
