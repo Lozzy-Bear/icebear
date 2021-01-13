@@ -1,12 +1,12 @@
 import h5py
 import scipy
-import pyfftw
 import numba
 import numpy as np
 import ctypes as C
 import digital_rf
 import icebear.utils
-pyfftw.interfaces.cache.enable()
+#import pyfftw
+#pyfftw.interfaces.cache.enable()
 
 
 def generate_level1(config):
