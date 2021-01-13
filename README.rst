@@ -23,21 +23,26 @@
     :alt: GitHub release (latest by date)
 
 
+A Python package for processing, imaging, and plotting ICEBEAR radar data
 
-ICEBEAR-3D Processing, Imaging and Plotting Python Package
-==========================================================
+Changelog
+=========
+Version 0.1-alpha release
+-------------------------
+Initial development release
+
+- added SWHT imaging
+- added common plotting fucntions
 
 
+Data Information
+================
 Data File Naming Convention
 ---------------------------
-Level 1: {radar_config}_{experiment_name}_{snr_cutoff_db}_{incoherent_averages}_{date}_{tx_site_name}_{rx_site_name}.h5
-
-.. code-block:: bash
+Level 1: {radar_config}_{experiment_name}_{snr_cutoff_db}_{incoherent_averages}_{date}_{tx_site_name}_{rx_site_name}.h5::
     $ ib3d_normal_01dB_1000ms_2019_10_24_00_prelate_bakker.h5
 
-Level 2: {radar_config}_{experiment_name}_{image_method}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5
-
-.. code-block:: bash
+Level 2: {radar_config}_{experiment_name}_{image_method}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5::
     $ ib3d_normal_swht_01deg_2019_10_24_00_prelate_bakker.h5
 
 
