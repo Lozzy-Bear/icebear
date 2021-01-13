@@ -4,31 +4,23 @@
 
 .. class:: no-web no-pdf
 
-    |docs| |pypi| |build| |coverage| |downloads| |gitter|
+    |docs| |license| |python| |release|
 
-.. |docs| image:: https://img.shields.io/badge/stable%20docs-httpie.org%2Fdocs-brightgreen?style=flat-square
-    :target: https://httpie.org/docs
-    :alt: Stable documentation
+.. |docs| image:: https://readthedocs.org/projects/icebear/badge/?version=latest&style=flat-square
+    :target: https://icebear.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation (latest build)
 
-.. |pypi| image:: https://img.shields.io/pypi/v/httpie.svg?style=flat-square&label=latest%20stable%20version
-    :target: https://pypi.python.org/pypi/httpie
-    :alt: Latest version released on PyPi
+.. |license| image:: https://img.shields.io/badge/License-LGPL%20v3-blue.svg?style=flat-square
+    :target: https://www.gnu.org/licenses/lgpl-3.0
+    :alt: Distribution license
 
-.. |coverage| image:: https://img.shields.io/codecov/c/github/httpie/httpie?style=flat-square
-    :target: https://codecov.io/gh/httpie/httpie
-    :alt: Test coverage
+.. |python| image:: https://img.shields.io/badge/python-3.7-blue.svg?style=flat-square
+    :target: https://www.python.org/downloads/release/python-370/
+    :alt: Python version
 
-.. |build| image:: https://github.com/httpie/httpie/workflows/Build/badge.svg
-    :target: https://github.com/httpie/httpie/actions
-    :alt: Build status of the master branch on Mac/Linux/Windows
+.. |release| image:: .. image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat-square
+    :alt: GitHub release (latest by date)
 
-.. |gitter| image:: https://img.shields.io/gitter/room/jkbrzt/httpie.svg?style=flat-square
-    :target: https://gitter.im/jkbrzt/httpie
-    :alt: Chat on Gitter
-
-.. |downloads| image:: https://pepy.tech/badge/httpie
-    :target: https://pepy.tech/project/httpie
-    :alt: Download count
 
 
 README

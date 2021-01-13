@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.rst" beforeDir="false" afterPath="$PROJECT_DIR$/README.rst" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -436,20 +437,6 @@
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
     </task>
-    <task id="LOCAL-00056" summary="Reworked swht.generate_coeffs">
-      <created>1594996549961</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1594996549961</updated>
-    </task>
-    <task id="LOCAL-00057" summary="added command line args parser and Config class.">
-      <created>1595299414086</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1595299414086</updated>
-    </task>
     <task id="LOCAL-00058" summary="auto generate coeffs if no file given.">
       <created>1595334900811</created>
       <option name="number" value="00058" />
@@ -779,7 +766,21 @@
       <option name="project" value="LOCAL" />
       <updated>1610503435577</updated>
     </task>
-    <option name="localTasksCounter" value="105" />
+    <task id="LOCAL-00105" summary="nan">
+      <created>1610510812593</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1610510812593</updated>
+    </task>
+    <task id="LOCAL-00106" summary="nan">
+      <created>1610510865569</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1610510865569</updated>
+    </task>
+    <option name="localTasksCounter" value="107" />
     <servers />
   </component>
   <component name="TodoView">
@@ -793,8 +794,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1088" y="-298" width="1096" height="1896" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.27977315" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.27977315" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
