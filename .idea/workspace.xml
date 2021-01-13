@@ -6,13 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/icebear.imaging.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/icebear.imaging.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/icebear.plotting.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/icebear.plotting.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/icebear.processing.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/icebear.processing.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/icebear.imaging.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/icebear.plotting.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/icebear.processing.rst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/icebear.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/icebear.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docs/index.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.rst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/indices.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/modules.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/icebear/imaging/stats.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -24,8 +22,13 @@
     <splitter split-orientation="horizontal" split-proportion="0.45140782">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/docs/index.rst">
+              <provider selected="true" editor-type-id="restructured-text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
               <provider selected="true" editor-type-id="restructured-text-editor" />
             </entry>
           </file>
@@ -150,8 +153,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/__init__.py" />
-        <option value="$PROJECT_DIR$/dat/ib3d_v1.dat" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yaml" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_10.py" />
         <option value="$PROJECT_DIR$/dat/ib3d_v1.yml" />
@@ -193,14 +194,16 @@
         <option value="$APPLICATION_CONFIG_DIR$/scratches/phys893_example1.py" />
         <option value="$PROJECT_DIR$/README.rst" />
         <option value="$PROJECT_DIR$/LICENSE" />
-        <option value="$PROJECT_DIR$/icebear/__init__.py" />
         <option value="$PROJECT_DIR$/docs/conf.py" />
         <option value="$PROJECT_DIR$/docs/requirements.txt" />
         <option value="$PROJECT_DIR$/setup.py" />
-        <option value="$PROJECT_DIR$/docs/index.rst" />
         <option value="$PROJECT_DIR$/docs/icebear.plotting.rst" />
         <option value="$PROJECT_DIR$/docs/icebear.imaging.rst" />
+        <option value="$PROJECT_DIR$/icebear/__init__.py" />
+        <option value="$PROJECT_DIR$/docs/icebear.tools.rst" />
         <option value="$PROJECT_DIR$/docs/icebear.processing.rst" />
+        <option value="$PROJECT_DIR$/docs/index.rst" />
+        <option value="$PROJECT_DIR$/docs/icebear.rst" />
       </list>
     </option>
   </component>
@@ -231,7 +234,18 @@
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
+              <item name="etc" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
               <item name="icebear" type="462c0819:PsiDirectoryNode" />
+              <item name="icebear" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
+              <item name="icebear" type="462c0819:PsiDirectoryNode" />
+              <item name="icebear" type="462c0819:PsiDirectoryNode" />
+              <item name="tools" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="icebear" type="b2602c69:ProjectViewProjectNode" />
@@ -427,13 +441,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
-    </task>
-    <task id="LOCAL-00073" summary="Added verbosity in processing. Added new plot types.">
-      <created>1598566561112</created>
-      <option name="number" value="00073" />
-      <option name="presentableId" value="LOCAL-00073" />
-      <option name="project" value="LOCAL" />
-      <updated>1598566561112</updated>
     </task>
     <task id="LOCAL-00074" summary="Added some common scripts">
       <created>1599780640054</created>
@@ -771,7 +778,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610575703079</updated>
     </task>
-    <option name="localTasksCounter" value="122" />
+    <task id="LOCAL-00122" summary="fixing rtd">
+      <created>1610577320581</created>
+      <option name="number" value="00122" />
+      <option name="presentableId" value="LOCAL-00122" />
+      <option name="project" value="LOCAL" />
+      <updated>1610577320581</updated>
+    </task>
+    <option name="localTasksCounter" value="123" />
     <servers />
   </component>
   <component name="TodoView">
@@ -908,19 +922,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_4.py" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_3.py" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-306">
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_6.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1148,16 +1149,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
@@ -1212,18 +1203,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/icebear.imaging.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/icebear.plotting.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/icebear.processing.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
-      <provider selected="true" editor-type-id="restructured-text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/docs/conf.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -1241,7 +1220,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/processing/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/tools/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/tools/calibration.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-705">
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret lean-forward="true" />
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/icebear/tools/filters.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/icebear.plotting.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/icebear.imaging.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/icebear.tools.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/icebear.processing.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/docs/index.rst">
+      <provider selected="true" editor-type-id="restructured-text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/icebear.rst">
       <provider selected="true" editor-type-id="restructured-text-editor" />
     </entry>
   </component>
