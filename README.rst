@@ -1,4 +1,4 @@
-.. image:: docs/imgs/ib_logo.png
+.. image:: docs/imgs/ib_logo_long.png
     :width: 250
     :align: center
 
