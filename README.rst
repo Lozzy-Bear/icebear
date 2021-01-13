@@ -1,3 +1,5 @@
+.. image:: docs/imgs/ib_logo.png
+
 README
 ======
 ICEBEAR-3D processing, imaging and plotting python package.
