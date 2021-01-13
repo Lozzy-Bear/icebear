@@ -18,29 +18,31 @@
     :target: https://www.python.org/downloads/release/python-370/
     :alt: Python version
 
-.. |release| image:: .. image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat
+.. |release| image:: .. image:: https://img.shields.io/github/v/release/lozzy-bear/icebear?style=flat-square
     :target: https://github.com/Lozzy-Bear/icebear/
     :alt: GitHub release (latest by date)
 
 
 
-ICEBEAR-3D processing, imaging and plotting python package.
-===========================================================
+ICEBEAR-3D Processing, Imaging and Plotting Python Package
+==========================================================
 
 
-DATA FILE NAMING CONVENTION
-===========================
+Data File Naming Convention
+---------------------------
 Level 1: {radar_config}_{experiment_name}_{snr_cutoff_db}_{incoherent_averages}_{date}_{tx_site_name}_{rx_site_name}.h5
+
 .. code-block:: bash
     $ ib3d_normal_01dB_1000ms_2019_10_24_00_prelate_bakker.h5
 
 Level 2: {radar_config}_{experiment_name}_{image_method}_{resolution}_{date}_{tx_site_name}_{rx_site_name}.h5
+
 .. code-block:: bash
     $ ib3d_normal_swht_01deg_2019_10_24_00_prelate_bakker.h5
 
 
-ATTRIBUTE INFORMATION
-=====================
+Attribute Information
+---------------------
 ==================================  ==========================================================================================================
 Attribute Name                      Description
 General Attributes (Level 0)

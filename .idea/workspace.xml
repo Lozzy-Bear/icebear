@@ -437,27 +437,6 @@
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
     </task>
-    <task id="LOCAL-00058" summary="auto generate coeffs if no file given.">
-      <created>1595334900811</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1595334900811</updated>
-    </task>
-    <task id="LOCAL-00059" summary="auto generate coeffs if no file given.">
-      <created>1595337261028</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1595337261028</updated>
-    </task>
-    <task id="LOCAL-00060" summary="processing routine added">
-      <created>1595432306252</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1595432306252</updated>
-    </task>
     <task id="LOCAL-00061" summary="processing routine added">
       <created>1595527004324</created>
       <option name="number" value="00061" />
@@ -780,7 +759,28 @@
       <option name="project" value="LOCAL" />
       <updated>1610510865569</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="added badges">
+      <created>1610520222280</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1610520222280</updated>
+    </task>
+    <task id="LOCAL-00108" summary="added badges">
+      <created>1610520393849</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1610520393849</updated>
+    </task>
+    <task id="LOCAL-00109" summary="added badges">
+      <created>1610520771379</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1610520771379</updated>
+    </task>
+    <option name="localTasksCounter" value="110" />
     <servers />
   </component>
   <component name="TodoView">
@@ -876,7 +876,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Reworked swht.generate_coeffs" />
     <MESSAGE value="added command line args parser and Config class." />
     <MESSAGE value="auto generate coeffs if no file given." />
     <MESSAGE value="processing routine added" />
@@ -901,7 +900,8 @@
     <MESSAGE value="patching image method" />
     <MESSAGE value="patch HDF5 string to config import" />
     <MESSAGE value="nan" />
-    <option name="LAST_COMMIT_MESSAGE" value="nan" />
+    <MESSAGE value="added badges" />
+    <option name="LAST_COMMIT_MESSAGE" value="added badges" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
