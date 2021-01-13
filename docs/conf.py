@@ -24,6 +24,7 @@ author = 'Adam Lozinsky'
 
 # The full version, including alpha/beta/rc tags
 # Get version number from __init__.py
+here = os.path.abspath(os.path.dirname(__file__))
 regex = "(?<=__version__..\s)\S+"
 with open(os.path.join(here, '../icebear/__init__.py'), 'r', encoding='utf-8') as f:
     text = f.read()
@@ -48,7 +49,6 @@ extensions = [
     'sphinx.ext.napoleon',
 ]
 # Napoleon settings
-napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False
@@ -74,7 +74,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'#''sphinx_rtd_theme'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
