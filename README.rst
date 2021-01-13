@@ -2,6 +2,35 @@
     :width: 250
     :align: center
 
+.. class:: no-web no-pdf
+
+    |docs| |pypi| |build| |coverage| |downloads| |gitter|
+
+.. |docs| image:: https://img.shields.io/badge/stable%20docs-httpie.org%2Fdocs-brightgreen?style=flat-square
+    :target: https://httpie.org/docs
+    :alt: Stable documentation
+
+.. |pypi| image:: https://img.shields.io/pypi/v/httpie.svg?style=flat-square&label=latest%20stable%20version
+    :target: https://pypi.python.org/pypi/httpie
+    :alt: Latest version released on PyPi
+
+.. |coverage| image:: https://img.shields.io/codecov/c/github/httpie/httpie?style=flat-square
+    :target: https://codecov.io/gh/httpie/httpie
+    :alt: Test coverage
+
+.. |build| image:: https://github.com/httpie/httpie/workflows/Build/badge.svg
+    :target: https://github.com/httpie/httpie/actions
+    :alt: Build status of the master branch on Mac/Linux/Windows
+
+.. |gitter| image:: https://img.shields.io/gitter/room/jkbrzt/httpie.svg?style=flat-square
+    :target: https://gitter.im/jkbrzt/httpie
+    :alt: Chat on Gitter
+
+.. |downloads| image:: https://pepy.tech/badge/httpie
+    :target: https://pepy.tech/project/httpie
+    :alt: Download count
+
+
 README
 ======
 ICEBEAR-3D processing, imaging and plotting python package.
@@ -127,3 +156,4 @@ imaging_start                       [year, month, day, hour, minute, second, mil
 imaging_stop                        [year, month, day, hour, minute, second, millisecond] time to stop imaging
 imaging_step                        [day, hour, minute, second, millisecond] step size for imaging
 ==================================  ==========================================================================================================
+

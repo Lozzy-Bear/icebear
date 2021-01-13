@@ -4,7 +4,9 @@
     <bookmark url="file://$APPLICATION_CONFIG_DIR$/scratches/scratch_7.py" line="6" mnemonic="1" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="patch HDF5 string to config import" />
+    <list default="true" id="bd989f0d-bb5d-47c1-9b71-0955a36a5f77" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/README.rst" beforeDir="false" afterPath="$PROJECT_DIR$/README.rst" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -434,13 +436,6 @@
       <option name="presentableId" value="Default" />
       <updated>1585631259917</updated>
     </task>
-    <task id="LOCAL-00055" summary="Added functions to walk hdf5 and yaml files.">
-      <created>1594988189812</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1594988189812</updated>
-    </task>
     <task id="LOCAL-00056" summary="Reworked swht.generate_coeffs">
       <created>1594996549961</created>
       <option name="number" value="00056" />
@@ -777,7 +772,14 @@
       <option name="project" value="LOCAL" />
       <updated>1609897274171</updated>
     </task>
-    <option name="localTasksCounter" value="104" />
+    <task id="LOCAL-00104" summary="patch HDF5 string to config import">
+      <created>1610503435577</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1610503435577</updated>
+    </task>
+    <option name="localTasksCounter" value="105" />
     <servers />
   </component>
   <component name="TodoView">
@@ -872,7 +874,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Added functions to walk hdf5 and yaml files." />
     <MESSAGE value="Reworked swht.generate_coeffs" />
     <MESSAGE value="added command line args parser and Config class." />
     <MESSAGE value="auto generate coeffs if no file given." />
@@ -895,9 +896,10 @@
     <MESSAGE value="added time fix script" />
     <MESSAGE value="added format fix script" />
     <MESSAGE value="added quick plot all" />
-    <MESSAGE value="patch HDF5 string to config import" />
     <MESSAGE value="patching image method" />
-    <option name="LAST_COMMIT_MESSAGE" value="patching image method" />
+    <MESSAGE value="patch HDF5 string to config import" />
+    <MESSAGE value="nan" />
+    <option name="LAST_COMMIT_MESSAGE" value="nan" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
