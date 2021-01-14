@@ -10,9 +10,8 @@ build:
 python:
   version: 3.7
   install:
-     - method: pip
+     - method: setuptools
        path: .
-     - requirements: requirements.txt
   system_packages: true
 
 sphinx:

@@ -1,4 +1,4 @@
-.. image:: /docs/imgs/ib_logo_long.png
+.. image:: ../docs/imgs/ib_logo_long.png
     :align: center
 
 |docs| |license| |python| |release|

@@ -7,6 +7,16 @@ import icebear.utils
 
 
 def generate_level1(config):
+    """
+    
+    Parameters
+    ----------
+    config
+
+    Returns
+    -------
+
+    """
     filenames = []
     level0_data = digital_rf.DigitalRFReader(config.processing_source)
     channels = level0_data.get_channels()
@@ -313,7 +323,7 @@ def func():
     Notes:
         * May be alternative ways to perform C/CUDA wrapping
 """
-__fmed = func()
+#__fmed = func()
 
 
 def ssmf(meas, code, averages, nrang, fdec, codelen):
