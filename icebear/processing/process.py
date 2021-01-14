@@ -1,12 +1,9 @@
 import h5py
-import scipy
 import numba
 import numpy as np
 import ctypes as C
 import digital_rf
 import icebear.utils
-#import pyfftw
-#pyfftw.interfaces.cache.enable()
 
 
 def generate_level1(config):
@@ -257,7 +254,7 @@ def generate_bcode(filepath):
     b_code = np.zeros(20000, dtype=np.float32)
 
     # Read in code to be tested
-    test_sig = scipy.fromfile(open(filepath), dtype=scipy.complex64)
+    test_sig = np.fromfile(open(filepath), dtype=np.complex64)
 
     # Sample code at 1/4 of the tx rate
     y = 0

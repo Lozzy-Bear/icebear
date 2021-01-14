@@ -81,9 +81,9 @@ if __name__ == "__main__":
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
 
-        # install_requires=['numpy'],
+        install_requires=['numpy', 'h5py', 'digital-rf', 'numba', 'matplotlib', 'imageio', 'scipy', 'opencv-python'],
 
-        # ext_modules=extensions,
+        ext_modules=extensions,
 
         # List additional groups of dependencies here (e.g. development
         # dependencies). You can install these using the following syntax,
