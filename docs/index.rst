@@ -1,4 +1,4 @@
-.. include:: ../README.rst
+.. include:: ../docs/readme.rst
 
 ICEBEAR-3D Documentation
 ========================
