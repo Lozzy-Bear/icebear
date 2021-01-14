@@ -7,3 +7,11 @@ ICEBEAR-3D Documentation
    :maxdepth: 4
 
    icebear
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

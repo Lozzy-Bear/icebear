@@ -303,7 +303,7 @@ def func():
        * Inputs are (cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftComplex *result, size_t measlen, size_t codelen, size_t size, ing avg, ing check)
     """
     #dll = C.CDLL('./libssmf.so', mode=C.RTLD_GLOBAL)
-    dll = C.CDLL('./icebear/processing/libssmf.so', mode=C.RTLD_GLOBAL)
+    dll = C.CDLL('icebear/processing/libssmf.so', mode=C.RTLD_GLOBAL)
     func = dll.ssmf
     func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float),
                      C.POINTER(C.c_float), C.c_size_t, C.c_size_t, C.c_size_t, C.c_int, C.c_int]
