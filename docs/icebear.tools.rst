@@ -1,30 +1,18 @@
-icebear.tools package
-=====================
+icebear.tools
+=============
 
-Submodules
-----------
-
-icebear.tools.calibration module
---------------------------------
+icebear.tools.calibration
+-------------------------
 
 .. automodule:: icebear.tools.calibration
    :members:
    :undoc-members:
    :show-inheritance:
 
-icebear.tools.filters module
-----------------------------
+icebear.tools.filters
+---------------------
 
 .. automodule:: icebear.tools.filters
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: icebear.tools
    :members:
    :undoc-members:
    :show-inheritance:

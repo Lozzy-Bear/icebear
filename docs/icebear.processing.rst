@@ -1,22 +1,10 @@
-icebear.processing package
-==========================
+icebear.processing
+==================
 
-Submodules
-----------
-
-icebear.processing.process module
----------------------------------
+icebear.processing.process
+--------------------------
 
 .. automodule:: icebear.processing.process
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: icebear.processing
    :members:
    :undoc-members:
    :show-inheritance:

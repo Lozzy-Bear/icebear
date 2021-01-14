@@ -1,10 +1,7 @@
-.. image:: docs/imgs/ib_logo_long.png
-    :width: 250
+.. image:: /docs/imgs/ib_logo_long.png
     :align: center
 
-.. class:: no-web no-pdf
-
-    |docs| |license| |python| |release|
+|docs| |license| |python| |release|
 
 .. |docs| image:: https://readthedocs.org/projects/icebear/badge/?version=latest&style=flat-square
     :target: https://icebear.readthedocs.io/en/latest/?badge=latest

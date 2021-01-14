@@ -1,8 +1,5 @@
-icebear package
-===============
-
-Subpackages
------------
+icebear
+=======
 
 .. toctree::
    :maxdepth: 4
@@ -12,22 +9,10 @@ Subpackages
    icebear.plotting
    icebear.tools
 
-Submodules
-----------
-
-icebear.utils module
---------------------
+icebear.utils
+-------------
 
 .. automodule:: icebear.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: icebear
    :members:
    :undoc-members:
    :show-inheritance:

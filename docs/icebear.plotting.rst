@@ -1,22 +1,10 @@
-icebear.plotting package
-========================
+icebear.plotting
+================
 
-Submodules
-----------
-
-icebear.plotting.plot module
-----------------------------
+icebear.plotting.plot
+---------------------
 
 .. automodule:: icebear.plotting.plot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: icebear.plotting
    :members:
    :undoc-members:
    :show-inheritance:
