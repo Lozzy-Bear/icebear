@@ -81,7 +81,8 @@ if __name__ == "__main__":
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
 
-        install_requires=['numpy', 'h5py', 'digital-rf', 'numba', 'matplotlib', 'imageio', 'scipy', 'opencv-python'],
+        install_requires=['numpy', 'h5py', 'digital-rf', 'numba', 'matplotlib', 'imageio', 'scipy', 'opencv-python',
+                          'PyYaml'],
 
         ext_modules=extensions,
 
