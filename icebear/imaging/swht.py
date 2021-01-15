@@ -208,7 +208,7 @@ def swht_py(visibilities, coeffs):
         * np.matmul method is faster than CUDA for array size less than 10e6.
     """
 
-    start_time = time.time()
+    #start_time = time.time()
     intensity = np.matmul(coeffs, visibilities)
     #print(f"\t-swht_py time: \t{time.time()-start_time}")
     

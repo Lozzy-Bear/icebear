@@ -1,5 +1,8 @@
 import cv2
-import numpy as np
+try:
+    import cupy as np
+except ImportError:
+    import numpy as np
 import icebear
 import icebear.utils as util
 import h5py

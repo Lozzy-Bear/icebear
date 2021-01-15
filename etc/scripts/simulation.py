@@ -6,28 +6,7 @@ import multiprocessing as mp
 import cv2
 import h5py
 import pickle
-
-
-def unpackage_factors_hdf5(filename, ind):
-    """
-    factors:	Array to be saved into pickle file.
-    filename:	Name of the pickle file to store the SWHT Factors array.
-    """
-    f = h5py.File(filename, 'r')
-    factors = np.array(f['coeffs'][f'{ind:02d}'], dtype=np.complex64)
-    print('hdf5 factors:', factors.shape)
-    return factors
-
-
-def unpackage_factors_pickle(filename):
-    """
-    factors:	Array to be saved into pickle file.
-    filename:	Name of the pickle file to store the SWHT Factors array.
-    """
-    with open(filename, 'rb') as w:
-        factors = pickle.load(w)
-    print('pickle factors:', factors.shape)
-    return factors
+import icebear
 
 
 def swht(V, factors):
@@ -142,13 +121,14 @@ if __name__ == '__main__':
     #V[0] = 1-1j
     #V[46] = 1-1j
     print(V)
-    factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 5)
+    factors = icebear.imaging.swht.unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 5)
     B = swht(V, factors[:, :, 0:len(V)])
 
     for i in range(85, 95, 10):
-        factors = unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', i)
+        factors = icebear.imaging.swht.unpackage_factors_hdf5(f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', i)
         #factors *= f
-        B *= swht(V, factors[:, :, 0:len(V)])
+        B *= icebear.imaging.swht.swht_py(V, factors[:, :, 0:len(V)])
+
 
     #B = swht(V, factors[:, :, 0:len(V)])
     B = np.abs(B / np.max(B))
