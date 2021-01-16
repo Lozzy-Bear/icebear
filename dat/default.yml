@@ -1,73 +1,117 @@
-# General Information
-radar_name: ib3d # human readable radar name
-version: 1.0 # version of radar if needed
-config_updated: [2020, 9, 22] # [year, month, day] file creation date
+# ICEBEAR Defaults
+#
+#   Copyright 2021 ICEBEAR, University of Saskatchewan
+#
+#   Author(s): Adam Lozinsky
+#   Date: 2021-01-15
+#
+#   Intended use:
+#     This is the default configuration for  processing, imaging, and plotting ICEBEAR data. Typically this is used to
+#     generate the attribute for the Config class for level 0 data processing, but also contains other setting.
+#     Users should make a copy of this file and edit the variables as required for their experiments.
+#
+#   The following attributes are set automatically for posterity:
+#     - date_created: automatically added by referencing the current time from time.time()
+#     - version: automatically added by referencing version number of installed package
+#     - date: automatically added by referencing data time stamps
 
-# Transmitter Information
-tx_name: prelate # human readable site name
-tx_coordinates: [50.893, -109.403] # [latitude, longitude, altitude] of site reference antenna
-tx_updated: [2020,07,17] # [year, month, day] date the positions, mask, and/or calibration was updated
-tx_pointing: 16 # Bore sight pointing direction East of North
-tx_x: [0.,6.0,12.0,18.0,24.0,30.0,36.0,42.0,48.0,54.0] # [x,...] relative antenna locations
-tx_y: [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] # [y,...] relative antenna locations
-tx_z: [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] # [z,...] relative antenna locations
-tx_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0,...] binary mask of which antennas were used
-tx_phase: [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] #
-tx_magnitude: [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] #
-tx_sample_rate: 800000.0 #
-tx_antenna_type: Cushcraft A50-5S # brand and model of antenna used
-tx_rf_path: X300->amplifier->bulk->feed->antenna # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+# General Information
+# ----------------------------------------------------------------------------------------------------------------------
+experiment_name: 'normal' # name of experiment (ex; normal, mobile)
+radar_config: 'ib3d'  # name of the radar the data was collected with (ex; ib, ib3d, lofar)
+center_freq: 49500000.0 # radar center frequency in Hz
 
 # Receiver Information
-rx_name: bakker # human readable site name
-rx_coordinates: [52.243, -106.450] # [latitude, longitude, altitude] of site reference antenna
+# ----------------------------------------------------------------------------------------------------------------------
+rx_site_name: 'bakker'  # name of receiver site
+rx_site_lat_long: [52.243, -106.450]  # [latitude, longitude] coordinates of the receiver antenna array
+rx_heading: 7 # receiver array boresight pointing direction in degrees east of north
 rx_updated: [2020,07,17] # [year, month, day] date the positions, mask, and/or calibration was updated
-rx_pointing: 7 # Bore sight pointing direction East of North
-rx_x: [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9] # [x,...] relative antenna locations
-rx_y: [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.] # [y,...] relative antenna locations
-rx_z: [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] # [z,...] relative antenna locations
-rx_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0,...] binary mask of which antennas were used
-rx_phase: [0.0,-13.95,-6.345,-5.89,-3.14,16.86,10.2,-1.25,5.72,3.015] #
-rx_magnitude: [6.708204,6.4031243,6.0827622,6.3245554,6.4031243,6.0827622,6.708204,6.0827622,5.830952,6.0]
-rx_sample_rate: 0  #
-rx_antenna_type: Cushcraft 50MHz Superboomer # brand and model of antenna used
-rx_rf_path: Ant->feed->bulk->BPF->LNA->LNA->X300 # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+rx_rf_path: 'Ant->feed->bulk->BPF->LNA->LNA->X300'  # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+rx_antenna_type: 'Cushcraft 50MHz Superboomer' # brand and model of antenna used
+rx_ant_coords:  # [[x0, ...],[y0, ...],[z0, ...]]receiver antenna relative locations in meters from antenna 0
+  - [0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9] # [x,...]
+  - [0.,0.,-99.90,0.,-94.50,-205.90,-177.2,0.,-27.30,0.] # [y,...]
+  - [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] # [z,...]
+rx_feed_corr: # [[ant 0 magnitude, ...],[ant 0 phase, ...]] correction per receiver antenna
+  - [6.708204,6.4031243,6.0827622,6.3245554,6.4031243,6.0827622,6.708204,6.0827622,5.830952,6.0] # [magnitude, ...]
+  - [0.0,-13.95,-6.345,-5.89,-3.14,16.86,10.2,-1.25,5.72,3.015] # [phase, ...]
+rx_feed_corr_date:
+rx_feed_corr_type:
+rx_ant_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0, 1, ...] mask indicating which receiver antennas were used and/or functional
+rx_sample_rate: 200000 # the raw recorded sample rate at the receiver in Hz
+
+# Transmitter Information
+# ----------------------------------------------------------------------------------------------------------------------
+tx_site_name: 'prelate'  # name of transmitter site
+tx_site_lat_long: [50.893, -109.403]  # [latitude, longitude] coordinates of the transmitter antenna array
+tx_heading: 16 # transmitter array boresight pointing direction in degrees east of north
+tx_updated: [2020,07,17] # [year, month, day] date the positions, mask, and/or calibration was updated
+tx_rf_path: 'X300->amplifier->bulk->feed->antenna'  # RF hardware path chain, eg. antenna->feedline->bulkhead->...
+tx_ant_type: 'Cushcraft A50-5S' # brand and model of antenna used
+tx_ant_coords:  # [[x0, ...],[y0, ...],[z0, ...]]transmitter antenna relative locations in meters from antenna 0
+  - [0.,6.0,12.0,18.0,24.0,30.0,36.0,42.0,48.0,54.0] # [x,...]
+  - [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] # [y,...]
+  - [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] # [z,...]
+tx_feed_corr: # [[ant 0 magnitude, ...],[ant 0 phase, ...]] correction per transmitter antenna
+  - [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] # [magnitude, ...]
+  - [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.] # [phase, ...]
+tx_feed_corr_date:
+tx_feed_corr_type:
+tx_ant_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0, 1, ...] mask indicating which transmitter antennas were used and/or functional
+tx_sample_rate: 800000 # sample rate of transmitted code in Hz
+tx_cw_code: # pseudo-random noise like code transmitted (contains full sequence)
 
 # Processing Settings
-processing_method: normal
-wavelength: 6.05641329 # radar wavelength in meters
-center_frequency: 49500000.0 # radar center frequency in Hz
-prn_code_file: 'dat/pseudo_random_code_test_8_lpf.txt' # name of pseudo-random code file used
-code_length: 20000 #
-raw_sample_rate: 200000 #
+# ----------------------------------------------------------------------------------------------------------------------
 decimation_rate: 200
+time_resolution: 0.1
+coherent_integration_time:
 incoherent_averages: 10
 number_ranges: 2000
 range_resolution: 1.5 # km
-timestamp_correction: 30
-time_resolution: 0.1
+timestamp_corr: 30
 clutter_gates: 100
-snr_cutoff: 1.0 # signal-to-noise ratio cutoff in dB
-spectra_descriptors: [spec00,spec11,spec22,spec33,spec44,spec55,spec66,spec77,spec88,spec99]
-xspectra_descriptors: [xspec01,xspec02,xspec03,xspec04,xspec05,xspec06,xspec07, xspec08,xspec09,xspec12,
-                       xspec13,xspec14,xspec15,xspec16,xspec17,xspec18,xspec19,xspec23,xspec24,xspec25,
-                       xspec26,xspec27,xspec28,xspec29,xspec34,xspec35,xspec36,xspec37,xspec38,xspec39,
-                       xspec45,xspec46,xspec47,xspec48,xspec49,xspec56,xspec57,xspec58,xspec59,xspec67,
-                       xspec68,xspec69,xspec78,xspec79,xspec89]
+code_length: 20000 #
+snr_cutoff_db: 1.0 # signal-to-noise ratio cutoff in dB
+spectra_descriptors:
+  - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+xspectra_descriptors:
+  - [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8]
+  - [1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 7, 8, 9, 7, 8, 9, 8, 9, 9]
 processing_source: '/ext_data3/icebear_3d_test/'
 processing_destination: '/home/icebear-processing/package/level1/'
-processing_start: [2019,11,20,3,0,0,0]
-processing_stop: [2019,11,20,23,0,0,0]
-processing_step: [0,0,0,1,0]
+processing_start: [2019,11,20,3,0,0,0]  # [year, month, day, hour, minute, second, millisecond] time to start processing
+processing_stop: [2019,11,20,23,0,0,0]  # [year, month, day, hour, minute, second, millisecond] time to stop processing
+processing_step: [0,0,0,1,0]  # [day, hour, minute, second, millisecond] step size for processing]
 
 # Imaging Settings
-swht_coeffs: #'swhtcoeffs_ib3d_2020-07-17_090-040-10-85'
-azimuth: [0,360]
-elevation: [0,180]
-resolution: 1.0222222
-
-lmax: 85
-fov:
+# ----------------------------------------------------------------------------------------------------------------------
+imaging_source: ''  # file path to directory holding level1 hdf5 files to be imaged
+imaging_destination: '' # file path to directory to store the level2 hdf5 files
+imaging_start: [] # [year, month, day, hour, minute, second, millisecond] time to start imaging
+imaging_stop: []  # [year, month, day, hour, minute, second, millisecond] time to stop imaging
+imaging_step: [0, 0, 0, 1, 0] # [day, hour, minute, second, millisecond] step size for imaging
+imaging_method: ''  # imaging method used (ex; swht, linear)
+# SWHT Imaging Method Settings
+# ----------------------------------------------------------------------------------------------------------------------
+swht_coeffs: '' # path to swht_coeffs file to be used, if left blank coeffs wil be calculated using below settings
+fov: [[-45, 45], [0, 45]] # [[az min, az max], [el min, el max]] image field of view
+fov_center: [0, 0]  # [az, el] angles in image which coincide with receiver boresight
+resolution: 0.1 # pixel resolution in degrees
+lmax: 218 # maximum harmonic degree the coefficients were calculated
+# Linear Imaging Method Settings
+# ----------------------------------------------------------------------------------------------------------------------
 
 # Plotting Settings
-plotting:
+# ----------------------------------------------------------------------------------------------------------------------
+plotting_source: ''  # file path to directory holding level1 hdf5 files to be imaged
+plotting_destination: '' # file path to directory to store the level2 hdf5 files
+plotting_start: [] # [year, month, day, hour, minute, second, millisecond] time to start plotting
+plotting_stop: []  # [year, month, day, hour, minute, second, millisecond] time to stop plotting
+plotting_step: [0, 0, 0, 1, 0] # [day, hour, minute, second, millisecond] step size for plotting
+plotting_method: ''  # plotting method used (ex; range_doppler_snr, 4plot, quick_plot, ...)
+# range_doppler_snr Plotting Settings
+# ----------------------------------------------------------------------------------------------------------------------
+plot_cadence: 5 # cadence of plots in seconds

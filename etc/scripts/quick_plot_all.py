@@ -14,7 +14,7 @@ for file in files:
     config = util.Config(file)
     config.add_attr('number_ranges', 2000)
     config.add_attr('range_resolution', 1.5)
-    config.add_attr('timestamp_correction', 30)
+    config.add_attr('timestamp_correction', 30) # timestamp_corr
     config.add_attr('clutter_gates', 100)
     config.add_attr('code_length', 20000)
     config.plotting_source = '/'.join(file.split('/')[0:-1])+'/'
@@ -25,6 +25,6 @@ for file in files:
     plotting_start, plotting_stop = util.get_data_file_times(file)
     print(config.plotting_destination, plotting_start, plotting_stop)
     time = util.Time(plotting_start, plotting_stop, plotting_step)
-    icebear.range_doppler_snr(config, time, plotting_spacing)
+    icebear.plotting.plot.range_doppler_snr(config, time, plotting_spacing)
 
 

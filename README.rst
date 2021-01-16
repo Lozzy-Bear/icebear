@@ -74,7 +74,7 @@ rx_site_name                        name of receiver site
 rx_site_lat_long                    [latitude, longitude] coordinates of the receiver antenna array
 rx_heading                          receiver array boresight pointing direction in degrees east of north
 rx_rf_path                          the receiver signal path; all inline elements listed
-rx_ant_type                         receiver antenna type
+rx_ant_type                         brand and model of receiver antenna
 rx_ant_coords                       [[x0, ...],[y0, ...],[z0, ...]]receiver antenna relative locations in meters from antenna 0
 rx_feed_corr                        [[ant 0 magnitude, ...],[ant 0 phase, ...]] correction per receiver antenna
 rx_feed_corr_date                   [year, month, day] date the feedline corrections were determined
@@ -92,7 +92,7 @@ tx_feed_corr_date                   [year, month, day] date the feedline correct
 tx_feed_corr_type                   [magnitude type, phase type] (ex; [data median, instrumental])
 tx_ant_mask                         [0, 1, ...] mask indicating which transmitter antennas were used and/or functional
 tx_cw_code                          pseudo-random noise like code transmitted (contains full sequence)
-tx_sample_rate                      sample rate of transmitted code
+tx_sample_rate                      sample rate of transmitted code in Hz
 data                                dataset key for data in file organized per second
 Processing Attributes (Level 1)
 ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -100,6 +100,11 @@ decimation_rate
 time_resolution
 coherent_integration_time
 incoherent_averages                 number of samples to average over
+number_ranges
+range_resolution
+timestamp_corr
+clutter_gates
+code_length
 snr_cutoff_db
 spectra_descriptors
 xspectra_descriptors
@@ -138,12 +143,12 @@ data/{time}/elevation_spread        targets spread in elevation given in degrees
 data/{time}/area                    area of target in image, highly variant based on imaging settings
 Plotting Attributes (Level 3)
 ----------------------------------------------------------------------------------------------------------------------------------------------
-velocity                            speed of target
-position                            [lat, long, alt]
-time                                time of data point
-snr_db                              signal strength
-spatial_spread                      [lat spread, long spread, alt spread]
 spatial_spread_function             function to determine spreading
+data/{time}/time                    time of data point
+data/{time}/velocity                speed of target
+data/{time}/snr_db                  signal strength
+data/{time}/position                [lat, long, alt]
+data/{time}/spatial_spread          [lat spread, long spread, alt spread]
 Configuration Class Only
 ----------------------------------------------------------------------------------------------------------------------------------------------
 processing_source                   file path to directory holding channel separated digital_rf files
@@ -157,5 +162,3 @@ imaging_start                       [year, month, day, hour, minute, second, mil
 imaging_stop                        [year, month, day, hour, minute, second, millisecond] time to stop imaging
 imaging_step                        [day, hour, minute, second, millisecond] step size for imaging
 ==================================  ==========================================================================================================
-
-cs/readme.rst

@@ -6,8 +6,8 @@ import icebear
 
 class Processing:
     def __init__(self, config):
-        filenames = icebear.generate_level1(config)
-        config.add_attr('level1_data_files', filenames)
+        filename = icebear.processing.process.generate_level1(config)
+        config.add_attr('level1_data_files', filename)
 
 
 class Imaging:
@@ -18,8 +18,8 @@ class Imaging:
     def check_coeffs(self, config):
         if config.check_attr('swht_coeffs'):
             if config.compare_attr('swht_coeffs', None):
-                filename = icebear.generate_coeffs(config)
-                config.add_attr('swht_coeff', filename)
+                filename = icebear.imaging.swht.generate_coeffs(config)
+                config.add_attr('swht_coeffs', filename)
             pass
         else:
             print(f'ERROR: Attribute {key} does not exists')
@@ -29,7 +29,7 @@ class Imaging:
 class Plotting:
     def __init__(self, config):
         time = icebear.utils.Time(config.plotting_start, config.plotting_stop, config.plotting_step)
-        icebear.range_doppler_snr(config, time)
+        icebear.plotting.plot.range_doppler_snr(config, time)
         pass
 
 
@@ -37,8 +37,6 @@ def main():
     parser = argparse.ArgumentParser(description="Setup icebear configuration.")
     parser.add_argument("-c", "--configuration", help="configuration file, leave blank for default",
                         type=str, default='dat/default.yml')
-    parser.add_argument("-s", "--settings", help="optional settings file, overrides -c attributes",
-                        type=str, required=False)
     parser.add_argument("-prc", "--processing", help='run the processing class',
                         action='store_true')
     parser.add_argument("-img", "--imaging", help='run the imaging class',
@@ -53,14 +51,11 @@ def main():
                         help="data step size, [year, month, day, hour, minute, second], overrides -c and -s")
     parser.set_defaults(func=run)
     args = parser.parse_args()
-    #if (args.processing or args.imaging or args.plotting) and not args.settings:
-    #    print('ERROR: No settings file -s set to configure -prc, -img, or -plt options')
-    #    exit()
     args.func(args)
 
 
 def run(args):
-    config = icebear.utils.Config(args.configuration, args.settings)
+    config = icebear.utils.Config(args.configuration)
     config.print_attrs()
 
     if args.processing:
@@ -91,6 +86,7 @@ def run(args):
         Plotting(config)
 
     return None
+
 
 if __name__ == '__main__':
     main()

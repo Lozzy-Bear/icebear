@@ -48,24 +48,22 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
                               np.array(config.rx_y),
                               np.array(config.rx_z),
                               wavelength)
-    if config.check_attr('azimuth'):
-        azimuth = config.azimuth
-    if config.check_attr('elevation'):
-        elevation = config.elevation
+    if config.check_attr('fov'):
+        fov = config.fov
     if config.check_attr('resolution'):
         resolution = config.resolution
     if config.check_attr('lmax'):
         lmax = config.lmax
     ko = 2 * np.pi / wavelength
-    az_step = int(np.abs(azimuth[0] - azimuth[1]) / resolution)
-    el_step = int(np.abs(elevation[0] - elevation[1]) / resolution)
+    az_step = int(np.abs(fov[0, 0] - fov[0, 1]) / resolution)
+    el_step = int(np.abs(fov[1, 0] - fov[1, 1]) / resolution)
     r, t, p = utils.uvw_to_rtp(u, v, w)
     r *= config.wavelength
     az = np.radians(np.linspace(azimuth[0], azimuth[1], az_step))
     el = np.radians(np.linspace(elevation[0], elevation[1], el_step))
-    config_name = f"{int(np.round(np.abs(azimuth[0] - azimuth[1]))):03d}-" \
-                  f"{int(np.round(np.abs(elevation[0] - elevation[1]))):03d}-" \
-                  f"{str(resolution).replace('.', '')}-" \
+    config_name = f"{int(np.round(np.abs(azimuth[0] - azimuth[1]))):03d}az-" \
+                  f"{int(np.round(np.abs(elevation[0] - elevation[1]))):03d}el-" \
+                  f"{str(resolution).replace('.', '')}res-" \
                   f"{lmax}"
 
     # Example filename: swhtcoeffs_icebear_2020-07-13_360-90-10-85
@@ -148,25 +146,47 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
 
     Notes
     -----
-        * Maximum harmonic degree is Lmax = 85. Above this scipy crashes.
+        Maximum harmonic degree is Lmax = 85. Above this scipy crashes due to an overflow error. The potential fix is to
+        scale the initial Pmm of the recursion by 10^280 sin^m (theta), and then rescale everything back at the end.
 
-    Todo
-        * Add functionality to go to harmonic degrees above lmax = 85.
+        Holmes, S. A., and W. E. Featherstone, A unified approach to the Clenshaw summation and the recursive
+        computation of very high degree and order normalised associated Legendre functions,
+        J. Geodesy, 76, 279- 299, doi:10.1007/s00190-002-0216-2, 2002.
     """
 
     start_time = time.time()
     AZ, EL = np.meshgrid(az, el)
     coeffs = np.zeros((len(el), len(az), len(r)), dtype=np.complex128)
 
-    for l in range(lmax+1):
-        for m in range(-l, l+1):
-            coeffs += ko ** 2 / (2 * np.pi ** 2 * np.round((-1j) ** l)) * \
-                      np.repeat(special.sph_harm(m, l, AZ, EL)[:, :, np.newaxis], len(r), axis=2) * \
-                      np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
-                      np.conjugate(special.sph_harm(m, l, p, t)) \
-                      [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
-            print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
-        append_coeffs_hdf5(filename, l, coeffs)
+    if lmax <= 85:
+        for l in range(lmax+1):
+            for m in range(-l, l+1):
+                coeffs += ko ** 2 / (2 * np.pi ** 2 * np.round((-1j) ** l)) * \
+                          np.repeat(special.sph_harm(m, l, AZ, EL)[:, :, np.newaxis], len(r), axis=2) * \
+                          np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
+                          np.conjugate(special.sph_harm(m, l, p, t)) \
+                          [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
+                print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
+            append_coeffs_hdf5(filename, l, coeffs)
+
+    elif lmax > 85:
+        try:
+            import pyshtools as pysh
+        except ImportError:
+            print(f'Error: lmax = {lmax} -- values over 85 requires PySHTOOLS '
+                  f'https://github.com/SHTOOLS try pip install pyshtools')
+            exit()
+        print(f'\twarning: lmax values over 85 generate massive files only lmax = {lmax} frame will be stored')
+        ylm_pysh = np.vectorize(pysh.expand.spharm_lm)
+        for l in range(lmax+1):
+            for m in range(-l, l+1):
+                coeffs += ko ** 2 / (2 * np.pi ** 2 * np.round((-1j) ** l)) * \
+                          np.repeat(ylm_pysh(l, m, EL, AZ, normalization='ortho', csphase=-1, kind='complex', degrees=False)[:, :, np.newaxis], len(r), axis=2) * \
+                          np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
+                          np.conjugate(special.sph_harm(m, l, p, t)) \
+                          [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
+                print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
+            append_coeffs_hdf5(filename, 0, coeffs)
 
     print(f"Complete time: \t{time.time()-start_time}")
 

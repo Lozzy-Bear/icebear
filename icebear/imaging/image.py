@@ -180,7 +180,7 @@ def calculate_image(visibilities, coeffs):
     -------
 
     """
-    brightness = icebear.swht_py(visibilities, coeffs)
+    brightness = icebear.imaging.swht.swht_py(visibilities, coeffs)
     brightness = brightness_cutoff(brightness)
     cx, cy, cx_spread, cy_spread, area = centroid_center(brightness)
 
