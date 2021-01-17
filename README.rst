@@ -57,7 +57,6 @@ Level 2: {radar_config}_{experiment_name}_{image_method}_{resolution}_{date}_{tx
 
     $ ib3d_normal_swht_01deg_2019_10_24_00_prelate_bakker.h5
 
-
 Attribute Information
 ---------------------
 ==================================  ==========================================================================================================
