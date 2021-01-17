@@ -96,7 +96,7 @@ imaging_step: [0, 0, 0, 1, 0] # [day, hour, minute, second, millisecond] step si
 imaging_method: ''  # imaging method used (ex; swht, linear)
 # SWHT Imaging Method Settings
 # ----------------------------------------------------------------------------------------------------------------------
-swht_coeffs: '' # path to swht_coeffs file to be used, if left blank coeffs wil be calculated using below settings
+swht_coeffs: # path to swht_coeffs file to be used, if left blank coeffs wil be calculated using below settings
 fov: [[-45, 45], [0, 45]] # [[az min, az max], [el min, el max]] image field of view
 fov_center: [0, 0]  # [az, el] angles in image which coincide with receiver boresight
 resolution: 0.1 # pixel resolution in degrees

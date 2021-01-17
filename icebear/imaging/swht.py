@@ -41,12 +41,12 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
             Altitude baseline coordinate divided by wavelength.
     """
 
-    array_name = config.radar_name
-    wavelength = config.wavelength
-    date = config.config_updated
-    u, v, w = utils.baselines(np.array(config.rx_x),
-                              np.array(config.rx_y),
-                              np.array(config.rx_z),
+    array_name = config.radar_config
+    wavelength = 299792458 / config.center_freq
+    date = config.date_created
+    u, v, w = utils.baselines(config.rx_ant_coords[0, :],
+                              config.rx_ant_coords[1, :],
+                              config.rx_ant_coords[2, :],
                               wavelength)
     if config.check_attr('fov'):
         fov = config.fov
