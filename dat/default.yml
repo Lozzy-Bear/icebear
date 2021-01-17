@@ -97,10 +97,10 @@ imaging_method: ''  # imaging method used (ex; swht, linear)
 # SWHT Imaging Method Settings
 # ----------------------------------------------------------------------------------------------------------------------
 swht_coeffs: # path to swht_coeffs file to be used, if left blank coeffs wil be calculated using below settings
-fov: [[45, 135], [45, 90]] # [[az min, az max], [el min, el max]] image field of view
+fov: [[135, 45], [90, 45]] # [[az max, az min], [el max, el min]] image field of view
 fov_center: [90, 90]  # [az, el] angles in image which coincide with receiver boresight
-resolution: 1.0 # pixel resolution in degrees
-lmax: 35 # maximum harmonic degree the coefficients were calculated
+resolution: 0.1 # pixel resolution in degrees
+lmax: 218 # maximum harmonic degree the coefficients were calculated
 # Linear Imaging Method Settings
 # ----------------------------------------------------------------------------------------------------------------------
 

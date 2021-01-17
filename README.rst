@@ -125,22 +125,24 @@ data/{time}/xspectra_noise
 Imaging Attributes (Level 2)
 ----------------------------------------------------------------------------------------------------------------------------------------------
 imaging_method                      imaging method used (ex; swht, linear)
-clean                               image cleaning method applied
-center                              target location method applied
-swht_coeffs                         name of swht_coeffs file used, these files are upward of 4 GB
-fov                                 [[az min, az max], [el min, el max]] image field of view
-fov_center                          [az, el] angles in image which coincide with receiver boresight
-resolution                          pixel resolution in degrees
-lmax                                maximum harmonic degree the coefficients were calculated
 data/{time}/time                    [year, month, day, hour, minute, second] data time stamp
 data/{time}/doppler_shift           target doppler shift in Hz
 data/{time}/snr_db                  target signal strength in dB
 data/{time}/rf_distance             distance from transmitter to target to receiver in kilometers
 data/{time}/azimuth                 targets azimuth position from fov_center in degrees
+SWHT Method Specific (Level 2)
+----------------------------------------------------------------------------------------------------------------------------------------------
+swht_coeffs                         name of swht_coeffs file used, these files are upward of 4 GB
+fov                                 [[az max, az min], [el max, el min]] image field of view
+fov_center                          [az, el] angles in image which coincide with receiver boresight
+resolution                          pixel resolution in degrees
+lmax                                maximum harmonic degree the coefficients were calculated
 data/{time}/elevation               targets elevation position from fov_center in degrees
 data/{time}/azimuth_spread          targets spread in azimuth given in degrees
 data/{time}/elevation_spread        targets spread in elevation given in degrees
 data/{time}/area                    area of target in image, highly variant based on imaging settings
+wavelength                          radar wavelength, c / center_freq -- swht coeffs hdf5 file specific
+baselines                           baselines u, v, w -- swht coeffs hdf5 file specific
 Plotting Attributes (Level 3)
 ----------------------------------------------------------------------------------------------------------------------------------------------
 spatial_spread_function             function to determine spreading

@@ -92,7 +92,7 @@ def simulate(config, azimuth, elevation, azimuth_spread, elevation_spread):
         visibility[:, i, i, i, i] = visibility[:, i, i, i, i] / np.abs(visibility[0, i, i, i, i])
     visibility = np.sum(visibility_dist, axis=(1, 2, 3, 4))
     visibility = np.append(visibility, np.conjugate(visibility))
-    coeffs = icebear.imaging.swht.unpackage_factors_hdf5(config.swht_coeffs, int(config.lmax))
+    coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
     brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
 
     # This section activates the experimental angular_frequency_beamforming()
@@ -103,6 +103,8 @@ def simulate(config, azimuth, elevation, azimuth_spread, elevation_spread):
     brightness = icebear.imaging.image.brightness_cutoff(brightness, threshold=0.8)
     cx, cy, cx_spread, cy_spread, area = icebear.imaging.image.centroid_center(brightness)
 
+    cx = cx * config.resolution - config.fov[0, 0] + config.fov_center[0]
+    cy = cy * config.resolution - config.fov[1, 0] + config.fov_center[1]
     print(f'\t-result azimuth {cx} deg x {cx_spread} deg')
     print(f'\t-result elevation {cy} deg x {cy_spread} deg')
     print(f'\t-result area {area}')
@@ -116,12 +118,13 @@ def simulate(config, azimuth, elevation, azimuth_spread, elevation_spread):
 if __name__ == '__main__':
     path = Path(__file__).parent.parent.parent / "dat/default.yml"
     config = utils.Config(str(path))
-
     # Change this to you swht_coeffs local save
-    config.swht_coeffs = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85'
-    config.lmax = 85
+    coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_10res_85lmax.h5'
+    config.update_config(coeffs_file)
+    config.swht_coeffs = coeffs_file
+    config.print_attrs()
 
-    brightness = simulate(config, np.array([20, -20, 0]), np.array([15, 15, 15]), np.array([3, 3, 3]), np.array([3, 3, 3]))
+    brightness = simulate(config, np.array([10]), np.array([15]), np.array([3]), np.array([3]))
     plt.figure()
     plt.pcolormesh(brightness)
     plt.colorbar()

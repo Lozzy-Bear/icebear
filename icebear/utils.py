@@ -32,8 +32,8 @@ def uvw_to_rtp(u, v, w):
     """
 
     r = np.sqrt(u ** 2 + v ** 2 + w ** 2)
-    t = np.arctan2(w, np.sqrt(u ** 2 + v ** 2)) # * -1 + np.pi / 2
-    p = np.arctan2(v, u) #+ np.pi
+    t = np.arctan2(np.sqrt(u ** 2 + v ** 2), w)
+    p = np.arctan2(v, u)
     np.nan_to_num(t, copy=False)
 
     return r, t, p
@@ -270,7 +270,7 @@ class Config:
         if file.split('.')[1] == 'h5':
             stream = h5py.File(file, 'r')
             for key in list(stream.keys()):
-                if key == 'data':
+                if key == 'data' or key == 'coeffs':
                     pass
                 # This horrible little patch fixes strings to UTF-8 from 'S' when loaded from HDF5's
                 # and removes unnecessary arrays
@@ -281,9 +281,12 @@ class Config:
                     setattr(self, key, temp_value)
                 else:
                     temp_value = stream[f'{key}'][()]
-                    if len(temp_value) == 1:
-                        temp_value = temp_value[0]
-                    setattr(self, key, temp_value)
+                    try:
+                        if len(temp_value) == 1:
+                            temp_value = temp_value[0]
+                        setattr(self, key, temp_value)
+                    except:
+                        setattr(self, key, temp_value)
 
     def print_attrs(self):
         print("experiment attributes loaded: ")

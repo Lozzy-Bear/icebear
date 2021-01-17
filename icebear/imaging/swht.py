@@ -5,7 +5,7 @@ import icebear.utils as utils
 import h5py
 
 
-def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0, lmax=85):
+def generate_coeffs(config, fov=np.array([[0, 360], [0, 90]]), resolution=1.0, lmax=85):
     """
     Makes an array containing all the factors that do not change with Visibility values.
     This array can then be saved to quickly create Brightness values given changing
@@ -15,10 +15,8 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
     ----------
         config : Class Object
             Config class instantiation.
-        azimuth : float np.array
-            [start, stop] angles within 0 to 360 degrees.
-        elevation : float np.array
-            [start, stop] angles within 0 to 180 degrees.
+        fov : float np.array
+            [[start, stop], [start, stop]] azimuth, elevation angles within 0 to 360 and 0 to 180 degrees.
         resolution : float
             Angular resolution in degree per pixel.
         lmax : int
@@ -43,7 +41,7 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
 
     array_name = config.radar_config
     wavelength = 299792458 / config.center_freq
-    date = config.date_created
+    date_created = config.date_created
     u, v, w = utils.baselines(config.rx_ant_coords[0, :],
                               config.rx_ant_coords[1, :],
                               config.rx_ant_coords[2, :],
@@ -58,56 +56,46 @@ def generate_coeffs(config, azimuth=(0, 360), elevation=(0, 90), resolution=1.0,
     az_step = int(np.abs(fov[0, 0] - fov[0, 1]) / resolution)
     el_step = int(np.abs(fov[1, 0] - fov[1, 1]) / resolution)
     r, t, p = utils.uvw_to_rtp(u, v, w)
-    r *= config.wavelength
-    az = np.radians(np.linspace(azimuth[0], azimuth[1], az_step))
-    el = np.radians(np.linspace(elevation[0], elevation[1], el_step))
-    config_name = f"{int(np.round(np.abs(azimuth[0] - azimuth[1]))):03d}az-" \
-                  f"{int(np.round(np.abs(elevation[0] - elevation[1]))):03d}el-" \
-                  f"{str(resolution).replace('.', '')}res-" \
-                  f"{lmax}"
-
-    # Example filename: swhtcoeffs_icebear_2020-07-13_360-90-10-85
-    filename = f"swhtcoeffs_{array_name}_{date[0]}-{date[1]}-{date[2]}_{config_name}"
+    r *= wavelength # Since r, t, p was converted from u, v, w we need the * wavelength back to match SWHT algorithm
+    az = np.deg2rad(np.linspace(fov[0, 0], fov[0, 1], az_step))
+    el = np.deg2rad(np.linspace(fov[1, 0], fov[1, 1], el_step))
+    setting_name = f"{int(np.round(np.abs(fov[0, 0] - fov[0, 1]))):03d}az_" \
+                  f"{int(np.round(np.abs(fov[1, 0] - fov[1, 1]))):03d}el_" \
+                  f"{str(resolution).replace('.', '')}res_" \
+                  f"{lmax}lmax"
+    filename = f"swhtcoeffs_{array_name}_{date_created[0]:04d}_{date_created[1]:02d}_{date_created[2]:02d}_{setting_name}.h5"
 
     print(f"Calculating SWHT coeffs:")
     print(f"\t-filename: {filename}")
     print(f"\t-configuration: {array_name}")
-    print(f"\t-azimuth: {azimuth[0]} - {azimuth[1]}")
-    print(f"\t-elevation: {elevation[0]} - {elevation[1]}")
+    print(f"\t-azimuth: {fov[0, 0]} - {fov[0, 1]}")
+    print(f"\t-elevation: {fov[1, 0]} - {fov[1, 1]}")
     print(f"\t-resolution: {resolution}")
     print(f"\t-degree: {lmax}")
     print(f"\t-wavelength: {wavelength}")
 
-    create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax,
-                       wavelength, r, t, p)
+    create_coeffs(filename, date_created, array_name, fov, resolution, lmax, wavelength, np.array([u, v, w]))
     calculate_coeffs(filename, az, el, ko, r, t, p, lmax)
 
     return filename
 
 
-def create_coeffs_hdf5(filename, date, array_name, azimuth, elevation, resolution, lmax,
-                       wavelength, r, t, p):
+def create_coeffs(filename, date_created, array_name, fov, resolution, lmax, wavelength, baselines):
     f = h5py.File(filename, 'w')
-    f.create_group('general')
-    f.create_dataset('general/radar_name', data=array_name)
-    f.create_dataset('general/date', data=date)
-    f.create_group('settings')
-    f.create_dataset('settings/azimuth', data=azimuth)
-    f.create_dataset('settings/elevation', data=elevation)
-    f.create_dataset('settings/resolution', data=resolution)
-    f.create_dataset('settings/lmax', data=lmax)
-    f.create_dataset('settings/wavelength', data=wavelength)
-    f.create_group('baseline')
-    f.create_dataset('baseline/radius', data=r)
-    f.create_dataset('baseline/theta', data=t)
-    f.create_dataset('baseline/phi', data=p)
+    f.create_dataset('radar_config', data=np.array(array_name, dtype='S'))
+    f.create_dataset('date_created', data=date_created)
+    f.create_dataset('fov', data=fov)
+    f.create_dataset('resolution', data=resolution)
+    f.create_dataset('lmax', data=lmax)
+    f.create_dataset('wavelength', data=wavelength)
+    f.create_dataset('baselines', data=baselines)
     f.create_group('coeffs')
     f.close()
 
     return None
 
 
-def append_coeffs_hdf5(filename, l, coeffs):
+def append_coeffs(filename, l, coeffs):
     f = h5py.File(filename, 'a')
     f.create_dataset(f'coeffs/{l:02d}', data=coeffs)
     f.close()
@@ -167,7 +155,7 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                           np.conjugate(special.sph_harm(m, l, p, t)) \
                           [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
                 print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
-            append_coeffs_hdf5(filename, l, coeffs)
+            append_coeffs(filename, l, coeffs)
 
     elif lmax > 85:
         try:
@@ -186,22 +174,42 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                           np.conjugate(special.sph_harm(m, l, p, t)) \
                           [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
                 print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
-            append_coeffs_hdf5(filename, 0, coeffs)
+            if l == 85:
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.1):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.2):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.3):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.4):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.5):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.6):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.7):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.8):
+                append_coeffs(filename, l, coeffs)
+            if l == int(lmax * 0.9):
+                append_coeffs(filename, l, coeffs)
+        append_coeffs(filename, l, coeffs)
 
     print(f"Complete time: \t{time.time()-start_time}")
 
     return None
 
 
-def unpackage_factors_hdf5(filename, ind):
+def unpackage_coeffs(filename, ind):
     """
     factors:	Array to be saved into pickle file.
     filename:	Name of the pickle file to store the SWHT Factors array.
     """
     f = h5py.File(filename, 'r')
-    factors = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
-    print('hdf5 factors:', factors.shape)
-    return factors
+    coeffs = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
+    print('hdf5 coeffs:', coeffs.shape)
+    return coeffs
 
 
 def swht_py(visibilities, coeffs):

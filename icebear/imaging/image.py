@@ -19,7 +19,7 @@ def generate_level2(config):
     print('imaging start:')
 
     file = h5py.File(config.imaging_source, 'r')
-    coeffs = icebear.imaging.swht.unpackage_factors_hdf5(config.swht_coeffs, int(config.lmax))
+    coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
     time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
