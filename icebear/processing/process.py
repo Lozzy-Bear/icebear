@@ -56,9 +56,10 @@ def generate_level1(config):
         # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
             filename = f'{config.processing_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
-                f'{config.radar_name}_{config.processing_method}_{config.tx_name}_{config.rx_name}_' \
-                f'{int(config.snr_cutoff):02d}dB_{int(config.incoherent_averages):02d}00ms_' \
-                f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}.h5'
+                       f'{config.radar_name}_{config.experiment_name}_{int(config.snr_cutoff_db):02d}dB_' \
+                       f'{int(config.incoherent_averages):02d}00ms_' \
+                       f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}_' \
+                       f'{config.tx_site_name}_{config.rx_site_name}.h5'
             print(f'\t-created level 1 HDf5: {filename}')
             filenames.append(filename)
             create_level1_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
@@ -136,6 +137,9 @@ def create_level1_hdf5(config, filename, year, month, day):
         config : Class Object
             Config class instantiation.
         filename:
+        year :
+        month :
+        day :
 
     Returns
     -------
@@ -147,56 +151,59 @@ def create_level1_hdf5(config, filename, year, month, day):
     """
     # general information
     f = h5py.File(filename, 'w')
-    f.create_dataset('config_updated', data=np.array(config.config_updated))
+    f.create_dataset('date_created', data=config.date_created)
+    f.create_dataset('version', data=np.array(config.version, dtype='S'))
     f.create_dataset('date', data=np.array([year, month, day]))
-    f.create_dataset('processing_method', data=config.processing_method)
-    # transmitter site information
-    f.create_dataset('tx_name', data=config.tx_name)
-    f.create_dataset('tx_coordinates', data=np.array(config.tx_coordinates))
-    f.create_dataset('tx_updated', data=config.tx_updated)
-    f.create_dataset('tx_pointing', data=config.tx_pointing)
-    f.create_dataset('tx_x', data=np.array(config.rx_x))
-    f.create_dataset('tx_y', data=np.array(config.rx_y))
-    f.create_dataset('tx_z', data=np.array(config.rx_z))
-    f.create_dataset('tx_mask', data=np.array(config.tx_mask))
-    f.create_dataset('tx_phase', data=np.array(config.tx_phase))
-    f.create_dataset('tx_magnitude', data=np.array(config.tx_magnitude))
-    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
-    f.create_dataset('tx_antenna_type', data=config.tx_antenna_type)
-    f.create_dataset('tx_rf_path', data=config.tx_rf_path)
+    f.create_dataset('config_updated', data=np.array(config.config_updated))
+    f.create_dataset('experiment_name', data=np.array(config.experiment_name, dtype='S'))
+    f.create_dataset('radar_config', data=np.array(config.radar_config, dtype='S'))
+    f.create_dataset('center_freq', data=config.center_freq)
     # receiver site information
-    f.create_dataset('rx_name', data=config.rx_name)
-    f.create_dataset('rx_coordinates', data=np.array(config.rx_coordinates))
-    f.create_dataset('rx_updated', data=config.rx_updated)
-    f.create_dataset('rx_pointing', data=config.rx_pointing)
-    f.create_dataset('rx_x', data=np.array(config.rx_x))
-    f.create_dataset('rx_y', data=np.array(config.rx_y))
-    f.create_dataset('rx_z', data=np.array(config.rx_z))
-    f.create_dataset('rx_mask', data=np.array(config.rx_mask))
-    f.create_dataset('rx_phase', data=np.array(config.rx_phase))
-    f.create_dataset('rx_magnitude', data=np.array(config.rx_magnitude))
+    f.create_dataset('rx_site_name', data=np.array(config.rx_site_name, dtype='S'))
+    f.create_dataset('rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('rx_heading', data=config.rx_heading)
+    f.create_dataset('rx_rf_path', data=np.array(config.rx_rf_path, dtype='S'))
+    f.create_dataset('rx_ant_type', data=np.array(config.rx_ant_type, dtype='S'))
+    f.create_dataset('rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('rx_feed_corr_date ', data=config.rx_feed_corr_date)
+    f.create_dataset('rx_feed_corr_type', data=np.array(config.rx_feed_corr_type, dtype='S'))
+    f.create_dataset('rx_ant_mask', data=config.rx_ant_mask)
     f.create_dataset('rx_sample_rate', data=config.rx_sample_rate)
-    f.create_dataset('rx_antenna_type', data=config.rx_antenna_type)
-    f.create_dataset('rx_rf_path', data=config.rx_rf_path)
+    # transmitter site information
+    f.create_dataset('tx_site_name', data=np.array(config.tx_site_name, dtype='S'))
+    f.create_dataset('tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('tx_heading', data=config.tx_heading)
+    f.create_dataset('tx_rf_path', data=np.array(config.tx_rf_path, dtype='S'))
+    f.create_dataset('tx_ant_type', data=np.array(config.tx_ant_type, dtype='S'))
+    f.create_dataset('tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('tx_feed_corr_date ', data=config.tx_feed_corr_date)
+    f.create_dataset('tx_feed_corr_type', data=np.array(config.tx_feed_corr_type, dtype='S'))
+    f.create_dataset('tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('tx_cw_code', data=config.tx_cw_code)
+    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
     # processing settings
-    f.create_dataset('wavelength', data=config.wavelength)
-    f.create_dataset('center_frequency', data=config.center_frequency)
-    f.create_dataset('prn_code_file', data=config.prn_code_file)
-    f.create_dataset('raw_sample_rate', data=config.raw_sample_rate)
     f.create_dataset('decimation_rate', data=config.decimation_rate)
-    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
     f.create_dataset('time_resolution', data=config.time_resolution)
-    f.create_dataset('snr_cutoff', data=config.snr_cutoff)
-    f.create_dataset('spectra_descriptors', data=np.array(config.spectra_descriptors, dtype='S'))
-    f.create_dataset('xspectra_descriptors', data=np.array(config.xspectra_descriptors, dtype='S'))
+    f.create_dataset('coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('number_ranges', data=config.number_ranges)
+    f.create_dataset('range_resolution', data=config.range_resolution)
+    f.create_dataset('timestamp_corr', data=config.timestamp_corr)
+    f.create_dataset('clutter_gates', data=config.clutter_gates)
+    f.create_dataset('code_length', data=config.code_length)
+    f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
+    f.create_dataset('spectra_descriptors', data=config.spectra_descriptors)
+    f.create_dataset('xspectra_descriptors', data=config.xspectra_descriptors)
     f.create_group('data')
     f.close()
     return None
 
 
-def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_distance, logsnr, noise,
-                       spectra, spectra_variance, spectra_median, spectra_clutter_corr,
-                       xspectra, xspectra_variance, xspectra_median, xspectra_clutter_corr):
+def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler_shift, rf_distance, snr_db, noise,
+                       spectra, spectra_variance, spectra_noise, spectra_clutter_corr,
+                       xspectra, xspectra_variance, xspectra_noise, xspectra_clutter_corr):
     """
     Append spectra and cross-spectra ICEBEAR data to previously created HDF5 file
 
@@ -207,17 +214,17 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
         minute
         second
         data_flag
-        doppler
+        doppler_shift
         rf_distance
-        logsnr
+        snr_db
         noise
         spectra
         spectra_variance
-        spectra_median
+        spectra_noise
         spectra_clutter_corr
         xspectra
         xspectra_variance
-        xspectra_median
+        xspectra_noise
         xspectra_clutter_corr
 
     Returns
@@ -233,17 +240,17 @@ def append_level1_hdf5(filename, hour, minute, second, data_flag, doppler, rf_di
     f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
     # create the noise data for the averaged spectra at a given time
     f.create_dataset(f'data/{time}/avg_spectra_noise', data=noise)
-    f.create_dataset(f'data/{time}/spectra_median', data=spectra_median)
-    f.create_dataset(f'data/{time}/xspectra_median', data=xspectra_median)
-    f.create_dataset(f'data/{time}/spectra_clutter_correction', data=spectra_clutter_corr)
-    f.create_dataset(f'data/{time}/xspectra_clutter_correction', data=xspectra_clutter_corr)
+    f.create_dataset(f'data/{time}/spectra_noise', data=spectra_noise)
+    f.create_dataset(f'data/{time}/xspectra_noise', data=xspectra_noise)
+    f.create_dataset(f'data/{time}/spectra_clutter_corr', data=spectra_clutter_corr)
+    f.create_dataset(f'data/{time}/xspectra_clutter_corr', data=xspectra_clutter_corr)
     f.create_dataset(f'data/{time}/data_flag', data=[data_flag])
     # only write data if there are measurements above the SNR threshold
     print(f'\t-data_flag = {data_flag}')
     if data_flag:
-        f.create_dataset(f'data/{time}/doppler_shift', data=doppler)
+        f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
         f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
-        f.create_dataset(f'data/{time}/snr_db', data=logsnr)
+        f.create_dataset(f'data/{time}/snr_db', data=snr_db)
         f.create_dataset(f'data/{time}/spectra', data=spectra)
         f.create_dataset(f'data/{time}/spectra_variance', data=spectra_variance)
         f.create_dataset(f'data/{time}/xspectra', data=xspectra)

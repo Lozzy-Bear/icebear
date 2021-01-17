@@ -164,7 +164,7 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
             print(f'Error: lmax = {lmax} -- values over 85 requires PySHTOOLS '
                   f'https://github.com/SHTOOLS try pip install pyshtools')
             exit()
-        print(f'\twarning: lmax values over 85 generate massive files only lmax = {lmax} frame will be stored')
+        print(f'\twarning: lmax values over 85 generate massive files only 1/10th frames will be stored, evenly distributed')
         ylm_pysh = np.vectorize(pysh.expand.spharm_lm)
         for l in range(lmax+1):
             for m in range(-l, l+1):
