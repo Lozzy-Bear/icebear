@@ -32,8 +32,8 @@ def uvw_to_rtp(u, v, w):
     """
 
     r = np.sqrt(u ** 2 + v ** 2 + w ** 2)
-    t = np.pi / 2 - np.arctan2(w, np.sqrt(u ** 2 + v ** 2))
-    p = np.arctan2(v, u) + np.pi
+    t = np.arctan2(w, np.sqrt(u ** 2 + v ** 2)) # * -1 + np.pi / 2
+    p = np.arctan2(v, u) #+ np.pi
     np.nan_to_num(t, copy=False)
 
     return r, t, p

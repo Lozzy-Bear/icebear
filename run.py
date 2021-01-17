@@ -19,7 +19,7 @@ class Imaging:
         if config.check_attr('swht_coeffs'):
             if config.compare_attr('swht_coeffs', None):
                 filename = icebear.imaging.swht.generate_coeffs(config)
-                config.add_attr('swht_coeffs', filename)
+                config.update_attr('swht_coeffs', filename)
             pass
         else:
             print(f'ERROR: Attribute {key} does not exists')
@@ -55,7 +55,12 @@ def main():
 
 
 def run(args):
-    config = icebear.utils.Config(args.configuration)
+    if args.configuration is None:
+        path = Path(__file__).parent.parent.parent / "dat/default.yml"
+        config = icebear.utils.Config(str(path))
+        print('running with default configuration: default.yml')
+    else:
+        config = icebear.utils.Config(args.configuration)
     config.print_attrs()
 
     if args.processing:
