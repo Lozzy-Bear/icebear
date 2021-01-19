@@ -1,0 +1,9 @@
+# Imaging Settings
+array_setup: ['3D'] #other option is linear
+azimuth: [-30,30]
+azimuthal_extent: [0,70]
+num_azimuths: [300]
+num_azimuthal_extents: [800]
+linear_ant_indices: [0,1,3,7,9]
+fit_method: ['gauss'] #maybe different method for fitting will be developed
+multiprocesing: [1] # 1 - yes, 0 - no

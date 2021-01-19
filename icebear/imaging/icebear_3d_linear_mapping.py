@@ -15,6 +15,7 @@ output = mp.Queue()
 azi_values_gauss = np.pi*(np.arange(300)-150)/(150)
 azi_width_values_gauss = (np.pi*(np.arange(800)/3)/(600))**2
 
+
 #determine the expected spatial coherence of the incoming signal between the baselines for the antennas arranged in a linear array
 def coherence_calc_gauss(lambda_r,distance,imag_azi,imag_width):
 
@@ -24,10 +25,12 @@ def coherence_calc_gauss(lambda_r,distance,imag_azi,imag_width):
         coherence_values[:,:,x] = np.matmul(np.exp(1.0j*imag_azi*distance[x]/lambda_r).reshape(len(imag_azi),1),np.exp(-imag_width*(distance[x]/lambda_r)**2).reshape(1,len(imag_width)))   
     return coherence_values
 
+
 #determine the least square fit value with weights applied
 def linear_least_square_fit(exp_data,calc_data,weights):
     sigma_2 = np.matmul((np.abs(exp_data[None,None,:]-calc_data))**2,weights)
     return sigma_2
+
 
 #for the parallelization
 def fit_results(x,spectra_values_antennas,xspectra_values,logsnr_single,coherence_values_calc_gauss,baseline_lengths):
@@ -58,86 +61,38 @@ def fit_results(x,spectra_values_antennas,xspectra_values,logsnr_single,coherenc
 
     #return the values for azimuth and azimuth width corresponding to the minimum least squares fit
     output.put((x,gauss_angle,gauss_width,lsf_gauss_value))
-
-#create HDF5 File
-def level2_hdf5_file_write(year,month,day,hours,level1_icebear_file):
-
-    tx_name = 'prelate'
-    rx_name = 'bakker'
-
-    imag_values_file = h5py.File(f"/ib_data/prototype_image_values/{year:04d}_{month:02d}_{day:02d}/icebear_3d_linear_imag_{year:04d}_{month:02d}_{day:02d}_{hours:02d}_{tx_name}_{rx_name}.h5", 'w')
-
-    # date and experiment
-    imag_values_file.create_dataset('date', data=[year,month,day])
-    imag_values_file.create_dataset('experiment_name', data=level1_icebear_file['experiment_name'])
     
-    #read in info for the given date and experiment
     
-    #rx-setup file read-in routine
+def append_level2_hdf5_linear_imaging(filename, hour, minute, second, azimuth, image_data_flag, azimuth_extent, least_squares_fit):
+    """
     
-    #tx-setup file read-in routine
+    Parameters
+    ----------
+    filename
+    hour
+    minute
+    second
+    image_data_flag
+    azimuth
+    azimuthal_extent
+    least_squares_fit
 
-    # receiver site information (can go in external file)
-    imag_values_file.create_dataset('rx_name',data=level1_icebear_file['rx_name'])
-    imag_values_file.create_dataset('rx_antenna_locations_x_y_z',data=level1_icebear_file['rx_antenna_locations_x_y_z'])
-    imag_values_file.create_dataset('rx_RF_path',data=level1_icebear_file['rx_RF_path'])
-    imag_values_file.create_dataset('rx_antenna_type',data=level1_icebear_file['rx_antenna_type'])
-    imag_values_file.create_dataset('rx_phase_corrections_applied', data=level1_icebear_file['rx_phase_corrections_applied'])
-    imag_values_file.create_dataset('rx_magnitude_corrections_applied', data=level1_icebear_file['rx_magnitude_corrections_applied'])
-    imag_values_file.create_dataset('rx_location_lat_lon', data=level1_icebear_file['rx_location_lat_lon'])
-    imag_values_file.create_dataset('rx_pointing_dir', data=level1_icebear_file['rx_pointing_dir'])
+    Returns
+    -------
 
-    # transmitter site information (can go in external file)
-    imag_values_file.create_dataset('tx_name', data=level1_icebear_file['tx_name'])
-    imag_values_file.create_dataset('tx_antenna_locations_x_y_z', data=level1_icebear_file['tx_antenna_locations_x_y_z'])
-    imag_values_file.create_dataset('tx_RF_path', data=level1_icebear_file['tx_RF_path'])
-    imag_values_file.create_dataset('tx_antenna_type', data=level1_icebear_file['tx_antenna_type'])
-    imag_values_file.create_dataset('tx_phase_corrections', data=level1_icebear_file['tx_phase_corrections'])
-    imag_values_file.create_dataset('tx_magnitude_corrections', data=level1_icebear_file['tx_magnitude_corrections'])
-    imag_values_file.create_dataset('tx_sample_rate', data=level1_icebear_file['tx_sample_rate'])
-    imag_values_file.create_dataset('tx_antennas_used', data=level1_icebear_file['tx_antennas_used'])
-    imag_values_file.create_dataset('tx_location_lat_lon', data=level1_icebear_file['tx_location_lat_lon'])
-    imag_values_file.create_dataset('tx_pointing_dir', data=level1_icebear_file['tx_pointing_dir'])
-
-    # processing details
-    imag_values_file.create_dataset('center_freq', data=level1_icebear_file['center_freq'])
-    imag_values_file.create_dataset('raw_recorded_sample_rate', data=level1_icebear_file['raw_recorded_sample_rate'])
-    imag_values_file.create_dataset('software_decimation_rate', data=level1_icebear_file['software_decimation_rate'])
-    imag_values_file.create_dataset('tx_code_used', data=level1_icebear_file['tx_code_used'])
-    imag_values_file.create_dataset('incoherent_averages', data=level1_icebear_file['incoherent_averages'])
-    imag_values_file.create_dataset('time_resolution', data=level1_icebear_file['time_resolution'])
-    imag_values_file.create_dataset('dB_SNR_cutoff', data=level1_icebear_file['dB_SNR_cutoff'])
-    
-    imag_values_file.close
-
-#write data to HDF5
-def level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,doppler,range_values,logsnr,azimuth,azimuth_extent,least_squares_fit):
-
-    tx_name = 'prelate'
-    rx_name = 'bakker'
-
+    """
     # append a new group for the current measurement
-    imag_values_file = h5py.File(f'/ib_data/prototype_image_values/{year:04d}_{month:02d}_{day:02d}/icebear_3d_linear_imag_{year:04d}_{month:02d}_{day:02d}_{hours:02d}_{tx_name}_{rx_name}.h5', 'a')
-    imag_values_file.create_group(f'data/{hours:02d}{minutes:02d}{seconds:05d}')
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    f.create_dataset(f'data/{time}/image_no_data', data=image_data_flag)
+    f.create_dataset(f'data/{time}/azimuth', data=azimuth)
+    f.create_dataset(f'data/{time}/azimuthal_extent', data=azimuthal_extent)
+    f.create_dataset(f'data/{time}/least_squares_fit', data=least_squares_fit)
+    f.close()
+    return None
 
-    imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/time',\
-                                   data=[hours,minutes,seconds])
 
-    # data flag
-    imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/data_flag',data=[data_flag])
-
-    # only write data if there are measurements above the SNR threshold
-    if data_flag==True:
-        imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/doppler_shift',data=doppler)
-        imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/rf_distance',data=range_values)    
-        imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/snr_dB',data=logsnr)
-        imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/azimuth', data=azimuth)
-        imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/azimuth_extent', data=azimuth_extent)
-        imag_values_file.create_dataset(f'data/{hours:02d}{minutes:02d}{seconds:05d}/least_squares_fit', data=least_squares_fit)
-    
-    imag_values_file.close
-
-def generate_azimuth_data():
+def icebear_linear_imaging():
 
     #set date of data to look at
     year=2020
@@ -166,7 +121,7 @@ def generate_azimuth_data():
         for temp_hours in range(24-hour):
             hours = hour+temp_hours
             ib_file = h5py.File(f'/ib_data/{year:04d}_{month:02d}_{days:02d}/icebear_3d_01dB_1000ms_vis_{year:04d}_{month:02d}_{days:02d}_{hours:02d}_prelate_bakker.h5','r')
-            level2_hdf5_file_write(year,month,day,hours,ib_file)
+            #level2_hdf5_file_write(year,month,day,hours,ib_file)
             for temp_minutes in range(60-minute):
                 minutes = minute+temp_minutes
                 time_start = time.time()
@@ -174,9 +129,8 @@ def generate_azimuth_data():
                     seconds=(second+temp_seconds)*1000
                     
                     if (ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/data_flag'][:]==False):
-                            data_flag = False
-                            averages = 10
-                            level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
+                            image_data_flag = False
+                            append_level2_hdf5_linear_imaging(filename,hours,minutes,seconds,image_data_flag,[],[],[])
                     else:
                         #read in the data to be fit
                         logsnr = np.abs(ib_file[f'data/{hours:02d}{minutes:02d}{seconds:05d}/snr_dB'][:])
@@ -216,14 +170,13 @@ def generate_azimuth_data():
                         #determine if there are any data above the snr cutoff
                         if (len(indices[0])==0):
                             #if no data above threshold, write blanks to imaging hdf5 file
-                            data_flag = False
-                            averages = 10
-                            level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
+                            image_data_flag = False
+                            append_level2_hdf5_linear_imaging(filename,hours,minutes,seconds,image_data_flag,[],[],[])
                         else:
                             #rudimentary check for dropped samples.  Potential area for improvement in future iterations
                             if not any((range_values[indices[0][ind_loop]]<100.0 or (range_values[indices[0][ind_loop]]>2900.0)) for ind_loop in indices[0][:]):
                                 
-                                data_flag = True
+                                image_data_flag = True
                                 averages=10
                                 doppler_t = np.zeros(len(indices[0]))
                                 range_values_t = np.zeros(len(indices[0]))
@@ -290,16 +243,14 @@ def generate_azimuth_data():
                                         least_squares_fit_t[x_value_corr+x_values[counter]] = lsf_gauss_value[counter]
 
                                 #write the fitted imaged data to the hdf5 file
-                                level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,doppler_t,range_values_t,logsnr_t,azimuth_t,azimuth_extent_t,least_squares_fit_t)
+                                append_level2_hdf5_linear_imaging(filename,hours,minutes,seconds,image_data_flag,azimuth_t,azimuth_extent_t,least_squares_fit_t)
 
                             #if there is a significant amount of clutter, dropped samples, and/or noise in the data
                             else:
-                                data_flag = False
-                                averages = 10
-                                level2_hdf5_data_write(year,month,day,hours,minutes,seconds,snr_cutoff,averages,data_flag,[],[],[],[],[],[])
+                                image_data_flag = False
+                                append_level2_hdf5_linear_imaging(filename,hours,minutes,seconds,image_data_flag,[],[],[])
                                                
                 second=0
                 print('One minute process time: ',time.time()-time_start)
             minute=0
-            ib_file.close
         hour=0
