@@ -261,3 +261,102 @@ def swht_cuda():
     """
     return
 
+
+def swht_method(visibilities, coeffs):
+    """
+
+    Parameters
+    ----------
+    visibilities
+    coeffs
+
+    Returns
+    -------
+
+    """
+    brightness = swht_py(visibilities, coeffs)
+    brightness = brightness_cutoff(brightness)
+    cx, cy, cx_spread, cy_spread, area = centroid_center(brightness)
+
+    return cx, cy, cx_spread, cy_spread, area
+
+
+def frequency_difference_beamform():
+    # This function is to be added. It provides exceptional target locating but sacrifices spread information.
+    # Todo
+    return
+
+
+def brightness_cutoff(brightness, threshold=0.5):
+    """
+    Given a Brightness array this normalizes then removes noise in the image below a power threshold.
+    The default threshold is 0.5 (3 dB).
+
+    Parameters
+    ----------
+        brightness
+        threshold
+
+    Returns
+    -------
+
+    """
+    brightness = np.abs(brightness / np.max(brightness))
+    brightness[brightness < threshold] = 0.0
+    return brightness
+
+
+def centroid_center(brightness):
+    """
+    Given a Brightness array this returns the centroid as x, y index of the array and the area of the largest blob.
+
+    Parameters
+    ----------
+        brightness
+
+    Returns
+    -------
+        cx
+        cy
+        area
+    """
+
+    image = np.array(brightness * 255, dtype=np.uint8)
+    threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    contours, _ = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    area = 0
+    cx = np.nan
+    cy = np.nan
+    cx_spread = np.nan
+    cy_spread = np.nan
+    for index, contour in enumerate(contours):
+        temp_area = cv2.contourArea(contour)
+        if temp_area > area:
+            area = temp_area
+            moments = cv2.moments(contour)
+            cx = int(moments['m10']/moments['m00'])
+            cy = int(moments['m01']/moments['m00'])
+            _, _, cx_spread, cy_spread = cv2.boundingRect(contour)
+
+    return cx, cy, cx_spread, cy_spread, area
+
+
+def max_center(brightness):
+    """
+    Given a Brightness array this returns the x, y index of the array of the brightest point.
+
+    Parameters
+    ----------
+        brightness
+
+    Returns
+    -------
+        cx
+        cy
+        area
+
+    """
+
+    index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
+    
+    return index[1], index[0], np.nan

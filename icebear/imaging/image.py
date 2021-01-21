@@ -5,21 +5,33 @@ import icebear.utils as util
 import h5py
 
 
-def generate_level2(config):
+def generate_level2(config, method='linear'):
     """
 
     Parameters
     ----------
-    config
+    config :
+    method : str
+        Imaging method to use, options include; swht, linear
 
     Returns
     -------
 
     """
+    if method == 'linear':
+        # todo
+        calculate_image = _linear_method
+        args = () # Devin any specific args you need to handle should be passed as a tuple
+    elif method == 'swht':
+        calculate_image = _swht_method
+        args = (icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)))
+    else:
+        print(f'ERROR: the imaging method {method} does not exist.')
+        exit()
+
     print('imaging start:')
 
     file = h5py.File(config.imaging_source, 'r')
-    coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
     time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
@@ -34,29 +46,12 @@ def generate_level2(config):
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
         data = file['data'][f'{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}']
         if data['data_flag'][()]:
-            doppler_shift = data['doppler_shift'][()]
-            # This is a little hack to check if we are seeing a dropped sample.
-            # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
-            if len(doppler_shift) >= 28000:
-                print('\t-dropped sample detected; skipped')
-                continue
-            rf_distance = data['rf_distance'][()]
-            snr_db = data['snr_db'][()]
-            visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
-            visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
-            visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
-            azimuth = np.empty_like(doppler_shift)
-            elevation = np.empty_like(doppler_shift)
-            azimuth_spread = np.empty_like(doppler_shift)
-            elevation_spread = np.empty_like(doppler_shift)
-            area = np.empty_like(doppler_shift)
-            for idx, visibility in enumerate(visibilities):
-                azimuth[idx], elevation[idx], azimuth_spread[idx], elevation_spread[idx], area[idx] = calculate_image(visibility, coeffs)
-
-            append_level2_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000), doppler_shift,
-                               snr_db, rf_distance, azimuth, elevation, azimuth_spread, elevation_spread, area)
-            print(f'\t-appended: {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}, '
-                  f'targets: {len(doppler_shift)}')
+            # todo
+            # Devin notice that the args argument is detupled before passing and everything else is standard.
+            # In this way we can pass any amount of additional arguments determined by method.
+            # data will pass by reference to the current hdf5 data we are working on.
+            calculate_image(filename, int(now.hour), int(now.minute), int(now.second * 1000), data, *args)
+            print(f'\t-appended: {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
 
     return None
 
@@ -128,10 +123,10 @@ def create_level2_hdf5(config, filename, year, month, day):
     return None
 
 
-def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf_distance,
-                       azimuth, elevation, azimuth_spread, elevation_spread, area):
+def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf_distance):
     """
-    
+    Appends to the hdf5 the standard data sets.
+
     Parameters
     ----------
     filename
@@ -141,11 +136,6 @@ def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
     doppler_shift
     snr_db
     rf_distance
-    azimuth
-    elevation
-    azimuth_spread
-    elevation_spread
-    area
 
     Returns
     -------
@@ -159,113 +149,80 @@ def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
     f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
     f.create_dataset(f'data/{time}/snr_db', data=snr_db)
     f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
+    f.close()
+
+    return None
+
+
+def linear_append(filename, now, data, any, other, args, like, this):
+    # todo
+    # Devin to do append work here see my _swht_method example.
+    # We do the _ infront to indicate this is not a function normall accesible by the user
+    return
+
+
+def _swht_method(filename, hour, minute, second, data, coeffs):
+    """
+
+    Parameters
+    ----------
+        filename : string
+            Name of the hdf5 file to be appended.
+        hour : int
+            Hour of the data passed.
+        minute : int
+            Minute of the data passed.
+        second : int
+            Second of the data passed.
+        data : dict hdf5
+            HDF5 structure of the level 1 data
+        coeffs : complex64 np.array
+            Matrix of coefficients for imaging with the SWHT
+
+    Returns
+    -------
+        None
+    """
+
+    doppler_shift = data['doppler_shift'][()]
+    # This is a little hack to check if we are seeing a dropped sample.
+    # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
+    if len(doppler_shift) >= 28000:
+        print('\t-dropped sample detected; skipped')
+        return
+    rf_distance = data['rf_distance'][()]
+    snr_db = data['snr_db'][()]
+
+    visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
+    visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
+    visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
+
+    azimuth = np.empty_like(doppler_shift)
+    elevation = np.empty_like(doppler_shift)
+    azimuth_spread = np.empty_like(doppler_shift)
+    elevation_spread = np.empty_like(doppler_shift)
+    area = np.empty_like(doppler_shift)
+
+    for idx, visibility in enumerate(visibilities):
+        azimuth[idx], elevation[idx], azimuth_spread[idx], elevation_spread[idx], area[idx] = \
+            icebear.imaging.swht.swht_method(visibility, coeffs)
+
+    # Custom data appending for SWHT image data sets
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    f.create_group(f'data/{time}')
+    f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
+    f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
+    f.create_dataset(f'data/{time}/snr_db', data=snr_db)
+    f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
     f.create_dataset(f'data/{time}/azimuth', data=azimuth)
     f.create_dataset(f'data/{time}/elevation', data=elevation)
     f.create_dataset(f'data/{time}/azimuth_spread', data=azimuth_spread)
     f.create_dataset(f'data/{time}/elevation_spread', data=elevation_spread)
     f.create_dataset(f'data/{time}/area', data=area)
     f.close()
-    return None
 
-
-def calculate_image(visibilities, coeffs):
-    """
-
-    Parameters
-    ----------
-    visibilities
-    coeffs
-
-    Returns
-    -------
-
-    """
-    brightness = icebear.imaging.swht.swht_py(visibilities, coeffs)
-    brightness = brightness_cutoff(brightness)
-    cx, cy, cx_spread, cy_spread, area = centroid_center(brightness)
-
-    return cx, cy, cx_spread, cy_spread, area
-
-
-# Cleaning options
-def frequency_difference_beamform():
-    # This function is to be added. It provides exceptional target locating but sacrifices spread information.
-    # Todo
     return
-
-
-def brightness_cutoff(brightness, threshold=0.5):
-    """
-    Given a Brightness array this normalizes then removes noise in the image below a power threshold.
-    The default threshold is 0.5 (3 dB).
-
-    Parameters
-    ----------
-        brightness
-        threshold
-
-    Returns
-    -------
-
-    """
-    brightness = np.abs(brightness / np.max(brightness))
-    brightness[brightness < threshold] = 0.0
-    return brightness
-
-
-# Target location finding options
-def centroid_center(brightness):
-    """
-    Given a Brightness array this returns the centroid as x, y index of the array and the area of the largest blob.
-
-    Parameters
-    ----------
-        brightness
-
-    Returns
-    -------
-        cx
-        cy
-        area
-
-    """
-    image = np.array(brightness * 255, dtype=np.uint8)
-    threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
-    contours, _ = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    area = 0
-    cx = np.nan
-    cy = np.nan
-    cx_spread = np.nan
-    cy_spread = np.nan
-    for index, contour in enumerate(contours):
-        temp_area = cv2.contourArea(contour)
-        if temp_area > area:
-            area = temp_area
-            moments = cv2.moments(contour)
-            cx = int(moments['m10']/moments['m00'])
-            cy = int(moments['m01']/moments['m00'])
-            _, _, cx_spread, cy_spread = cv2.boundingRect(contour)
-
-    return cx, cy, cx_spread, cy_spread, area
-
-
-def max_center(brightness):
-    """
-    Given a Brightness array this returns the x, y index of the array of the brightest point.
-
-    Parameters
-    ----------
-        brightness
-
-    Returns
-    -------
-        cx
-        cy
-        area
-
-    """
-    index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
-    return index[1], index[0], np.nan
 
 
 if __name__ == '__main__':
