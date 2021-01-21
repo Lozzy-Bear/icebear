@@ -3,6 +3,7 @@ import scipy.special as special
 import time
 import icebear.utils as utils
 import h5py
+import cv2
 
 
 def generate_coeffs(config, fov=np.array([[0, 360], [0, 90]]), resolution=1.0, lmax=85):
@@ -203,9 +204,18 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
 
 def unpackage_coeffs(filename, ind):
     """
-    factors:	Array to be saved into pickle file.
-    filename:	Name of the pickle file to store the SWHT Factors array.
+
+    Parameters
+    ----------
+    filename
+    ind
+
+    Returns
+    -------
+        coeffs : complex128 np.array
+            Complex matrix of coefficients for the SWHT with dimension fov / resolution.
     """
+
     f = h5py.File(filename, 'r')
     coeffs = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
     print('hdf5 coeffs:', coeffs.shape)
@@ -358,5 +368,5 @@ def max_center(brightness):
     """
 
     index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
-    
+
     return index[1], index[0], np.nan

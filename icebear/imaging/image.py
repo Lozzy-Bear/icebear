@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 import icebear
 import icebear.utils as util
@@ -163,6 +162,8 @@ def linear_append(filename, now, data, any, other, args, like, this):
 
 def _swht_method(filename, hour, minute, second, data, coeffs):
     """
+    Sets up the environment for imaging with the SWHT method with standard parameters and appends the level 2 HDF5 file
+    for both standard measurements and SWHT specific ones.
 
     Parameters
     ----------
@@ -176,8 +177,8 @@ def _swht_method(filename, hour, minute, second, data, coeffs):
             Second of the data passed.
         data : dict hdf5
             HDF5 structure of the level 1 data
-        coeffs : complex64 np.array
-            Matrix of coefficients for imaging with the SWHT
+        coeffs : complex128 np.array
+            Complex matrix of coefficients for the SWHT with dimension fov / resolution.
 
     Returns
     -------
@@ -192,11 +193,9 @@ def _swht_method(filename, hour, minute, second, data, coeffs):
         return
     rf_distance = data['rf_distance'][()]
     snr_db = data['snr_db'][()]
-
     visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
     visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
     visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
-
     azimuth = np.empty_like(doppler_shift)
     elevation = np.empty_like(doppler_shift)
     azimuth_spread = np.empty_like(doppler_shift)
