@@ -137,19 +137,19 @@ fov_center                          [az, el] angles in image which coincide with
 resolution                          pixel resolution in degrees
 lmax                                maximum harmonic degree the coefficients were calculated
 data/{time}/elevation               targets elevation position from fov_center in degrees
-data/{time}/azimuth_spread          targets spread in azimuth given in degrees
-data/{time}/elevation_spread        targets spread in elevation given in degrees
+data/{time}/azimuth_extent          targets extent in azimuth given in degrees
+data/{time}/elevation_extent        targets extent in elevation given in degrees
 data/{time}/area                    area of target in image, highly variant based on imaging settings
 wavelength                          radar wavelength, c / center_freq -- swht coeffs hdf5 file specific
 baselines                           baselines u, v, w -- swht coeffs hdf5 file specific
 Plotting Attributes (Level 3)
 ----------------------------------------------------------------------------------------------------------------------------------------------
-spatial_spread_function             function to determine spreading
+spatial_extent_function             function to determine extenting
 data/{time}/time                    time of data point
 data/{time}/velocity                speed of target
 data/{time}/snr_db                  signal strength
 data/{time}/position                [lat, long, alt]
-data/{time}/spatial_spread          [lat spread, long spread, alt spread]
+data/{time}/spatial_extent          [lat extent, long extent, alt extent]
 Configuration Class Only
 ----------------------------------------------------------------------------------------------------------------------------------------------
 processing_source                   file path to directory holding channel separated digital_rf files

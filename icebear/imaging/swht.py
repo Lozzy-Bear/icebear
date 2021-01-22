@@ -172,7 +172,7 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                 coeffs += ko ** 2 / (2 * np.pi ** 2 * np.round((-1j) ** l)) * \
                           np.repeat(ylm_pysh(l, m, EL, AZ, normalization='ortho', csphase=-1, kind='complex', degrees=False)[:, :, np.newaxis], len(r), axis=2) * \
                           np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
-                          np.conjugate(special.sph_harm(m, l, p, t)) \
+                          np.conjugate(ylm_pysh(m, l, t, p, normalization='ortho', csphase=-1, kind='complex', degrees=False)) \
                           [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
                 print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
             if l == 85:
@@ -236,7 +236,7 @@ def swht_py(visibilities, coeffs):
 
     Returns
     -------
-        intensity : complex64 np.array
+        brightness : complex64 np.array
             Array of image domain intensity values.
 
     Notes
@@ -247,10 +247,10 @@ def swht_py(visibilities, coeffs):
     """
 
     #start_time = time.time()
-    intensity = np.matmul(coeffs, visibilities)
+    brightness = np.matmul(coeffs, visibilities)
     #print(f"\t-swht_py time: \t{time.time()-start_time}")
     
-    return intensity
+    return brightness
 
 
 def swht_cuda():
@@ -286,13 +286,13 @@ def swht_method(visibilities, coeffs):
     """
     brightness = swht_py(visibilities, coeffs)
     brightness = brightness_cutoff(brightness)
-    cx, cy, cx_spread, cy_spread, area = centroid_center(brightness)
+    cx, cy, cx_extent, cy_extent, area = centroid_center(brightness)
 
-    return cx, cy, cx_spread, cy_spread, area
+    return cx, cy, cx_extent, cy_extent, area
 
 
 def frequency_difference_beamform():
-    # This function is to be added. It provides exceptional target locating but sacrifices spread information.
+    # This function is to be added. It provides exceptional target locating but sacrifices extent information.
     # Todo
     return
 
@@ -328,6 +328,8 @@ def centroid_center(brightness):
     -------
         cx
         cy
+        cx_extent
+        cy_extent
         area
     """
 
@@ -337,8 +339,8 @@ def centroid_center(brightness):
     area = 0
     cx = np.nan
     cy = np.nan
-    cx_spread = np.nan
-    cy_spread = np.nan
+    cx_extent = np.nan
+    cy_extent = np.nan
     for index, contour in enumerate(contours):
         temp_area = cv2.contourArea(contour)
         if temp_area > area:
@@ -346,9 +348,9 @@ def centroid_center(brightness):
             moments = cv2.moments(contour)
             cx = int(moments['m10']/moments['m00'])
             cy = int(moments['m01']/moments['m00'])
-            _, _, cx_spread, cy_spread = cv2.boundingRect(contour)
+            _, _, cx_extent, cy_extent = cv2.boundingRect(contour)
 
-    return cx, cy, cx_spread, cy_spread, area
+    return cx, cy, cx_extent, cy_extent, area
 
 
 def max_center(brightness):

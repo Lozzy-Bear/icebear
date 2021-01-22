@@ -119,6 +119,7 @@ def create_level2_hdf5(config, filename, year, month, day):
     f.create_dataset('lmax', data=config.lmax)
     f.create_group('data')
     f.close()
+
     return None
 
 
@@ -198,12 +199,12 @@ def _swht_method(filename, hour, minute, second, data, coeffs):
     visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
     azimuth = np.empty_like(doppler_shift)
     elevation = np.empty_like(doppler_shift)
-    azimuth_spread = np.empty_like(doppler_shift)
-    elevation_spread = np.empty_like(doppler_shift)
+    azimuth_extent = np.empty_like(doppler_shift)
+    elevation_extent = np.empty_like(doppler_shift)
     area = np.empty_like(doppler_shift)
 
     for idx, visibility in enumerate(visibilities):
-        azimuth[idx], elevation[idx], azimuth_spread[idx], elevation_spread[idx], area[idx] = \
+        azimuth[idx], elevation[idx], azimuth_extent[idx], elevation_extent[idx], area[idx] = \
             icebear.imaging.swht.swht_method(visibility, coeffs)
 
     # Custom data appending for SWHT image data sets
@@ -216,8 +217,8 @@ def _swht_method(filename, hour, minute, second, data, coeffs):
     f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
     f.create_dataset(f'data/{time}/azimuth', data=azimuth)
     f.create_dataset(f'data/{time}/elevation', data=elevation)
-    f.create_dataset(f'data/{time}/azimuth_spread', data=azimuth_spread)
-    f.create_dataset(f'data/{time}/elevation_spread', data=elevation_spread)
+    f.create_dataset(f'data/{time}/azimuth_extent', data=azimuth_extent)
+    f.create_dataset(f'data/{time}/elevation_extent', data=elevation_extent)
     f.create_dataset(f'data/{time}/area', data=area)
     f.close()
 

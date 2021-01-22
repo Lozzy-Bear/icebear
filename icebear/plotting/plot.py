@@ -301,3 +301,24 @@ def range_doppler_snr(config, time, spacing):
                     continue
     writer.close()
     return None
+
+
+def brightness_plot(config, brightness):
+    el, az = elevation_azimuth(-20, 20, I.shape[0], -45, 45, I.shape[1])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    plt.title("I'(az,el) Range=" + title)
+    plt.xlabel("Azimuth [degrees]")
+    plt.ylabel("Elevation [degrees]")
+    plt.pcolormesh(np.rad2deg(az), np.rad2deg(el), np.flip(np.abs(I / np.max(I)), axis=(0, 1)), cmap='jet', vmin=0.0,
+                   vmax=1.0)
+    ax.set_xticks(np.arange(-45, 46, 5))
+    ax.set_yticks(np.arange(-20, 21, 5))
+    ax.set_xlim(-30, 30)
+    ax.set_ylim(0, 20)
+    plt.grid(which='both')
+    plt.colorbar()
+    plt.gcf().set_size_inches(12, 4)
+    fig.tight_layout()
+    return

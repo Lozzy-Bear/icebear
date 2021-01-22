@@ -329,7 +329,7 @@ def func():
     Notes:
         * May be alternative ways to perform C/CUDA wrapping
 """
-__fmed = func()
+#__fmed = func()
 
 
 def ssmf(meas, code, averages, nrang, fdec, codelen):
