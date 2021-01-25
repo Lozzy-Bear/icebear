@@ -76,7 +76,7 @@ def create_level2_hdf5(config, filename, year, month, day):
     # general information
     f = h5py.File(filename, 'w')
     f.create_dataset('date_created', data=np.array(config.date_created))
-    f.create_dataset('version', data=np.array(config.version))
+    f.create_dataset('version', data=np.array(config.version, dtype='S'))
     f.create_dataset('date', data=np.array([year, month, day]))
     f.create_dataset('experiment_name', data=np.array([config.experiment_name], dtype='S'))
     f.create_dataset('radar_config', data=np.array([config.radar_config], dtype='S'))
@@ -113,8 +113,8 @@ def create_level2_hdf5(config, filename, year, month, day):
     f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
     # imaging settings
     f.create_dataset('image_method', data=np.array([config.image_method], dtype='S'))
-    f.create_dataset('clean', data=np.array([config.clean], dtype='S'))
-    f.create_dataset('center', data=np.array([config.center], dtype='S'))
+    #f.create_dataset('clean', data=np.array([config.clean], dtype='S'))
+    #f.create_dataset('center', data=np.array([config.center], dtype='S'))
     f.create_dataset('swht_coeffs', data=config.swht_coeffs)
     f.create_dataset('fov', data=config.fov)
     f.create_dataset('fov_center', data=config.fov_center)
@@ -160,7 +160,7 @@ def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
 def _linear_method(filename, now, data, any, other, args, like, this):
     # todo
     # Devin to do append work here see my _swht_method example.
-    # We do the _ infront to indicate this is not a function normall accesible by the user
+    # We do the _ infront to indicate this is not a function normally accesible by the user
     return
 
 

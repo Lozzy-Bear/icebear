@@ -110,7 +110,7 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     cy = cy * config.resolution - config.fov[1, 0] + config.fov_center[1]
     cx_extent *= config.resolution
     cy_extent *= config.resolution
-    area *= config.resolution ** 2
+    #area *= config.resolution ** 2
     print(f'\t-result azimuth {cx} deg x {cx_extent} deg -- max {mx}')
     print(f'\t-result elevation {cy} deg x {cy_extent} deg -- max {my}')
     print(f'\t-result area {area}')
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     config.swht_coeffs = coeffs_file
     config.print_attrs()
 
-    brightness = simulate(config, np.array([0]), np.array([10]), np.array([3]), np.array([3]))
+    brightness = simulate(config, np.array([-20]), np.array([10]), np.array([3]), np.array([3]))
     plt.figure()
     plt.pcolormesh(brightness)
     plt.colorbar()
