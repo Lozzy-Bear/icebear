@@ -192,7 +192,7 @@ def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, 
     doppler_shift = data['doppler_shift'][()]
     # This is a little hack to check if we are seeing a dropped sample.
     # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
-    if len(doppler_shift) >= 28000:
+    if len(doppler_shift) >= 9000:#28000:
         print('\t-dropped sample detected; skipped')
         return
     rf_distance = data['rf_distance'][()]

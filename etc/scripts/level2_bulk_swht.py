@@ -4,7 +4,7 @@ import numpy as np
 
 
 filepath = 'E:/icebear/level1/'  # Enter file path to level 1 directory
-files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+files = utils.get_all_data_files(filepath, '2020_12_13', '2020_12_15')  # Enter first sub directory and last
 for file in files:
     config = icebear.utils.Config(file)
     config.lmax = 85
