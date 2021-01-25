@@ -23,7 +23,10 @@ def generate_level2(config, method='linear'):
         args = () # Devin any specific args you need to handle should be passed as a tuple
     elif method == 'swht':
         calculate_image = _swht_method
-        args = (icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)))
+        args = (icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)),
+                config.resolution,
+                config.fov,
+                config.fov_center)
     else:
         print(f'ERROR: the imaging method {method} does not exist.')
         exit()
@@ -154,14 +157,14 @@ def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
     return None
 
 
-def linear_append(filename, now, data, any, other, args, like, this):
+def _linear_method(filename, now, data, any, other, args, like, this):
     # todo
     # Devin to do append work here see my _swht_method example.
     # We do the _ infront to indicate this is not a function normall accesible by the user
     return
 
 
-def _swht_method(filename, hour, minute, second, data, coeffs):
+def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, fov_center):
     """
     Sets up the environment for imaging with the SWHT method with standard parameters and appends the level 2 HDF5 file
     for both standard measurements and SWHT specific ones.
@@ -205,7 +208,7 @@ def _swht_method(filename, hour, minute, second, data, coeffs):
 
     for idx, visibility in enumerate(visibilities):
         azimuth[idx], elevation[idx], azimuth_extent[idx], elevation_extent[idx], area[idx] = \
-            icebear.imaging.swht.swht_method(visibility, coeffs)
+            icebear.imaging.swht.swht_method(visibility, coeffs, resolution, fov, fov_center)
 
     # Custom data appending for SWHT image data sets
     time = f'{hour:02d}{minute:02d}{second:05d}'
@@ -238,8 +241,6 @@ if __name__ == '__main__':
     config.add_attr('lmax', 85)
     config.add_attr('resolution', 0.1)
     config.add_attr('image_method', 'swht')
-    config.add_attr('clean', '3db')
-    config.add_attr('center', 'centroid')
     config.add_attr('fov', np.array([[0, 360], [0, 180]]))
     config.add_attr('fov_center', np.array([90, 90]))
     config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85')

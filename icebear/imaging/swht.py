@@ -272,23 +272,33 @@ def swht_cuda():
     return
 
 
-def swht_method(visibilities, coeffs):
+def swht_method(visibilities, coeffs, resolution, fov, fov_center):
     """
 
     Parameters
     ----------
     visibilities
     coeffs
+    resolution
+    fov
+    fov_center
 
     Returns
     -------
 
     """
     brightness = swht_py(visibilities, coeffs)
-    brightness = brightness_cutoff(brightness)
-    cx, cy, cx_extent, cy_extent, area = centroid_center(brightness)
+    brightness = brightness_cutoff(brightness, threshold=0.9)
+    _, _, cx_extent, cy_extent, area = centroid_center(brightness)
+    mx, my, _ = max_center(brightness)
 
-    return cx, cy, cx_extent, cy_extent, area
+    mx = mx * resolution - fov[0, 0] + fov_center[0]
+    my = my * resolution - fov[1, 0] + fov_center[1]
+    cx_extent *= resolution
+    cy_extent *= resolution
+    area *= resolution ** 2
+
+    return mx, my, cx_extent, cy_extent, area
 
 
 def frequency_difference_beamform():
@@ -318,7 +328,8 @@ def brightness_cutoff(brightness, threshold=0.5):
 
 def centroid_center(brightness):
     """
-    Given a Brightness array this returns the centroid as x, y index of the array and the area of the largest blob.
+    Given a Brightness array this returns the centroid as x, y index of the array and the area of the largest blob
+    that encloses the maximum power pixel.
 
     Parameters
     ----------
@@ -336,19 +347,23 @@ def centroid_center(brightness):
     image = np.array(brightness * 255, dtype=np.uint8)
     threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
     contours, _ = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    mx, my, _ = max_center(brightness)
     area = 0
     cx = np.nan
     cy = np.nan
     cx_extent = np.nan
     cy_extent = np.nan
     for index, contour in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(contour)
         temp_area = cv2.contourArea(contour)
-        if temp_area > area:
-            area = temp_area
-            moments = cv2.moments(contour)
-            cx = int(moments['m10']/moments['m00'])
-            cy = int(moments['m01']/moments['m00'])
-            _, _, cx_extent, cy_extent = cv2.boundingRect(contour)
+        if (x <= mx < (x + w)) and (y <= my <= (y + h)):
+            if temp_area > area:
+                area = temp_area
+                moments = cv2.moments(contour)
+                cx = int(moments['m10']/moments['m00'])
+                cy = int(moments['m01']/moments['m00'])
+                cx_extent = w
+                cy_extent = h
 
     return cx, cy, cx_extent, cy_extent, area
 

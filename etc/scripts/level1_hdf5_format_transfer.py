@@ -1,12 +1,12 @@
-import icebear.utils as util
+import icebear.utils as utils
 import h5py
 import os
 import numpy as np
 import time
 
 
-filepath = '/beaver/backup/level1/'
-files = util.get_all_data_files(filepath, '2017_12_06', '2020_11_16')
+filepath = 'E:/icebear/level1/' # Enter file path to level 1 directory
+files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15') # Enter first sub directory and last
 rxfd = [np.nan, np.nan, np.nan]
 rxtf = ['data median', 'instrument measured']
 txfd = [np.nan, np.nan, np.nan]
@@ -113,6 +113,15 @@ for file in files:
     f.move('dB_SNR_cutoff', 'snr_cutoff_db')
     # spectra_descriptors                     spectra_descriptors
     # xspectra_descriptors                    xspectra_descriptors
+    del f['spectra_descriptors']
+    del f['xspectra_descriptors']
+    f.create_dataset('spectra_descriptors',
+                     data=np.array([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]))
+    f.create_dataset('xspectra_descriptors',
+                     data=np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2,
+                                     3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8],
+                                    [1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6, 7, 8,
+                                     9, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 7, 8, 9, 7, 8, 9, 8, 9, 9]]))
     # data/{time}/time                        time
     # data/{time}/antenna_spectra             spectra
     # data/{time}/antenna_spectra_var         spectra_variance

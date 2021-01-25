@@ -1,14 +1,14 @@
-import icebear.utils as util
+import icebear.utils as utils
 import h5py
 import os
 
 
-filepath = # Enter file path to level 1 directory
-files = util.get_all_data_files(filepath, , ) # Enter first sub directory and last
+filepath = 'E:/icebear/level1/' # Enter file path to level 1 directory
+files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15') # Enter first sub directory and last
 remove_flag = False
 for file in files:
     f = h5py.File(file, 'r+')
-    start1, stop1 = util.get_data_file_times(file)
+    start1, stop1 = utils.get_data_file_times(file)
     group = f['data']
     gkeys = group.keys()
     for gkey in gkeys:
@@ -54,7 +54,7 @@ for file in files:
         print('removed:', file)
         remove_flag = False
     else:
-        start2, stop2 = util.get_data_file_times(file)
+        start2, stop2 = utils.get_data_file_times(file)
         print('file formatted:', file)
         print('before:', start1, stop1)
         print('after:', start2, stop2)

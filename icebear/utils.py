@@ -256,10 +256,10 @@ class Config:
         with open(os.path.join(here, '__init__.py'), 'r', encoding='utf-8') as f:
             text = f.read()
         match = re.findall(regex, text)
-        self.add_attr('version', str(match[0].strip("'")))
+        setattr(self, 'version', str(match[0].strip("'")))
         # Add date_created attribute
         now = datetime.datetime.now()
-        self.add_attr('date_created', [now.year, now.month, now.day])
+        setattr(self, 'date_created', [now.year, now.month, now.day])
 
     def update_config(self, file):
         if file.split('.')[1] == 'yml':
