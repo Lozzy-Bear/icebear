@@ -160,7 +160,7 @@ def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
 def _linear_method(filename, now, data, any, other, args, like, this):
     # todo
     # Devin to do append work here see my _swht_method example.
-    # We do the _ infront to indicate this is not a function normally accesible by the user
+    # We do the _ in front to indicate this is not a function normally accessible by the user
     return
 
 
