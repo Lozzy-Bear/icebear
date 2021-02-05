@@ -100,7 +100,7 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     #     coeffs = icebear.imaging.swht.unpackage_factors_hdf5(config.swht_coeffs, i)
     #     brightness *= icebear.imaging.image.calculate_image(visibility, coeffs)
 
-    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.9)
+    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
     cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
     mx, my, _ = icebear.imaging.swht.max_center(brightness)
 
@@ -110,7 +110,7 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     cy = cy * config.resolution - config.fov[1, 0] + config.fov_center[1]
     cx_extent *= config.resolution
     cy_extent *= config.resolution
-    #area *= config.resolution ** 2
+    area *= config.resolution ** 2
     print(f'\t-result azimuth {cx} deg x {cx_extent} deg -- max {mx}')
     print(f'\t-result elevation {cy} deg x {cy_extent} deg -- max {my}')
     print(f'\t-result area {area}')
@@ -126,21 +126,21 @@ if __name__ == '__main__':
     config = utils.Config(str(path))
     # Change this to you swht_coeffs local save
 
-    #coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85.h5'
-    #config.fov = np.array([[360, 0], [180, 0]])
-    #config.fov_center = np.array([90, 90])
-    #config.lmax = 85
-    #config.resolution = 1
-
-    #coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_10res_85lmax.h5'
-    coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_01res_218lmax.h5'
-    config.update_config(coeffs_file)
+    coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85.h5'
+    config.fov = np.array([[0, 360], [0, 180]])
+    config.fov_center = np.array([90, 90])
     config.lmax = 85
+    config.resolution = 1
+
+    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_10res_85lmax.h5'
+    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_01res_218lmax.h5'
+    # config.update_config(coeffs_file)
+    # config.lmax = 85
 
     config.swht_coeffs = coeffs_file
     config.print_attrs()
 
-    brightness = simulate(config, np.array([-20]), np.array([10]), np.array([3]), np.array([3]))
+    brightness = simulate(config, np.array([10]), np.array([10]), np.array([3]), np.array([3]))
     plt.figure()
     plt.pcolormesh(brightness)
     plt.colorbar()
