@@ -2,10 +2,9 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import icebear.utils as utils
-import icebear
 from scipy.optimize import curve_fit
 
-filepath = 'E:/icebear/level2a/'  # Enter file path to level 1 directory
+filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
 files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
 el = np.array([])
 rng = np.array([])
@@ -39,16 +38,16 @@ for file in files:
         az = np.append(az, azimuth)
 
 snr = np.abs(snr)
-az = np.abs(az)
-el += 90
-el = np.abs(el)
+# az = np.abs(az)
+# el += 90
+# el = np.abs(el)
 rng = rng * 0.75 - 200
 m = np.ones_like(rng)
 m = np.ma.masked_where(dop > 20, m)
 m = np.ma.masked_where(dop < -20, m)
 m = np.ma.masked_where(snr <= 6.0, m)
-m = np.ma.masked_where(az >= 315, m)
-m = np.ma.masked_where(az <= 225, m)
+# m = np.ma.masked_where(az >= 315, m)
+# m = np.ma.masked_where(az <= 225, m)
 m = np.ma.masked_where(el >= 30, m)
 m = np.ma.masked_where(el <= 1, m)
 m = np.ma.masked_where(rng <= 300, m)

@@ -172,7 +172,7 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                 coeffs += ko ** 2 / (2 * np.pi ** 2 * np.round((-1j) ** l)) * \
                           np.repeat(ylm_pysh(l, m, EL, AZ, normalization='ortho', csphase=-1, kind='complex', degrees=False)[:, :, np.newaxis], len(r), axis=2) * \
                           np.repeat(np.repeat(special.spherical_jn(l, ko * r) * \
-                          np.conjugate(ylm_pysh(m, l, t, p, normalization='ortho', csphase=-1, kind='complex', degrees=False)) \
+                          np.conjugate(ylm_pysh(l, m, t, p, normalization='ortho', csphase=-1, kind='complex', degrees=False)) \
                           [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
                 print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
             if l == 85:
