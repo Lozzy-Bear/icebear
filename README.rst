@@ -31,20 +31,6 @@ Initial development release
 - added SWHT imaging
 - added common plotting functions
 
-Getting Started
-===============
-Install Instructions
---------------------
-Todo
-
-Running From Command Line
--------------------------
-Todo
-
-Other Examples
---------------
-todo
-
 Data Information
 ================
 Data File Naming Convention

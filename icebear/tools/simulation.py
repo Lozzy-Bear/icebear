@@ -5,6 +5,7 @@ import multiprocessing as mp
 import icebear
 import icebear.utils as utils
 from pathlib import Path
+import cv2
 
 
 def _real_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
@@ -91,8 +92,9 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     for i in range(len(azimuth)):
         visibility[:, i, i, i, i] = visibility[:, i, i, i, i] / np.abs(visibility[0, i, i, i, i])
     visibility = np.sum(visibility_dist, axis=(1, 2, 3, 4))
-    visibility = np.append(visibility, np.conjugate(visibility))
+    visibility = np.append(np.conjugate(visibility), visibility)
     coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
+    coeffs2 = np.copy(coeffs)
     brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
 
     # This section activates the experimental angular_frequency_beamforming()
@@ -100,7 +102,7 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     #     coeffs = icebear.imaging.swht.unpackage_factors_hdf5(config.swht_coeffs, i)
     #     brightness *= icebear.imaging.image.calculate_image(visibility, coeffs)
 
-    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
+    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.9)
     cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
     mx, my, _ = icebear.imaging.swht.max_center(brightness)
 
@@ -118,30 +120,73 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
         if np.allclose([azimuth, elevation, azimuth_extent, elevation_extent], [cx, cy, cx_extent, cy_extent], atol=5):
             print('\t-result matches input within error (10e-5)')
 
-    return brightness
+    intensity = icebear.imaging.swht.swht_py(visibility, coeffs2)
+    intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
+
+    return brightness, intensity
 
 
 if __name__ == '__main__':
     path = Path(__file__).parent.parent.parent / "dat/default.yml"
     config = utils.Config(str(path))
-    # Change this to you swht_coeffs local save
+    # Change this to your swht_coeffs local save
 
-    coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85.h5'
-    config.fov = np.array([[0, 360], [0, 180]])
-    config.fov_center = np.array([90, 90])
+    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85.h5'
+    # config.fov = np.array([[0, 360], [0, 180]])
+    # config.fov_center = np.array([0, 0])
+    # config.lmax = 85
+    # config.resolution = 1
+
+    coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    config.update_config(coeffs_file)
     config.lmax = 85
-    config.resolution = 1
+    config.fov_center = np.array([270, 90])
 
+    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_26_360az_180el_1res_85lmax.h5'
     # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_10res_85lmax.h5'
-    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_01res_218lmax.h5'
+    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_02_16_090az_045el_1res_85lmax.h5'
     # config.update_config(coeffs_file)
     # config.lmax = 85
 
     config.swht_coeffs = coeffs_file
     config.print_attrs()
 
-    brightness = simulate(config, np.array([10]), np.array([10]), np.array([3]), np.array([3]))
-    plt.figure()
-    plt.pcolormesh(brightness)
-    plt.colorbar()
-    plt.show()
+    brightness, intensity = simulate(config, np.array([0]), np.array([20]), np.array([3]), np.array([3]))
+
+    # with open('test.npy', 'wb') as f:
+    #     np.save(f, brightness)
+    #     np.save(f, intensity)
+
+    # with open('test.npy', 'rb') as f:
+    #     brightness = np.load(f)
+    #     intensity = np.load(f)
+    #
+    # plt.figure(figsize=[12, 5])
+    # plt.pcolormesh(intensity)
+    # plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
+    # plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
+    # plt.grid()
+    # im = np.array(brightness * 255.0, dtype=np.uint8)
+    # threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    # contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # a, b, w, h = cv2.boundingRect(contours[0])
+    # x = contours[0][:, :, 0]
+    # x = np.append(x, x[0])
+    # y = contours[0][:, :, 1]
+    # y = np.append(y, y[0])
+    # moments = cv2.moments(contours[0])
+    # cx = int(moments['m10'] / moments['m00'])
+    # cy = int(moments['m01'] / moments['m00'])
+    # index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
+    # plt.plot(x, y, 'k', linewidth=3, label='Contour')
+    # plt.plot([a, a+w, a+w, a, a], [b, b, b+h, b+h, b], 'r', linewidth=3, label='Bounding Rectangle')
+    # plt.scatter(cx, cy, label='Centroid')
+    # plt.scatter(index[1], index[0], label='Maximum Intensity')
+    # plt.colorbar(label='Intensity')
+    # plt.title('')
+    # plt.xlabel('Azimuth [deg]')
+    # plt.ylabel('Elevation [deg]')
+    # #plt.xlim(300, 600)
+    # #plt.ylim(100, 300)
+    # plt.legend(loc='best')
+    # plt.show()

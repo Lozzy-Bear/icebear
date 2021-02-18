@@ -30,7 +30,7 @@ for file in files:
         azimuth = data['azimuth'][()]
         elevation = data['elevation'][()]
         #elevation_spread = data['elevation_extent'][()]
-        #azimuth_spread = data['azimuth_extent'][()]
+        #azimuth_spread = data['azimuth_extent'][()]a
         area = data['area'][()]
         rng = np.append(rng, rf_distance)
         el = np.append(el, elevation)
@@ -49,6 +49,7 @@ r1 = np.sqrt((a*np.cos(p1))**2 + (b*np.sin(p1))**2)
 
 pre_alt = np.sqrt(r1 ** 2 + rng ** 2 - 2 * r1 * rng * np.cos(np.deg2rad(90 + np.abs(el))))
 gamma = np.arccos((rng ** 2 - (r1 ** 2) - (pre_alt ** 2)) / (-2 * r1 * pre_alt))
+
 el2 = el - np.abs(np.rad2deg(gamma))
 
 p2 = p1 + gamma

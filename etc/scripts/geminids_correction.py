@@ -66,7 +66,11 @@ p2 = p1 + gamma
 r2 = np.sqrt((a*np.cos(p2))**2 + (b*np.sin(p2))**2)
 
 alt_geocentric = -re + np.sqrt(re ** 2 + rng ** 2 + 2 * re * rng * np.sin(np.deg2rad(el - gamma)))
+alt_geocentric -= np.tan(np.deg2rad(2.8624)) * (400 + rng * np.sin(np.deg2rad(az)))
+
 alt_normal = -re + np.sqrt(re**2 + rng**2 + 2 * re * rng * np.sin(np.deg2rad(el)))
+alt_normal -= np.tan(np.deg2rad(2.8624)) * (400 + rng * np.sin(np.deg2rad(az)))
+
 alt_negative = -re + np.sqrt(re**2 + rng**2 - 2 * re * rng * np.sin(np.deg2rad(el)))
 
 rng = rng * m
@@ -120,4 +124,11 @@ plt.scatter(rng, alt_geocentric, marker='x')
 plt.legend(('2nd Order correction', 'Geocentric correction'))
 plt.xlabel('Range [km]')
 plt.ylabel('Altitude [km]')
+
+plt.figure()
+plt.title('Difference between Fit and Geocentric')
+plt.scatter(rng, (alt_geocentric - np.abs(alt_normal - func(rng, *popt) + 101)), marker='o')
+plt.xlabel('Range [km]')
+plt.ylabel('Altitude [km]')
+
 plt.show()
