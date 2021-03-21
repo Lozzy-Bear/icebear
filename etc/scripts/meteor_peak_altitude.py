@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def meteor_distribution(alt):
-    #plt.figure(figsize=[12, 3])
+    plt.figure(figsize=[12, 3])
     #alt = np.ma.masked_where(alt < 70, alt)
     _ = plt.hist(alt, bins='auto', orientation='horizontal', histtype=u'step', label=f'{len(alt)} total targets')
     plt.xscale('log')
@@ -84,14 +84,14 @@ def range_altitude_doppler(rng, alt, dop):
     return
 
 
-def plot_3d(az, rng, alt, dop, name, idx):
+def plot_3d(az, rng, alt, dop):#, name, idx):
     #alt = np.ma.masked_where(alt < 70, alt)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     p = ax.scatter(rng*np.sin(np.deg2rad(az)), rng*np.cos(np.deg2rad(az)),
                    alt,
                    c=dop, cmap='jet_r',  alpha=0.25, vmin=-500.0, vmax=500.0,)
-    ax.set_title(f'Time = {idx*5} [s]')
+    #ax.set_title(f'Time = {idx*5} [s]')
     ax.set_xlabel('West - East [km]')
     ax.set_ylabel('North - South [km]')
     ax.set_zlabel('Altitude [km]')
@@ -102,9 +102,9 @@ def plot_3d(az, rng, alt, dop, name, idx):
     ax.view_init(elev=35.0, azim=225.0)
     # for ii in range(0, 360, 1):
     #     ax.view_init(elev=35., azim=ii)
-    plt.savefig(f"E:/icebear/figures/2020_03_31/{name}{idx}.png")
-    del p
-    plt.close()
+    # plt.savefig(f"E:/icebear/figures/2020_03_31/{name}{idx}.png")
+    # del p
+    # plt.close()
     return
 
 
@@ -216,87 +216,87 @@ def movies(file, name):
 
 
 filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-# files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_12')  # Enter first sub directory and last
 # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
-# el = np.array([])
-# rng = np.array([])
-# dop = np.array([])
-# snr = np.array([])
-# az = np.array([])
+# files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+el = np.array([])
+rng = np.array([])
+dop = np.array([])
+snr = np.array([])
+az = np.array([])
 
 for file in files:
-    file = files[2]
-    movies(file, 'march')
-    exit()
-#     f = h5py.File(file, 'r')
-#     print(file)
-#     group = f['data']
-#     keys = group.keys()
-#
-#     for key in keys:
-#         data = group[f'{key}']
-#         rf_distance = data['rf_distance'][()]
-#         snr_db = data['snr_db'][()]
-#         doppler_shift = data['doppler_shift'][()]
-#         azimuth = data['azimuth'][()]
-#         elevation = data['elevation'][()]
-#         area = data['area'][()]
-#         rng = np.append(rng, rf_distance)
-#         el = np.append(el, elevation)
-#         dop = np.append(dop, doppler_shift)
-#         snr = np.append(snr, snr_db)
-#         az = np.append(az, azimuth)
-#     break
-#
-# rng = rng * 0.75 - 200
-# m = np.ones_like(rng)
-# # m = np.ma.masked_where(dop > 20, m)
-# # m = np.ma.masked_where(dop < -20, m)
-# m = np.ma.masked_where(snr <= 8.0, m)
-# m = np.ma.masked_where(el >= 25, m)
-# m = np.ma.masked_where(el <= 1, m)
-# m = np.ma.masked_where(rng <= 25, m)
-# m = np.ma.masked_where(rng >= 1200, m)
-#
-# a = 6378.1370
-# b = 6356.7523
-# p1 = np.deg2rad(52.1579)
-# r1 = np.sqrt((a*np.cos(p1))**2 + (b*np.sin(p1))**2)
-# re = 6378
-#
-# pre_alt = np.sqrt(r1 ** 2 + rng ** 2 - 2 * r1 * rng * np.cos(np.deg2rad(90 + np.abs(el))))
-# gamma = np.arccos((rng ** 2 - (r1 ** 2) - (pre_alt ** 2)) / (-2 * r1 * pre_alt))
-# el2 = el - np.abs(np.rad2deg(gamma))
-# p2 = p1 + gamma
-# r2 = np.sqrt((a*np.cos(p2))**2 + (b*np.sin(p2))**2)
-# alt_geocentric = -r1 + np.sqrt(r1 ** 2 + rng ** 2 + 2 * r1 * rng * np.sin(np.deg2rad(el2)))
-# alt_geocentric -= np.tan(np.deg2rad(2.8624)) * (400 + rng*np.sin(np.deg2rad(az)))
-#
-# # m = np.ma.masked_where(alt_geocentric >= 150, m)
-# # m = np.ma.masked_where(alt_geocentric <= 50, m)
-# rng = rng * m
-# dop = dop * m
-# snr = snr * m
-# az = az * m
-# el = el * m
-# alt_geocentric = alt_geocentric * m
-# alt_geocentric = np.ma.compressed(alt_geocentric)
-#
-# print(len(alt_geocentric))
-#
-# rng = np.ma.compressed(rng)
-# snr = np.ma.compressed(snr)
-# dop = np.ma.compressed(dop)
-# az = np.ma.compressed(az)
-#
-# #plot_3d(az, rng, alt_geocentric, np.abs(snr))
-# #plot_3d(az, rng, alt_geocentric, dop)
-# #meteor_distribution(alt_geocentric)
-# #doppler_distribution(dop, alt_geocentric)
-# #power_distribution(np.abs(snr), alt_geocentric)
-# range_altitude_power(rng, alt_geocentric, np.abs(snr))
-# range_altitude_doppler(rng, alt_geocentric, dop)
-#
-#
-# plt.show()
+    # file = files[2]
+    # movies(file, 'march')
+    # exit()
+    f = h5py.File(file, 'r')
+    print(file)
+    group = f['data']
+    keys = group.keys()
+
+    for key in keys:
+        data = group[f'{key}']
+        rf_distance = data['rf_distance'][()]
+        snr_db = data['snr_db'][()]
+        doppler_shift = data['doppler_shift'][()]
+        azimuth = data['azimuth'][()]
+        elevation = data['elevation'][()]
+        area = data['area'][()]
+        rng = np.append(rng, rf_distance)
+        el = np.append(el, elevation)
+        dop = np.append(dop, doppler_shift)
+        snr = np.append(snr, snr_db)
+        az = np.append(az, azimuth)
+
+
+rng = rng * 0.75 - 200
+m = np.ones_like(rng)
+# m = np.ma.masked_where(dop > 20, m)
+# m = np.ma.masked_where(dop < -20, m)
+m = np.ma.masked_where(snr <= 8.0, m)
+m = np.ma.masked_where(el >= 25, m)
+m = np.ma.masked_where(el <= 1, m)
+m = np.ma.masked_where(rng <= 25, m)
+m = np.ma.masked_where(rng >= 1200, m)
+
+a = 6378.1370
+b = 6356.7523
+p1 = np.deg2rad(52.1579)
+r1 = np.sqrt((a*np.cos(p1))**2 + (b*np.sin(p1))**2)
+re = 6378
+
+pre_alt = np.sqrt(r1 ** 2 + rng ** 2 - 2 * r1 * rng * np.cos(np.deg2rad(90 + np.abs(el))))
+gamma = np.arccos((rng ** 2 - (r1 ** 2) - (pre_alt ** 2)) / (-2 * r1 * pre_alt))
+el2 = el - np.abs(np.rad2deg(gamma))
+p2 = p1 + gamma
+r2 = np.sqrt((a*np.cos(p2))**2 + (b*np.sin(p2))**2)
+alt_geocentric = -r1 + np.sqrt(r1 ** 2 + rng ** 2 + 2 * r1 * rng * np.sin(np.deg2rad(el2)))
+alt_geocentric -= np.tan(np.deg2rad(2.8624)) * (400 + rng*np.sin(np.deg2rad(az)))
+
+# m = np.ma.masked_where(alt_geocentric >= 150, m)
+# m = np.ma.masked_where(alt_geocentric <= 50, m)
+rng = rng * m
+dop = dop * m
+snr = snr * m
+az = az * m
+el = el * m
+alt_geocentric = alt_geocentric * m
+alt_geocentric = np.ma.compressed(alt_geocentric)
+
+print(len(alt_geocentric))
+
+rng = np.ma.compressed(rng)
+snr = np.ma.compressed(snr)
+dop = np.ma.compressed(dop)
+az = np.ma.compressed(az)
+
+#plot_3d(az, rng, alt_geocentric, np.abs(snr))
+plot_3d(az, rng, alt_geocentric, dop)
+meteor_distribution(alt_geocentric)
+doppler_distribution(dop, alt_geocentric)
+power_distribution(np.abs(snr), alt_geocentric)
+range_altitude_power(rng, alt_geocentric, np.abs(snr))
+range_altitude_doppler(rng, alt_geocentric, dop)
+
+
+plt.show()
