@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import icebear.utils as utils
 import pymap3d as pm
 import pyproj
+import icebear as ib
 
 
 def map_target(tx, rx, az, el, rf):
@@ -93,7 +94,10 @@ def map_target(tx, rx, az, el, rf):
     #                             rx[0], rx[1], rx[2], ell=pm.Ellipsoid("wgs84"), deg=True)
 
     #return sx, r, uv
-    return sx[2, :], r
+    vaz, vel, _ = pm.ecef2aer(uv[0, :] + bx3, uv[1, :] + by3, uv[2, :] + bz3,
+                              sx[0, :], sx[1, :], sx[2, :], ell=pm.Ellipsoid("wgs84"), deg=True)
+    return sx[2, :], r, vaz, vel
+    # return sx[2, :], r
 
 
 def plot_3d(az, rng, alt, dop):
@@ -110,6 +114,21 @@ def plot_3d(az, rng, alt, dop):
     ax.set_ylim(0, 1200)
     ax.set_zlim(0, 200)
     ax.view_init(elev=35.0, azim=225.0)
+    return
+
+
+def meteor_distribution(alt):
+    plt.figure(figsize=[12, 3])
+    #alt = np.ma.masked_where(alt < 70, alt)
+    _ = plt.hist(alt, bins='auto', orientation='horizontal', histtype=u'step', label=f'{len(alt)} total targets')
+    plt.xscale('log')
+    #plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
+    plt.xlabel('Count')
+    plt.ylabel('Altitude [km]')
+    #plt.ylim((80, 130))
+    plt.xlim((10, 10_000))
+    plt.plot([0, 10_000], [102, 102], '--k', label='102.0 km Altitude')
+    plt.legend(loc='best')
     return
 
 
@@ -204,7 +223,7 @@ def scatter_location_determination(rx_lat_lon_alt,tx_lat_lon_alt,rf_path,azi,ele
 def bistatic(tx, rx, az, el, rf):
     """
     Find the scatter location given tx location, rx, location, total rf distance, and target angle-of-arrival.
-
+    Todo: Remove
     Parameters
     ----------
         tx
@@ -268,25 +287,207 @@ def bistatic(tx, rx, az, el, rf):
     return r, alt
 
 
+def create_level2_hdf5(config, filename, year, month, day):
+    """
+
+    Parameters
+    ----------
+    config
+    filename
+    year
+    month
+    day
+
+    Returns
+    -------
+
+    """
+    # general information
+    f = h5py.File(filename, 'w')
+    f.create_dataset('date_created', data=np.array(config.date_created))
+    f.create_dataset('version', data=np.array(config.version, dtype='S'))
+    f.create_dataset('date', data=np.array([year, month, day]))
+    f.create_dataset('experiment_name', data=np.array([config.experiment_name], dtype='S'))
+    f.create_dataset('radar_config', data=np.array([config.radar_config], dtype='S'))
+    f.create_dataset('center_freq', data=config.center_freq)
+    # receiver site information
+    f.create_dataset('rx_site_name', data=np.array([config.rx_site_name], dtype='S'))
+    f.create_dataset('rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('rx_heading', data=config.rx_heading)
+    f.create_dataset('rx_rf_path', data=np.array([config.rx_rf_path], dtype='S'))
+    f.create_dataset('rx_ant_type', data=np.array([config.rx_ant_type], dtype='S'))
+    f.create_dataset('rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('rx_feed_corr_date', data=config.rx_feed_corr_date)
+    f.create_dataset('rx_feed_corr_type', data=np.array([config.rx_feed_corr_type], dtype='S'))
+    f.create_dataset('rx_ant_mask', data=config.rx_ant_mask)
+    f.create_dataset('rx_sample_rate', data=config.rx_sample_rate)
+    # transmitter site information
+    f.create_dataset('tx_site_name', data=np.array([config.tx_site_name], dtype='S'))
+    f.create_dataset('tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('tx_heading', data=config.tx_heading)
+    f.create_dataset('tx_rf_path', data=np.array([config.tx_rf_path], dtype='S'))
+    f.create_dataset('tx_ant_type', data=np.array([config.tx_ant_type], dtype='S'))
+    f.create_dataset('tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('tx_feed_corr_date', data=config.tx_feed_corr_date)
+    f.create_dataset('tx_feed_corr_type', data=np.array([config.tx_feed_corr_type], dtype='S'))
+    f.create_dataset('tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
+    # processing settings
+    f.create_dataset('decimation_rate', data=config.decimation_rate)
+    f.create_dataset('time_resolution', data=config.time_resolution)
+    f.create_dataset('coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
+    # imaging settings
+    f.create_dataset('image_method', data=np.array([config.image_method], dtype='S'))
+    #f.create_dataset('clean', data=np.array([config.clean], dtype='S'))
+    #f.create_dataset('center', data=np.array([config.center], dtype='S'))
+    f.create_dataset('swht_coeffs', data=config.swht_coeffs)
+    f.create_dataset('fov', data=config.fov)
+    f.create_dataset('fov_center', data=config.fov_center)
+    f.create_dataset('resolution', data=config.resolution)
+    f.create_dataset('lmax', data=config.lmax)
+    f.create_group('data')
+    f.close()
+
+    return None
+
+
+def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf_distance):
+    """
+    Appends to the hdf5 the standard data sets.
+
+    Parameters
+    ----------
+    filename
+    hour
+    minute
+    second
+    doppler_shift
+    snr_db
+    rf_distance
+
+    Returns
+    -------
+
+    """
+    # append a new group for the current measurement
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    f.create_group(f'data/{time}')
+    f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
+    f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
+    f.create_dataset(f'data/{time}/snr_db', data=snr_db)
+    f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
+
+    # Custom data appending for SWHT image data sets
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    f.create_group(f'data/{time}')
+    f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
+    f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
+    f.create_dataset(f'data/{time}/snr_db', data=snr_db)
+    f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
+    f.create_dataset(f'data/{time}/azimuth', data=azimuth)
+    f.create_dataset(f'data/{time}/elevation', data=elevation)
+    f.create_dataset(f'data/{time}/azimuth_extent', data=azimuth_extent)
+    f.create_dataset(f'data/{time}/elevation_extent', data=elevation_extent)
+    f.create_dataset(f'data/{time}/area', data=area)
+    f.close()
+
+    return None
+
+
+def package_data(time, snr_db, range, azimuth, elevation, altitude,
+                 velocity_azimuth, velocity_elevation, doppler_shift):
+
+    config = ib.utils.Config('X://PythonProjects//icebear//dat//default.yml')
+
+    f = h5py.File('cleaned_2020_06_16.h5', 'w')
+    f.create_dataset('date_created', data=np.array([2021, 4, 1]))
+    f.create_dataset('version', data=np.array(config.version, dtype='S'))
+    f.create_dataset('experiment_name', data=np.array(['meteor winds'], dtype='S'))
+    f.create_dataset('radar_config', data=np.array([config.radar_config], dtype='S'))
+    f.create_dataset('center_freq', data=config.center_freq)
+    # receiver site information
+    f.create_dataset('rx_site_name', data=np.array([config.rx_site_name], dtype='S'))
+    f.create_dataset('rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('rx_heading', data=config.rx_heading)
+    f.create_dataset('rx_rf_path', data=np.array([config.rx_rf_path], dtype='S'))
+    f.create_dataset('rx_ant_type', data=np.array([config.rx_ant_type], dtype='S'))
+    f.create_dataset('rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('rx_feed_corr_date', data=config.rx_feed_corr_date)
+    f.create_dataset('rx_feed_corr_type', data=np.array([config.rx_feed_corr_type], dtype='S'))
+    f.create_dataset('rx_ant_mask', data=config.rx_ant_mask)
+    f.create_dataset('rx_sample_rate', data=config.rx_sample_rate)
+    # transmitter site information
+    f.create_dataset('tx_site_name', data=np.array([config.tx_site_name], dtype='S'))
+    f.create_dataset('tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('tx_heading', data=config.tx_heading)
+    f.create_dataset('tx_rf_path', data=np.array([config.tx_rf_path], dtype='S'))
+    f.create_dataset('tx_ant_type', data=np.array([config.tx_ant_type], dtype='S'))
+    f.create_dataset('tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('tx_feed_corr_date', data=config.tx_feed_corr_date)
+    f.create_dataset('tx_feed_corr_type', data=np.array([config.tx_feed_corr_type], dtype='S'))
+    f.create_dataset('tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
+    # processing settings
+    f.create_dataset('decimation_rate', data=config.decimation_rate)
+    f.create_dataset('time_resolution', data=config.time_resolution)
+    f.create_dataset('coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
+    # imaging settings
+    f.create_dataset('imaging_method', data=np.array([config.imaging_method], dtype='S'))
+    f.create_dataset('swht_coeffs', data=np.array([config.swht_coeffs], dtype='S'))
+    f.create_dataset('fov', data=config.fov)
+    f.create_dataset('fov_center', data=config.fov_center)
+    f.create_dataset('resolution', data=config.resolution)
+    f.create_dataset('lmax', data=config.lmax)
+    f.create_group('data')
+
+    # append a new group for the current measurement
+    f.create_dataset(f'data/time', data=time)
+    f.create_dataset(f'data/snr_db', data=snr_db)
+    f.create_dataset(f'data/range', data=range)
+    f.create_dataset(f'data/azimuth', data=azimuth)
+    f.create_dataset(f'data/elevation', data=elevation)
+    f.create_dataset(f'data/altitude', data=altitude)
+    f.create_dataset(f'data/velocity_azimuth', data=velocity_azimuth)
+    f.create_dataset(f'data/velocity_elevation', data=velocity_elevation)
+    f.create_dataset(f'data/doppler_shift', data=doppler_shift)
+    f.close()
+
+    return
+
+
 if __name__ == '__main__':
     filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_12')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')  # Enter first sub directory and last
     el = np.array([])
     rng = np.array([])
     dop = np.array([])
     snr = np.array([])
     az = np.array([])
+    t = np.array([])
 
     for file in files:
         f = h5py.File(file, 'r')
         print(file)
         group = f['data']
+        date = f['date']
         keys = group.keys()
 
         for key in keys:
-            if f'{key}' == '052138000':
-                break
+            # if f'{key}' == '052138000':
+            #     break
             data = group[f'{key}']
+            time = data['time'][()]
+            time = np.append(date, time)
             rf_distance = data['rf_distance'][()]
             snr_db = data['snr_db'][()]
             doppler_shift = data['doppler_shift'][()]
@@ -296,32 +497,37 @@ if __name__ == '__main__':
             #azimuth_spread = data['azimuth_extent'][()]
             area = data['area'][()]
 
+            for i in range(len(rf_distance)):
+                t = np.append(t, time)
             rng = np.append(rng, rf_distance)
             el = np.append(el, elevation)
             dop = np.append(dop, doppler_shift)
             snr = np.append(snr, snr_db)
             az = np.append(az, azimuth)
 
+    t = np.reshape(t, (-1, 6))
+
     snr = np.abs(snr)
     # az = np.abs(az)
     # el += 90
-    # el = np.abs(el)
+    el = np.abs(el)
     m = np.ones_like(rng)
-    m = np.ma.masked_where(dop > 20, m)
-    m = np.ma.masked_where(dop < -20, m)
-    m = np.ma.masked_where(snr <= 6.0, m)
+    m = np.ma.masked_where(dop > 50, m)
+    m = np.ma.masked_where(dop < -50, m)
+    m = np.ma.masked_where(snr <= 3.0, m)
     # m = np.ma.masked_where(az >= 315, m)
     # m = np.ma.masked_where(az <= 225, m)
-    #m = np.ma.masked_where(el >= 30, m)
-    #m = np.ma.masked_where(el <= 1, m)
+    m = np.ma.masked_where(el >= 26, m)
+    m = np.ma.masked_where(el <= 1, m)
 
 
-    alt_bistatic, rb = map_target([50.893, -109.403, 0.0], [52.243, -106.450, 0.0], np.copy(az), np.copy(el), np.copy(rng))
+    alt_bistatic, rb, v_az, v_el = map_target([50.893, -109.403, 0.0], [52.243, -106.450, 0.0], np.copy(az), np.copy(el), np.copy(rng))
+    # alt_bistatic, rb = map_target([50.893, -109.403, 0.0], [52.243, -106.450, 0.0], np.copy(az), np.copy(el), np.copy(rng))
     #alt_bistatic, rb = scatter_location_determination([52.243, -106.450, 0.0], [50.893, -109.403, 0.0], np.copy(rng), np.copy(az), np.copy(el))
 
     rng = rng * 0.75 - 200
-    #m = np.ma.masked_where(rng <= 300, m)
-    #m = np.ma.masked_where(rng >= 1200, m)
+    m = np.ma.masked_where(rng <= 300, m)
+    m = np.ma.masked_where(rng >= 1200, m)
 
     re = 6378.0
     a = 6378.1370
@@ -332,12 +538,15 @@ if __name__ == '__main__':
     gamma = np.rad2deg(np.arccos((rng ** 2 - (re ** 2) - (pre_alt ** 2)) / (-2 * re * pre_alt)))
     p2 = p1 + gamma
     r2 = np.sqrt((a*np.cos(p2))**2 + (b*np.sin(p2))**2)
+    el2 = np.copy(el) - gamma
 
     alt_geocentric = -re + np.sqrt(re ** 2 + rng ** 2 + 2 * re * rng * np.sin(np.deg2rad(el - gamma)))
     alt_geocentric -= np.tan(np.deg2rad(2.8624)) * (400 + rng * np.sin(np.deg2rad(az)))
 
-    alt_normal = -re + np.sqrt(re**2 + rng**2 + 2 * re * rng * np.sin(np.deg2rad(el)))
-    alt_normal -= np.tan(np.deg2rad(2.8624)) * (400 + rng * np.sin(np.deg2rad(az)))
+    # alt_normal = -re + np.sqrt(re**2 + rng**2 + 2 * re * rng * np.sin(np.deg2rad(el)))
+    # alt_normal -= np.tan(np.deg2rad(2.8624)) * (400 + rng * np.sin(np.deg2rad(az)))
+
+    m = np.ma.masked_where(alt_geocentric <= 80, m)
 
     rng = rng * m
     rb = rb * m
@@ -345,26 +554,59 @@ if __name__ == '__main__':
     snr = snr * m
     az = az * m
     el = el * m
+    el2 = el2 * m
     alt_geocentric = alt_geocentric * m
-    alt_normal = alt_normal * m
+    # alt_normal = alt_normal * m
     alt_bistatic = alt_bistatic * m
+    v_az = v_az * m
+    v_el = v_el * m
+    t = np.ma.array(t)
+    seconds = t[:, 3] * 3600 + t[:, 4] * 60 + t[:, 5]/1000
+    seconds = seconds + m
+    seconds = seconds[~seconds.mask]
 
-    plot_3d(az, rb, alt_bistatic, dop)
+    print(t.shape)
+    for i in range(6):
+        t[:, i] = t[:, i] * m
+    t = t[~t.mask]
+    t = np.reshape(t, (-1, 6))
+    print(t.shape)
+    print(t)
+    snr = snr[~snr.mask]
+    rb = rb[~rb.mask]
+    az = az[~az.mask]
+    el2 = el2[~el2.mask]
+    alt_geocentric = alt_geocentric[~alt_geocentric.mask]
+    v_az = v_az[~v_az.mask]
+    v_el = v_el[~v_el.mask]
+    dop = dop[~dop.mask]
 
-    plt.figure()
-    plt.scatter(rng, alt_normal, c='y', label='No Correction')
-    plt.scatter(rng, alt_geocentric, c='r', label='Geocentric Correction')
-    plt.scatter(rb, alt_bistatic, c='k', label='Geocentric with Bistatic Correction')
-    plt.legend(loc='best')
-    plt.xlabel('Range [km]')
-    plt.ylabel('Altitude [km]')
+    # # meteor_distribution(alt_bistatic)
+    # meteor_distribution(alt_geocentric)
+    #
+    # plt.figure()
+    # # plt.scatter(rng, alt_normal, c='y', label='No Correction')
+    # #plt.scatter(rng, alt_geocentric, c='r', label='Geocentric Correction')
+    # plt.scatter(rb, alt_geocentric, c='k', label='Geocentric Correction')
+    # # plt.scatter(rb, alt_bistatic, c='k', label='Geocentric with Bistatic Correction')
+    # plt.legend(loc='best')
+    # plt.xlabel('Range [km]')
+    # plt.ylabel('Altitude [km]')
+    #
+    # plt.figure()
+    # # plt.scatter(az, alt_normal, c='y', label='No Correction')
+    # plt.scatter(az, alt_geocentric, c='k', label='Geocentric Correction')
+    # # plt.scatter(az, alt_bistatic, c='k', label='Geocentric with Bistatic Correction')
+    # plt.legend(loc='best')
+    # plt.xlabel('Azimuth [deg]')
+    # plt.ylabel('Altitude [km]')
+    # plt.show()
 
-    plt.figure()
-    plt.scatter(az, alt_normal, c='y', label='No Correction')
-    plt.scatter(az, alt_geocentric, c='r', label='Geocentric Correction')
-    plt.scatter(az, alt_bistatic, c='k', label='Geocentric with Bistatic Correction')
-    plt.legend(loc='best')
-    plt.xlabel('Azimuth [deg]')
-    plt.ylabel('Altitude [km]')
+    # plt.figure()
+    # _ = plt.hist(seconds)
+    # plt.xlabel('Time [s]')
+    # plt.ylabel('Count')
+    # plt.show()
 
-    plt.show()
+    package_data(t, snr, rb, az, el2, alt_geocentric, v_az, v_el, dop)
+

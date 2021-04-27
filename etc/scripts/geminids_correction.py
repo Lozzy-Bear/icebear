@@ -43,15 +43,15 @@ snr = np.abs(snr)
 # el = np.abs(el)
 rng = rng * 0.75 - 200
 m = np.ones_like(rng)
-m = np.ma.masked_where(dop > 20, m)
-m = np.ma.masked_where(dop < -20, m)
-m = np.ma.masked_where(snr <= 6.0, m)
+# m = np.ma.masked_where(dop > 20, m)
+# m = np.ma.masked_where(dop < -20, m)
+# m = np.ma.masked_where(snr <= 6.0, m)
 # m = np.ma.masked_where(az >= 315, m)
 # m = np.ma.masked_where(az <= 225, m)
-m = np.ma.masked_where(el >= 30, m)
-m = np.ma.masked_where(el <= 1, m)
-m = np.ma.masked_where(rng <= 300, m)
-m = np.ma.masked_where(rng >= 1200, m)
+# m = np.ma.masked_where(el >= 30, m)
+# m = np.ma.masked_where(el <= 1, m)
+# m = np.ma.masked_where(rng <= 300, m)
+# m = np.ma.masked_where(rng >= 1200, m)
 
 re = 6378.0
 a = 6378.1370
