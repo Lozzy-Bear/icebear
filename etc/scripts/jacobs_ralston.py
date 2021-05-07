@@ -6,7 +6,6 @@ import random
 import csv
 
 # Constants
-PI = np.pi
 SPEED_OF_LIGHT = sci.c
 FREQUENCY = 49500000
 WAVELENGTH = SPEED_OF_LIGHT / FREQUENCY
@@ -17,19 +16,49 @@ class JacobsRalston():
     """
     Use 'Ambiguity Resolution in Interferometry (Jacobs,. Ralston, 1981)'
     To determine the best antenna spacing in a crossed configuration.
+
+    Note
+    ----
+    Units should always be input in terms of wavelengths and degrees
+
     """
 
     # UNITS should always be in terms of wavelengths and degrees
-    def __init__(self, array_file):
-        self.fov_azimuth = np.array([-45, 45]) / 180 * PI  # This should be defined by recievable fov not desired.
-        self.fov_elevation = np.array([45, 89]) / 180 * PI  # This should be defined by recievable fov not desired.
-        self.array_file = array_file
-        self.antenna_coords = np.array(
-            [[0, 0], [9, 0], [19, 0], [np.nan, np.nan], [np.nan, np.nan], [np.nan, np.nan], [np.nan, np.nan], [9, 5],
-             [9, -16], [np.nan, np.nan]])
+    def __init__(self):
+        self.fov_azimuth = np.deg2rad(np.array([-45, 45]))
+        self.fov_elevation = np.deg2rad(np.array([45, 89]))
+                                                          # b12 result = 16.0
+        x1, y1 = self.find_position(0.0, 16.0, 0.001, 1.5)  # b13 result = 2.50
+        x2, y2 = self.find_position(2.462, 16.0, 0.001, 1.5)  # b14 result = 2.50
+        x3, y3 = self.find_position(3.98, 16.0, 0.001, 1.5)  # result = 2.50
+        x2, y2 = self.pad_arr(x2, y2, x1)
+        x3, y3 = self.pad_arr(x3, y3, x1)
+        y1 += 1
+        y2 += 1
+        y3 += 1
 
-        self.find_position()
+        x = np.copy(x1)
+        y = (y1 * y2 * y3) / 3
+
+        plt.figure(figsize=[6, 4])
+        plt.plot(x, y, 'k')
+
+        plt.figure(figsize=[6, 4])
+        plt.plot(x, y1, 'k', label='Between Antenna 1 and 2')
+        # plt.plot(x, y2, 'm', label='Between Antenna 1 and 3')
+        # plt.plot(x, y3, 'g', label='Between Antenna 1 and 4')
+        plt.title("Minimum Separation vs. Baseline")
+        plt.xlabel("Baseline")
+        plt.ylabel("Minimum Phase Lines Separation")
+        plt.legend(loc='upper right')
+        plt.show()
         return
+
+    def pad_arr(self, x, y, ref):
+        pads = np.zeros(len(ref) - len(x))
+        x = np.append(pads, x)
+        y = np.append(pads, y)
+        return x, y
 
     def modulo_integer(self, d, theta_max):
         nmax = int(np.abs(d * np.sin(theta_max) + 0.5))
@@ -37,101 +66,28 @@ class JacobsRalston():
         return n
 
     def find_lmin(self, d1, d2, n1, n2):
-        dd = np.abs(d1) + np.abs(d2)
-        m = d1 / d2
-        B = 1 / ((1 + m ** 2) ** 0.5)
-        yi = np.array([])
-        # print(dd, m, B)
-        for i in n1:
-            for j in n2:
-                dndn = np.abs(np.abs(d2) * i - np.abs(d1) * j)
-                if dndn <= dd:
-                    y = m * j - i
-                    yi = np.append(yi, y)
-                else:
-                    pass
-        ysorted = np.sort(yi)
-        lmin = 1  # This is very lazy
-        for i in range(1, len(ysorted)):
-            l = (ysorted[i] - ysorted[i - 1]) * B
-            if l < lmin:
-                lmin = l
+        y = np.zeros((len(n1), len(n2)))
+        for i in range(len(n1)):
+            for j in range(len(n2)):
+                y[i, j] = d1 / d2 * n2[j] - n1[i]
+        y = np.sort(y.flatten())
+        lmin = np.min((y[1::] - y[0:-1]) / ((1 + (d1 / d2) ** 2) ** 0.5))
+
         return lmin
 
-    def find_position(self):
+    def find_position(self, x1, x2, dx, xmin):
         """ Find the next position for the antenna in the linear array. """
-        step = 0.001
+        x = np.arange(x1+xmin, x2, dx)
+        y = np.zeros_like(x)
+        theta = np.pi/2
+        n1 = self.modulo_integer(np.abs(x2 - x1)/2, theta)
+        for i in range(len(x)):
+            n2 = self.modulo_integer(x[i], theta)
+            y[i] = self.find_lmin(np.abs(x2 - x1)/2, x[i], n1, n2)
+        ind1 = np.where(y == np.amax(y))
+        print("placed:", x[ind1])
 
-        start = 2
-        d1 = 16 / 2
-        stop = d1
-        theta = 90 / 180 * PI
-        # For the East-West array.
-        data_d = np.array([])
-        data_l = np.array([])
-        n1 = self.modulo_integer(d1, theta)
-        d2 = np.arange(start, stop, step)
-        for di in d2:
-            n2 = self.modulo_integer(di, theta)
-            lmin = self.find_lmin(d1, di, n1, n2)
-            data_d = np.append(data_d, di)
-            data_l = np.append(data_l, lmin)
-        ind1 = np.where(data_l == np.amax(data_l))
-        print("First placed:", data_d[ind1])
-
-        start = 2.5
-        d1 = 16 / 2 - 2.5  # stop -data_d[ind1[0][0]]
-        stop = 16 / 2
-        theta = 90 / 180 * PI
-        # For the East-West array.
-        data_d2 = np.array([])
-        data_l2 = np.array([])
-        n1 = self.modulo_integer(d1, theta)
-        d2 = np.arange(start, stop, step)
-        for di in d2:
-            n2 = self.modulo_integer(di, theta)
-            lmin = self.find_lmin(d1, di, n1, n2)
-            data_d2 = np.append(data_d2, di)
-            data_l2 = np.append(data_l2, lmin)
-        ind2 = np.where(data_l2 == np.amax(data_l2))
-        data_d2 = data_d2 + data_d[ind1[0]]
-        # data_d2 = np.pad(data_d2, (ind1[0][0], (len(data_d)-len(data_d2)-ind1[0][0]) ), 'constant', constant_values=(0,0))
-        data_l2 = np.pad(data_l2, (ind1[0][0], (len(data_l) - len(data_l2) - ind1[0][0])), 'constant',
-                         constant_values=(0, 0))
-
-        # #dl_mult = np.multiply(data_l+1, data_l2+1)
-
-        # start = 4
-        # d1 = 16/2 - 4#stop -4.1
-        # stop = 16/2
-        # theta = 90 / 180 * PI
-        # # For the East-West array.
-        # data_d3 = np.array([])
-        # data_l3 = np.array([])
-        # n1 = self.modulo_integer(d1, theta)
-        # d2 = np.arange(start, stop, step)
-        # for di in d2:
-        # 	n2 = self.modulo_integer(di, theta)
-        # 	lmin = self.find_lmin(d1, di, n1, n2)
-        # 	data_d3 = np.append(data_d3, di)
-        # 	data_l3 = np.append(data_l3, lmin)
-        # print(data_d3[np.where(data_l3 == np.amax(data_l3))])
-        # data_l3 = np.pad(data_l3, (ind1[0][0], (len(data_l)-len(data_l3)-ind1[0][0]) ), 'constant', constant_values=(0,0))
-
-        plt.figure(figsize=[6, 4])
-        plt.scatter(data_d[ind1], data_l[ind1], marker='o', c='k', s=100.0,
-                    label=f'Antenna Location {data_d[ind1][0]*WAVELENGTH:.2f} [m]')
-        plt.plot(data_d, data_l, 'k', label='Third Antenna Placement')
-        plt.plot(data_d, data_l2, '--m', label='Fourth Antenna Placement')
-        # plt.plot(data_d, dl_mult)
-        # plt.plot(data_d3+4.1, data_l3,'g')
-        plt.title("Minimum Separation vs. Baseline")
-        plt.xlabel("Baseline")
-        plt.ylabel("Minimum Phase Lines Separation")
-        plt.legend(loc='upper right')
-        plt.savefig('E:/school/masters_thesis/images/jacobs_ralston_plot.png')
-        plt.show()
-        return
+        return x, y
 
 
 class AntennaArray:
@@ -272,4 +228,4 @@ if __name__ == "__main__":
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-    JacobsRalston("pass")
+    JacobsRalston()
