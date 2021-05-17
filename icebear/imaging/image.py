@@ -4,7 +4,7 @@ import icebear.utils as util
 import h5py
 
 
-def generate_level2(config, method='linear'):
+def generate_level2(config, method='swht'):
     """
 
     Parameters
@@ -115,7 +115,7 @@ def create_level2_hdf5(config, filename, year, month, day):
     f.create_dataset('image_method', data=np.array([config.image_method], dtype='S'))
     #f.create_dataset('clean', data=np.array([config.clean], dtype='S'))
     #f.create_dataset('center', data=np.array([config.center], dtype='S'))
-    f.create_dataset('swht_coeffs', data=config.swht_coeffs)
+    f.create_dataset('swht_coeffs', data=np.array([config.swht_coeffs], dtype='S'))
     f.create_dataset('fov', data=config.fov)
     f.create_dataset('fov_center', data=config.fov_center)
     f.create_dataset('resolution', data=config.resolution)

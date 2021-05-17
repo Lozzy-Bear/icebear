@@ -2,6 +2,91 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 from scipy.interpolate import griddata
+import pymap3d as pm
+
+
+def map_target(tx, rx, az, el, rf):
+    """
+    Find the scatter location given tx location, rx, location, total rf distance, and target angle-of-arrival.
+
+    Parameters
+    ----------
+        tx : float np.array
+            [latitude, longitude, altitude] of tx array in degrees and kilometers
+        rx : float np.array
+            [latitude, longitude, altitude] of rx array in degrees and kilometers
+        az : float
+            angle-of-arrival azimuth in degrees
+        el : float
+            angle-of-arrival elevation in degrees
+        rf : float np.array
+            total rf path distance rf = c * tau
+
+    Returns
+    -------
+        sx : float np.array
+            [latitude, longitude, altitude] of scatter in degrees and kilometers
+        r : float
+            bistatic slant range in kilometers
+    """
+
+    # Setup givens in correct units
+    rf = rf * 1.0e3 * 1.5 - 230e3  # Assumed rf propagation correction in km
+    az = np.where(az < 0, np.deg2rad(az + 367.0), np.deg2rad(az + 7.0))
+    el = np.deg2rad(np.abs(el))
+    sx = np.zeros((3, len(rf)))
+    uv = np.zeros((3, len(rf)))
+    us = np.zeros((3, len(rf)))
+
+    # Determine the slant range, r
+    bx1, by1, bz1 = pm.geodetic2ecef(rx[0], rx[1], rx[2], ell=pm.Ellipsoid("wgs84"), deg=True)
+    ur = np.array([bx1, by1, bz1]) / np.linalg.norm([bx1, by1, bz1])
+    bx2, by2, bz2 = pm.geodetic2ecef(tx[0], tx[1], tx[2], ell=pm.Ellipsoid("wgs84"), deg=True)
+    ut = np.array([bx2, by2, bz2]) / np.linalg.norm([bx2, by2, bz2])
+    bx = bx2 - bx1
+    by = by2 - by1
+    bz = bz2 - bz1
+    b = np.linalg.norm([bx, by, bz])
+    ub = np.array([bx, by, bz]) / b
+
+    dr = np.ones(1000)
+    dtheta = np.ones(1000)
+    dr[0] = 1e6
+    dtheta[0] = 1e6
+    r2 = np.copy(rf)
+    theta2 = np.ones(len(az)) * np.pi
+    cnt = 0
+    while np.max(dtheta[cnt]) >= 0.002 and dr[cnt] >= 1500:
+        ua = np.array([np.sin(az) * np.cos(el), np.cos(az) * np.cos(el), np.sin(el)])
+        theta = np.arccos(ua[0, :] * ub[0] + ua[1, :] * ub[1] + ua[2, :] * ub[2])
+        r = (rf ** 2 - b ** 2) / (2 * (rf - b * np.cos(theta)))
+
+        # Correct elevation using geocentric angle gamma and first order ranges, find scatter lat, long, alt
+        for i in range(len(rf)):
+            bx3, by3, bz3 = pm.aer2ecef(np.rad2deg(az[i]), np.rad2deg(el[i]), np.abs(r[i]),
+                                    rx[0], rx[1], rx[2], ell=pm.Ellipsoid("wgs84"), deg=True)
+            us[:, i] = np.array([bx3, by3, bz3]) / np.linalg.norm([bx3, by3, bz3])
+            el[i] -= np.arccos(ur[0] * us[0, i] + ur[1] * us[1, i] + ur[2] * us[2, i])
+            sx[:, i] = pm.aer2geodetic(np.rad2deg(az[i]), np.rad2deg(el[i]), np.abs(r[i]),
+                                    rx[0], rx[1], rx[2], ell=pm.Ellipsoid("wgs84"), deg=True)
+
+        dr[cnt + 1] = np.max(np.abs(r - r2))
+        dtheta[cnt + 1] = np.max(np.abs(theta - theta2))
+
+        cnt += 1
+        r2 = r
+        theta2 = theta
+
+    # Find the bistatic bisector velocity unit vector
+    uv = (us + ua) / 2.0
+    uv = uv / np.linalg.norm(uv)
+
+    # Set units to degrees and kilometers
+    sx[2, :] /= 1.0e3
+    r /= 1.0e3
+
+    return sx[2, :], r, dr[0:cnt], dtheta[0:cnt]
+
 
 if __name__ == '__main__':
     # Pretty plot configuration.
