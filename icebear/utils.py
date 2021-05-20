@@ -361,7 +361,7 @@ def get_all_data_files(directory, start_subdir='nodate', stop_subdir='nodate'):
     if stop_subdir == 'nodate':
         stop_subdir = start_subdir
 
-    for path, subdirs, files in os.walk(directory):
+    for path, subdirs, files in sorted(os.walk(directory)):
         if start_subdir in path:
             start_flag = True
         if start_flag and not stop_flag:
