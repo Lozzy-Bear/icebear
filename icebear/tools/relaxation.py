@@ -402,8 +402,8 @@ if __name__ == '__main__':
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
-    # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
+    # filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
+    filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
     files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     rf_distance = np.array([])
@@ -592,18 +592,23 @@ if __name__ == '__main__':
         sv[2, :] = np.where(sv[2, :] > thresh, thresh, sv[2, :])
         sv[2, :] = np.where(sv[2, :] < -thresh, -thresh, sv[2, :])
 
-        plt.figure()
-        plt.hist(sv[2, :])
+        # plt.figure()
+        # plt.hist(sv[2, :])
 
         plt.figure()
         plt.quiver(sx[1, :], sx[0, :],
                    np.sin(np.deg2rad(sv[0, :])), np.cos(np.deg2rad(sv[0, :])),
                    sv[2, :], cmap='jet_r')
-        plt.title('E Region Scatter 2019-12-19')
+        # plt.title(f'{year}-{month}-{day} {hour}:{minute}:{second}')
         plt.xlabel('Longitude [deg]')
         plt.ylabel('Latitude [deg]')
         plt.colorbar(label='Velocity [m/s]')
 
-        plt.scatter(-109.403, 50.893, label='TX')
-        plt.scatter(-106.450, 52.243, label='RX')
+        plt.scatter(-109.403, 50.893, c='k')
+        plt.annotate('TX', (-109.403, 50.893))
+        plt.scatter(-106.450, 52.243, c='k')
+        plt.annotate('RX', (-106.450, 52.24))
+
+        plt.xlim([-114.0, -96.0])
+        plt.ylim([50.0, 62.0])
         plt.show()
