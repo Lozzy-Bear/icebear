@@ -2,8 +2,51 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 import pymap3d as pm
-import icebear.utils as utils
-import time
+import os
+# import icebear.utils as utils
+# import time
+
+
+def get_all_data_files(directory, start_subdir='nodate', stop_subdir='nodate'):
+    """
+    Given a directory, reads all sub directories to find hdf5 files and returns paths, start times, and stop times.
+
+    Parameters
+    ----------
+        directory :
+        start_subdir :
+        stop_subdir :
+
+    Returns
+    -------
+        times :
+
+    Note
+    ----
+        This is intended to be used for batching large data sets.
+    """
+    filepaths = []
+    start_flag = False
+    stop_flag = False
+    if start_subdir == 'nodate':
+        start_flag = True
+    if stop_subdir == 'nodate':
+        stop_subdir = start_subdir
+
+    for path, subdirs, files in sorted(os.walk(directory)):
+        if start_subdir in path:
+            start_flag = True
+        if start_flag and not stop_flag:
+            for file in files:
+                if 'plots' in path:
+                    continue
+                else:
+                    filepaths.append(os.path.join(path, file))
+        if stop_subdir in path:
+            stop_flag = True
+    filepaths.sort()
+
+    return filepaths
 
 
 def map_target_updated(tx, rx, az, el, rf, dop, wavelength):
@@ -404,8 +447,8 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     # filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
-    # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
+    files = get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+    # files = get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -582,12 +625,12 @@ if __name__ == '__main__':
         # plt.legend(loc='upper right')
         # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
 
-        # import cartopy.crs as ccrs
-        # ax = plt.axes(projection=ccrs.PlateCarree())
-        # ax.set_extent([np.min(sv[0, :]),np.max(sv[0, :]), np.min(sv[1, :]), np.max(sv[1, :])], crs=ccrs.PlateCarree())
-        # ax.lakes
-        # ax.coastline
-        # ax.rivers
+        import cartopy.crs as ccrs
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax.set_extent([np.min(sv[0, :]), np.max(sv[0, :]), np.min(sv[1, :]), np.max(sv[1, :])], crs=ccrs.PlateCarree())
+        ax.lakes()
+        ax.coastline()
+        ax.rivers()
         thresh = 1500.0
         sv[2, :] = np.where(sv[2, :] > thresh, thresh, sv[2, :])
         sv[2, :] = np.where(sv[2, :] < -thresh, -thresh, sv[2, :])

@@ -82,7 +82,7 @@ if __name__ == "__main__":
         # https://packaging.python.org/en/latest/requirements.html
 
         install_requires=['numpy', 'h5py', 'digital-rf', 'numba', 'matplotlib', 'imageio', 'scipy', 'opencv-python',
-                          'PyYaml'],
+                          'PyYaml', 'pymap3d'],
 
         ext_modules=extensions,
 

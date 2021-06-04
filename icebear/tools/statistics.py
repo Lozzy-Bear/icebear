@@ -91,16 +91,14 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
     v_sr = (v_gr - v_gs.T).T
     u_sr = v_sr / np.linalg.norm(v_sr, axis=0)
     radar_wavelength = wavelength / np.abs(2.0 * np.einsum('ij,ij->j', u_sr, u_bi))
-    doppler_sign = np.sign(dop)
+    # doppler_sign = np.sign(dop)  # 1 for positive, -1 for negative, and 0 for zero
+    doppler_sign = np.where(dop >= 0, 1, -1)  # 1 for positive, -1 for negative, and 0 for zero
     vaz, vel, _ = pm.ecef2aer(doppler_sign * u_bi[0, :] + x,
                               doppler_sign * u_bi[1, :] + y,
                               doppler_sign * u_bi[2, :] + z,
                               sx[0, :], sx[1, :], sx[2, :],
                               ell=pm.Ellipsoid("wgs84"), deg=True)
-    # plt.figure()
-    # plt.scatter(vaz, vel, c=dop)
-    # plt.colorbar()
-    # plt.show()
+
     # Convert back to conventional units
     sx[2, :] /= 1.0e3
     az = np.rad2deg(az)
@@ -169,29 +167,48 @@ def velocity_plot(sx, sv, date, time, filepath):
     n = np.sqrt(u**2 + v**2)
     u /= n
     v /= n
+    # u = np.where(sv[2, :] == 0, np.nan, u)
+    # v = np.where(sv[2, :] == 0, np.nan, v)
 
-    plt.figure(figsize=[18, 14])
-    plt.quiver(sx[1, :], sx[0, :], u, v, sv[2, :], cmap='jet_r')
-    plt.title(f'{year}-{month}-{day} {hour}:{minute}:{second}')
-    plt.xlabel('Longitude [deg]')
+    # plt.figure(figsize=[18, 14])
+    fig = plt.figure(figsize=[20, 14], constrained_layout=True)
+    gs = fig.add_gridspec(1, 4)
+    fig.suptitle(f'{year}-{month}-{day} {hour}:{minute}:{second}')
+
+    # Altitude slice
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.set_facecolor('black')
+    plt.scatter(sx[2, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-1500.0, vmax=1500.0)
+    plt.xlabel('Altitude [km]')
     plt.ylabel('Latitude [deg]')
+    plt.clim(-1500.0, 1500.0)
+    plt.xlim([200.0, 0.0])
+    plt.ylim([50.0, 62.0])
+    plt.grid()
+
+    # Azimuth slice
+    ax2 = fig.add_subplot(gs[0, 1::])
+    ax2.set_facecolor('black')
+    plt.quiver(sx[1, :], sx[0, :], u, v, sv[2, :], cmap='RdBu')
+    # plt.title(f'{year}-{month}-{day} {hour}:{minute}:{second}')
+    plt.xlabel('Longitude [deg]')
+    # plt.ylabel('Latitude [deg]')
     plt.colorbar(label='Velocity [m/s]')
     plt.clim(-1500.0, 1500.0)
-
+    plt.scatter(sx[1, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-1500.0, vmax=1500.0)
     plt.scatter(-109.403, 50.893, c='k')
     plt.annotate('TX', (-109.403, 50.893))
     plt.scatter(-106.450, 52.243, c='k')
     plt.annotate('RX', (-106.450, 52.24))
     props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
-    plt.text(-113.5, 61.5, f'Records {len(sx[1, :]):3d}', bbox=props)
-
+    plt.text(-100.0, 50.5, f'Records {len(sx[1, :]):3d}\nSNR Cutoff 3.0 dB', bbox=props)
     plt.xlim([-114.0, -96.0])
     plt.ylim([50.0, 62.0])
     plt.grid()
 
     plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.png')
     plt.close()
-
+    # plt.show()
     return
 
 
@@ -212,10 +229,11 @@ if __name__ == '__main__':
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
     # Load the level 2 data file.
-    # filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
-    filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
+    filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
+    # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
     # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -246,86 +264,97 @@ if __name__ == '__main__':
             azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
             area = np.append(area, data['area'][()])
 
-            print(f'time {key}')
-            print('\t-loading completed')
-            azimuth += 7.0
-            print('\t-total data', len(rf_distance))
-            # Pre-masking
-            m = np.ones_like(rf_distance)
-            m = np.ma.masked_where(snr_db <= 1.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
-            # m = np.ma.masked_where(doppler_shift >= 50, m)  # Meteors are less than |150 m/s|
-            # m = np.ma.masked_where(doppler_shift <= -50, m)  # Meteors are less than |150 m/s|
-            # m = np.ma.masked_where(area >= 5.0, m)  # Meteors should have small scattering cross-sectional area
+    print('\t-loading completed')
+    azimuth += 7.0
+    print('\t-total data', len(rf_distance))
+    # Pre-masking
+    m = np.ones_like(rf_distance)
+    m = np.ma.masked_where(snr_db <= 1.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
+    # m = np.ma.masked_where(doppler_shift >= 50, m)  # Meteors are less than |150 m/s|
+    # m = np.ma.masked_where(doppler_shift <= -50, m)  # Meteors are less than |150 m/s|
+    # m = np.ma.masked_where(area >= 5.0, m)  # Meteors should have small scattering cross-sectional area
 
-            rf_distance = rf_distance * m
-            snr_db = snr_db * m
-            doppler_shift = doppler_shift * m
-            azimuth = azimuth * m
-            azimuth_extent = azimuth_extent * m
-            elevation = elevation * m
-            elevation_extent = elevation_extent * m
-            area = area * m
-            t = t * m
-            print('\t-pre-masking completed')
+    rf_distance = rf_distance * m
+    snr_db = snr_db * m
+    doppler_shift = doppler_shift * m
+    azimuth = azimuth * m
+    azimuth_extent = azimuth_extent * m
+    elevation = elevation * m
+    elevation_extent = elevation_extent * m
+    area = area * m
+    t = t * m
+    print('\t-pre-masking completed')
 
-            sx, sa, sv = map_target([50.893, -109.403, 0.0],
-                                    [52.243, -106.450, 0.0],
-                                    azimuth, elevation, rf_distance,
-                                    doppler_shift, 6.056)
-            lat = sx[0, :]
-            lon = sx[1, :]
-            altitude = sx[2, :]
-            vaz = sv[0, :]
-            vel = sv[1, :]
-            doppler_shift = sv[2, :]
-            slant_range = sa[2, :]
-            elevation = sa[1, :]
-            print('\t-mapping completed')
+    sx, sa, sv = map_target([50.893, -109.403, 0.0],
+                            [52.243, -106.450, 0.0],
+                            azimuth, elevation, rf_distance,
+                            doppler_shift, 6.056)
+    lat = sx[0, :]
+    lon = sx[1, :]
+    altitude = sx[2, :]
+    vaz = sv[0, :]
+    vel = sv[1, :]
+    doppler_shift = sv[2, :]
+    slant_range = sa[2, :]
+    elevation = sa[1, :]
+    print('\t-mapping completed')
 
-            # Set up a filtering mask.
-            m = np.ma.masked_where(elevation == np.nan, m)  # Elevation iterations not converging (noise)
-            m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
-            # m = np.ma.masked_where(((slant_range <= 100.0) & (altitude <= 25.0)), m)  # Beam camping location
-            m = np.ma.masked_where(slant_range <= 225, m)  # Man made noise and multipath objects
-            m = np.ma.masked_where(altitude <= 50, m)  # Man made noise and multipath objects
-            # m = np.ma.masked_where(altitude >= 130, m)  # Man made noise and multipath objects
-            rf_distance = rf_distance * m
-            snr_db = snr_db * m
-            doppler_shift = doppler_shift * m
-            azimuth = azimuth * m
-            azimuth_extent = azimuth_extent * m
-            elevation = elevation * m
-            elevation_extent = elevation_extent * m
-            area = area * m
-            slant_range = slant_range * m
-            altitude = altitude * m
-            t = t * m
-            lat = lat * m
-            lon = lon * m
-            vaz = vaz * m
-            vel = vel * m
+    # Set up a filtering mask.
+    m = np.ma.masked_where(elevation == np.nan, m)  # Elevation iterations not converging (noise)
+    m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
+    m = np.ma.masked_where(slant_range <= 300, m)  # Man made noise and multipath objects
+    # m = np.ma.masked_where(altitude <= 50, m)  # Man made noise and multipath objects
+    # m = np.ma.masked_where(((slant_range <= 100.0) & (altitude <= 25.0)), m)  # Beam camping location
+    rf_distance = rf_distance * m
+    snr_db = snr_db * m
+    doppler_shift = doppler_shift * m
+    azimuth = azimuth * m
+    azimuth_extent = azimuth_extent * m
+    elevation = elevation * m
+    elevation_extent = elevation_extent * m
+    area = area * m
+    slant_range = slant_range * m
+    altitude = altitude * m
+    t = t * m
+    lat = lat * m
+    lon = lon * m
+    vaz = vaz * m
+    vel = vel * m
 
-            rf_distance = rf_distance[~rf_distance.mask]
-            snr_db = snr_db[~snr_db.mask]
-            doppler_shift = doppler_shift[~doppler_shift.mask]
-            azimuth = azimuth[~azimuth.mask]
-            azimuth_extent = azimuth_extent[~azimuth_extent.mask]
-            elevation = elevation[~elevation.mask]
-            elevation_extent = elevation_extent[~elevation_extent.mask]
-            area = area[~area.mask]
-            slant_range = slant_range[~slant_range.mask]
-            altitude = altitude[~altitude.mask]
-            t = t[~t.mask]
-            lat = lat[~lat.mask]
-            lon = lon[~lon.mask]
-            vaz = vaz[~vaz.mask]
-            vel = vel[~vel.mask]
+    rf_distance = rf_distance[~rf_distance.mask].flatten()
+    snr_db = snr_db[~snr_db.mask].flatten()
+    doppler_shift = doppler_shift[~doppler_shift.mask].flatten()
+    azimuth = azimuth[~azimuth.mask].flatten()
+    azimuth_extent = azimuth_extent[~azimuth_extent.mask].flatten()
+    elevation = elevation[~elevation.mask].flatten()
+    elevation_extent = elevation_extent[~elevation_extent.mask].flatten()
+    area = area[~area.mask].flatten()
+    slant_range = slant_range[~slant_range.mask].flatten()
+    altitude = altitude[~altitude.mask].flatten()
+    t = t[~t.mask].flatten()
+    lat = lat[~lat.mask].flatten()
+    lon = lon[~lon.mask].flatten()
+    vaz = vaz[~vaz.mask].flatten()
+    vel = vel[~vel.mask].flatten()
 
-            print('\t-masking completed')
-            print('\t-remaining data', len(rf_distance))
+    print('\t-masking completed')
+    print('\t-remaining data', len(rf_distance))
 
-            if len(rf_distance) > 0:
-                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'eplots/')
-            else:
-                print('\t-0 records')
+    plt.figure(figsize=[12, 12])
+    mean_altitude = np.mean(altitude)
+    total_targets = len(altitude)
+    _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
+    plt.xscale('log')
+    # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
+    plt.title('E-Region Scatter 2019-12-19 Altitude Distribution')
+    # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
+    plt.xlabel('Count')
+    plt.ylabel('Altitude [km]')
+    plt.ylim((0, 200))
+    plt.xlim((10, 10_000))
+    plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    plt.legend(loc='upper right')
+    # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
+    plt.show()
 
+exit()  # Needs a clean exit?
