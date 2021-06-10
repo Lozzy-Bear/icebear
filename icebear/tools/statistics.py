@@ -269,7 +269,7 @@ if __name__ == '__main__':
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
-    m = np.ma.masked_where(snr_db <= 1.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
+    m = np.ma.masked_where(snr_db <= 3.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
     # m = np.ma.masked_where(doppler_shift >= 50, m)  # Meteors are less than |150 m/s|
     # m = np.ma.masked_where(doppler_shift <= -50, m)  # Meteors are less than |150 m/s|
     # m = np.ma.masked_where(area >= 5.0, m)  # Meteors should have small scattering cross-sectional area
