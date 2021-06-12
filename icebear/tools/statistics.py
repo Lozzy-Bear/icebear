@@ -212,6 +212,71 @@ def velocity_plot(sx, sv, date, time, filepath):
     return
 
 
+def package_data(time, snr_db, range, azimuth, elevation, altitude,
+                 velocity_azimuth, velocity_elevation, doppler_shift):
+
+    config = ib.utils.Config('X://PythonProjects//icebear//dat//default.yml')
+
+    f = h5py.File('cleaned_2020_06_16.h5', 'w')
+    f.create_dataset('date_created', data=np.array([2021, 4, 1]))
+    f.create_dataset('version', data=np.array(config.version, dtype='S'))
+    f.create_dataset('experiment_name', data=np.array(['meteor winds'], dtype='S'))
+    f.create_dataset('radar_config', data=np.array([config.radar_config], dtype='S'))
+    f.create_dataset('center_freq', data=config.center_freq)
+    # receiver site information
+    f.create_dataset('rx_site_name', data=np.array([config.rx_site_name], dtype='S'))
+    f.create_dataset('rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('rx_heading', data=config.rx_heading)
+    f.create_dataset('rx_rf_path', data=np.array([config.rx_rf_path], dtype='S'))
+    f.create_dataset('rx_ant_type', data=np.array([config.rx_ant_type], dtype='S'))
+    f.create_dataset('rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('rx_feed_corr_date', data=config.rx_feed_corr_date)
+    f.create_dataset('rx_feed_corr_type', data=np.array([config.rx_feed_corr_type], dtype='S'))
+    f.create_dataset('rx_ant_mask', data=config.rx_ant_mask)
+    f.create_dataset('rx_sample_rate', data=config.rx_sample_rate)
+    # transmitter site information
+    f.create_dataset('tx_site_name', data=np.array([config.tx_site_name], dtype='S'))
+    f.create_dataset('tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('tx_heading', data=config.tx_heading)
+    f.create_dataset('tx_rf_path', data=np.array([config.tx_rf_path], dtype='S'))
+    f.create_dataset('tx_ant_type', data=np.array([config.tx_ant_type], dtype='S'))
+    f.create_dataset('tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('tx_feed_corr_date', data=config.tx_feed_corr_date)
+    f.create_dataset('tx_feed_corr_type', data=np.array([config.tx_feed_corr_type], dtype='S'))
+    f.create_dataset('tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
+    # processing settings
+    f.create_dataset('decimation_rate', data=config.decimation_rate)
+    f.create_dataset('time_resolution', data=config.time_resolution)
+    f.create_dataset('coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
+    # imaging settings
+    f.create_dataset('imaging_method', data=np.array([config.imaging_method], dtype='S'))
+    f.create_dataset('swht_coeffs', data=np.array([config.swht_coeffs], dtype='S'))
+    f.create_dataset('fov', data=config.fov)
+    f.create_dataset('fov_center', data=config.fov_center)
+    f.create_dataset('resolution', data=config.resolution)
+    f.create_dataset('lmax', data=config.lmax)
+    f.create_group('data')
+
+    # append a new group for the current measurement
+    f.create_dataset(f'data/time', data=time)
+    f.create_dataset(f'data/snr_db', data=snr_db)
+    f.create_dataset(f'data/range', data=range)
+    f.create_dataset(f'data/azimuth', data=azimuth)
+    f.create_dataset(f'data/elevation', data=elevation)
+    f.create_dataset(f'data/altitude', data=altitude)
+    f.create_dataset(f'data/velocity_azimuth', data=velocity_azimuth)
+    f.create_dataset(f'data/velocity_elevation', data=velocity_elevation)
+    f.create_dataset(f'data/doppler_shift', data=doppler_shift)
+    f.close()
+
+    return
+
+
 if __name__ == '__main__':
     # Pretty plot configuration.
     from matplotlib import rc
@@ -231,9 +296,9 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -350,10 +415,27 @@ if __name__ == '__main__':
     # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
     plt.xlabel('Count')
     plt.ylabel('Altitude [km]')
-    plt.ylim((0, 200))
-    plt.xlim((10, 10_000))
-    plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    plt.ylim((50, 450))
+    plt.xlim((10, 100_000))
+    plt.plot([0, 100_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
     plt.legend(loc='upper right')
+    plt.grid()
+    # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
+
+    plt.figure(figsize=[12, 12])
+    mean_longitude = np.mean(lon)
+    _ = plt.hist(lon, bins='auto', orientation='vertical', histtype=u'step', label=f'Total Targets {total_targets}')
+    plt.yscale('log')
+    # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
+    plt.title('E-Region Scatter 2019-12-19 Longitude Distribution')
+    # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
+    plt.xlabel('Longitude [deg]')
+    plt.ylabel('Count')
+    plt.ylim((10, 100_000))
+    plt.xlim((-114.0, -96.0))
+    plt.plot([mean_longitude, mean_longitude], [10, 100_000], '--k', label=f'Mean Longitude {mean_longitude:.1f} [km]')
+    plt.legend(loc='upper right')
+    plt.grid()
     # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
     plt.show()
 

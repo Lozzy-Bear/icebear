@@ -4,9 +4,10 @@ import h5py
 import pymap3d as pm
 import icebear.utils as utils
 from scipy.optimize import curve_fit
-from scipy.signal import peak_widths, find_peaks
+from scipy.signal import peak_widths
 
-def map_target(tx, rx, az, el, rf, dop, wavelength):
+
+def map_target(tx, rx, azimuth, elevation, rf_distance, doppler_shift, wavelength):
     """
     Find the scatter location given tx location, rx location, total rf distance, and target angle-of-arrival
     using the 'WGS84' Earth model. Also determines the bistatic velocity vector and bistatic radar wavelength.
@@ -17,13 +18,13 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
             [latitude, longitude, altitude] of tx array in degrees and kilometers
         rx : float np.array
             [latitude, longitude, altitude] of rx array in degrees and kilometers
-        az : float np.array
+        azimuth : float np.array
             angle-of-arrival azimuth in degrees
-        el : float np.array
+        elevation : float np.array
             angle-of-arrival elevation in degrees
-        rf : float np.array
+        rf_distance : float np.array
             total rf path distance rf = c * tau in kilometers
-        dop : float np.array
+        doppler_shift : float np.array
             doppler shift in hertz
         wavelength : float
             radar signal center wavelength
@@ -53,15 +54,16 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
     """
 
     # Initialize output arrays
-    sx = np.zeros((3, len(rf)), dtype=float)
-    sa = np.zeros((3, len(rf)), dtype=float)
-    sv = np.zeros((3, len(rf)), dtype=float)
+    sx = np.zeros((3, len(rf_distance)), dtype=float)
+    sa = np.zeros((3, len(rf_distance)), dtype=float)
+    sv = np.zeros((3, len(rf_distance)), dtype=float)
 
     # Setup variables in correct units for pymap3d
-    rf = rf * 1.0e3
-    az = np.where(az < 0.0, az + 360.0, az)
-    az = np.deg2rad(az)
-    el = np.deg2rad(np.abs(el))
+    re = 6378.0e3
+    rf_distance = rf_distance * 1.0e3
+    azimuth = np.where(azimuth < 0.0, azimuth + 360.0, azimuth)
+    azimuth = np.deg2rad(azimuth)
+    elevation = np.deg2rad(np.abs(elevation))
 
     # Determine the slant range, r
     bx1, by1, bz1 = pm.geodetic2ecef(rx[0], rx[1], rx[2], ell=pm.Ellipsoid("wgs84"), deg=True)
@@ -72,15 +74,15 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
     u_rt = np.array([np.sin(np.deg2rad(raz)) * np.cos(np.deg2rad(rel)),
                      np.cos(np.deg2rad(raz)) * np.cos(np.deg2rad(rel)),
                      np.sin(np.deg2rad(rel))])
-    el -= relaxation_elevation(el, rf, az, b, u_rt)
-    u_rs = np.array([np.sin(az) * np.cos(el), np.cos(az) * np.cos(el), np.sin(el)])
-    r = (rf ** 2 - b ** 2) / (2 * (rf - b * np.dot(u_rt, u_rs)))
+    elevation -= relaxation_elevation(azimuth, elevation, rf_distance, re, b, u_rt)
+    u_rs = np.array([np.sin(azimuth) * np.cos(elevation), np.cos(azimuth) * np.cos(elevation), np.sin(elevation)])
+    r = (rf_distance ** 2 - b ** 2) / (2 * (rf_distance - b * np.dot(u_rt, u_rs)))
 
     # WGS84 Model for lat, long, alt
-    sx[:, :] = pm.aer2geodetic(np.rad2deg(az), np.rad2deg(el), np.abs(r),
-                         np.repeat(rx[0], len(az)),
-                         np.repeat(rx[1], len(az)),
-                         np.repeat(rx[2], len(az)),
+    sx[:, :] = pm.aer2geodetic(np.rad2deg(azimuth), np.rad2deg(elevation), np.abs(r),
+                         np.repeat(rx[0], len(azimuth)),
+                         np.repeat(rx[1], len(azimuth)),
+                         np.repeat(rx[2], len(azimuth)),
                          ell=pm.Ellipsoid("wgs84"), deg=True)
 
     # Determine the bistatic Doppler velocity vector
@@ -92,8 +94,7 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
     v_sr = (v_gr - v_gs.T).T
     u_sr = v_sr / np.linalg.norm(v_sr, axis=0)
     radar_wavelength = wavelength / np.abs(2.0 * np.einsum('ij,ij->j', u_sr, u_bi))
-    # doppler_sign = np.sign(dop)  # 1 for positive, -1 for negative, and 0 for zero
-    doppler_sign = np.where(dop >= 0, 1, -1)  # 1 for positive, -1 for negative, and 0 for zero
+    doppler_sign = np.where(doppler_shift >= 0, 1, -1)  # 1 for positive, -1 for negative, and 0 for zero
     vaz, vel, _ = pm.ecef2aer(doppler_sign * u_bi[0, :] + x,
                               doppler_sign * u_bi[1, :] + y,
                               doppler_sign * u_bi[2, :] + z,
@@ -102,119 +103,68 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
 
     # Convert back to conventional units
     sx[2, :] /= 1.0e3
-    az = np.rad2deg(az)
-    el = np.rad2deg(el)
-    sa[:, :] = np.array([az, el, r / 1.0e3])
-    sv[:, :] = np.array([vaz, vel, dop * radar_wavelength])
+    azimuth = np.rad2deg(azimuth)
+    elevation = np.rad2deg(elevation)
+    sa[:, :] = np.array([azimuth, elevation, r / 1.0e3])
+    sv[:, :] = np.array([vaz, vel, doppler_shift * radar_wavelength])
 
     return sx, sa, sv
 
 
-def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic_vector):
+def relaxation_elevation(azimuth, elevation, rf_distance, radius=6378.0e3,
+                         bistatic_distance=0.0, bistatic_vector=np.array([0.0, 0.0, 0.0])):
     """
+    Given  a raw interferometer elevation measurement determine the curved surface (default spherical Earth)
+    phase referenced elevation angle with respect to the receiver. Leaving the bistatic quantities zeroed (default)
+    solves for a monostatic radar case.
+
+    Relaxation (https://en.wikipedia.org/wiki/Relaxation_(iterative_method)
+    Elevation Correction (todo: site paper here when published)
 
     Parameters
     ----------
-    beta : float np.array
-        Measured elevation angle in degrees
-    rf_distance :
-    azimuth
-    bistatic_distance
-    bistatic_vector
+        azimuth : float np.array
+            measured azimuth angle(s) in radians from the receiver
+        elevation : float np.array
+            measured elevation angle(s) in radians from the receiver
+        rf_distance : float np.array
+            total RF propagation distance measured in meters
+        radius : float
+            the radius of the reference curve in meters
+        bistatic_distance : float
+            the separation distance between transmitter and receiver in meters
+        bistatic_vector : float np.array
+            unit vector (u_rt) pointing from the receiver towards the transmitter
 
     Returns
     -------
-
+        relaxed_elevation : float np.array
+            Elevation angles corrected for the phase reference curve.
     """
-    n = 0
-    radius_of_earth = 6378.0e3
+
+    u_rt = bistatic_vector
     err = np.deg2rad(1.0)
     target = np.deg2rad(0.1)
-    m = np.zeros((3, len(beta)))
+    m = np.zeros((3, len(elevation)))
     m[1, :] = 0.1
-    v = np.array([np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]), np.sin(beta - m[1, :])])
-    r = (rf_distance ** 2 - bistatic_distance ** 2) / (2 * (rf_distance - bistatic_distance * (np.dot(bistatic_vector, v))))
-    m[2, :] = 1 / (radius_of_earth / r + np.sin(beta) / 2)
+    u_rs = np.array([np.sin(azimuth) * np.cos(elevation - m[1, :]), np.cos(azimuth) * np.cos(elevation - m[1, :]),
+                  np.sin(elevation - m[1, :])])
+    r = (rf_distance ** 2 - bistatic_distance ** 2) / (
+                2 * (rf_distance - bistatic_distance * (np.dot(u_rt, u_rs))))
+    m[2, :] = 1 / (radius / r + np.sin(elevation) / 2)
     while np.nanmean(err) > target:
         m[0, :] = m[1, :]
         m[1, :] = m[2, :]
-        v = np.array([np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]), np.sin(beta - m[1, :])])
-        r = (rf_distance ** 2 - bistatic_distance ** 2) / (2 * (rf_distance - bistatic_distance * (np.dot(bistatic_vector, v))))
-        m[2, :] = 1 / (radius_of_earth / r + np.sin(beta) / 2)
+        u_rs = np.array([np.sin(azimuth) * np.cos(elevation - m[1, :]), np.cos(azimuth) * np.cos(elevation - m[1, :]),
+                      np.sin(elevation - m[1, :])])
+        r = (rf_distance ** 2 - bistatic_distance ** 2) / (
+                    2 * (rf_distance - bistatic_distance * (np.dot(u_rt, u_rs))))
+        m[2, :] = 1 / (radius / r + np.sin(elevation) / 2)
         err = np.abs((m[1, :] - m[2, :]) ** 2 / (2 * m[1, :] - m[0, :] - m[2, :]))
-        n += 1
 
     m[2, :] = np.where(err >= target, np.nan, m[2, :])
-    print('\t-relaxation mean error:', np.rad2deg(np.nanmean(err)), 'iterations:', n)
+
     return m[2, :]
-
-
-def velocity_plot(sx, sv, date, time, filepath):
-    year = date[0]
-    month = date[1]
-    day = date[2]
-    hour = time[0:2]
-    minute = time[2:4]
-    second = time[4:6]
-    # import cartopy.crs as ccrs
-    # ax = plt.axes(projection=ccrs.PlateCarree())
-    # ax.set_extent([np.min(sv[0, :]),np.max(sv[0, :]), np.min(sv[1, :]), np.max(sv[1, :])], crs=ccrs.PlateCarree())
-    # ax.lakes
-    # ax.coastline
-    # ax.rivers
-
-    u = np.sin(np.deg2rad(sv[0, :])) * np.cos(np.deg2rad(sv[1, :]))
-    v = np.cos(np.deg2rad(sv[0, :])) * np.cos(np.deg2rad(sv[1, :]))
-    n = np.sqrt(u**2 + v**2)
-    u /= n
-    v /= n
-    # u = np.where(sv[2, :] == 0, np.nan, u)
-    # v = np.where(sv[2, :] == 0, np.nan, v)
-
-    # plt.figure(figsize=[18, 14])
-    fig = plt.figure(figsize=[20, 14], constrained_layout=True)
-    gs = fig.add_gridspec(1, 4)
-    fig.suptitle(f'{year}-{month}-{day} {hour}:{minute}:{second}')
-    props = dict(boxstyle='square', facecolor='wheat', alpha=1.0)
-    vel_thresh = 150.0
-    # Altitude slice
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax1.set_facecolor('black')
-    plt.scatter(sx[2, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
-    plt.xlabel('Altitude [km]')
-    plt.ylabel('Latitude [deg]')
-    plt.clim(-vel_thresh, vel_thresh)
-    plt.xlim([200.0, 0.0])
-    plt.ylim([50.0, 62.0])
-    plt.grid()
-
-    # Azimuth slice
-    ax2 = fig.add_subplot(gs[0, 1::])
-    ax2.set_facecolor('black')
-    plt.quiver(sx[1, :], sx[0, :], u, v, sv[2, :], cmap='RdBu')
-    plt.xlabel('Longitude [deg]')
-    plt.colorbar(label='Velocity [m/s]')
-    plt.clim(-vel_thresh, vel_thresh)
-    plt.scatter(sx[1, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
-    plt.scatter(-109.403, 50.893, c='w')
-    plt.annotate('TX', (-109.403, 50.893),
-                 xytext=(-25.0, 15.0), textcoords='offset points', ha='center', va='bottom', color='red',
-                 bbox=dict(boxstyle='round,pad=0.2', fc='wheat', alpha=1.0),
-                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1', color='r'))
-    plt.scatter(-106.450, 52.243, c='w')
-    plt.annotate('RX', (-106.450, 52.24),
-                 xytext=(-25.0, 15.0), textcoords='offset points', ha='center', va='bottom', color='blue',
-                 bbox=dict(boxstyle='round,pad=0.2', fc='wheat', alpha=1.0),
-                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1', color='b'))
-    plt.text(-100.0, 50.5, f'Records {len(sx[1, :]):3d}\nSNR Cutoff 1.0 dB', bbox=props, color='k')
-    plt.xlim([-114.0, -96.0])
-    plt.ylim([50.0, 62.0])
-    plt.grid()
-
-    plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.png')
-    plt.close()
-
-    return
 
 
 def spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, velocity, snr):
@@ -254,15 +204,20 @@ def spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, velocit
                           elevation, elevation[i], elevation_extent[i],
                           1.0) * snr
         popt, _ = curve_fit(gaussian, vels, pows)
-        x = np.arange(-1500.0, 1500.0, 10.0)
+        x = np.arange(-1500.0, 1500.0, 3.0)
         y = gaussian(x, *popt)
-        plt.figure()
-        plt.plot(x, y)
-        plt.show()
-        peaks, _ = find_peaks(y, rel_height=0.5)
-        spectral_width[i] = peak_widths(y, peaks, rel_height=0.5)[0] * 30.0
+        spectral_width[i] = peak_widths(y, np.amax(y), rel_height=0.5) * 3.0
 
     return spectral_width
+
+
+def swht2fit():
+    filter()
+    map_target()
+    doppler_width()
+    filter()
+
+    return
 
 
 if __name__ == '__main__':
@@ -386,10 +341,7 @@ if __name__ == '__main__':
             print('\t-remaining data', len(rf_distance))
 
             if len(rf_distance) > 0:
-                widths = spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, doppler_shift, snr_db)
-                print(doppler_shift)
-                print(widths)
-                #velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'meteor_2020_12_12-15/')
+                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'meteor_2020_12_12-15/')
             else:
                 print('\t-0 records')
 
