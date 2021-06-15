@@ -6,6 +6,7 @@ import icebear.utils as utils
 from scipy.optimize import curve_fit
 from scipy.signal import peak_widths, find_peaks
 
+
 def map_target(tx, rx, az, el, rf, dop, wavelength):
     """
     Find the scatter location given tx location, rx location, total rf distance, and target angle-of-arrival
@@ -253,16 +254,27 @@ def spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, velocit
         pows = gaussian2d(azimuth, azimuth[i], azimuth_extent[i],
                           elevation, elevation[i], elevation_extent[i],
                           1.0) * snr
+        if len(pows) <= 2:  # At least 3 points are required to make a fit
+            spectral_width[i] = 30.0
+            continue
+        plt.figure()
+        plt.scatter(vels, pows)
+        plt.show()
+        print(vels, pows)
         popt, _ = curve_fit(gaussian, vels, pows)
         x = np.arange(-1500.0, 1500.0, 10.0)
         y = gaussian(x, *popt)
-        plt.figure()
-        plt.plot(x, y)
-        plt.show()
+        # plt.figure()
+        # plt.plot(x, y)
+        # plt.show()
         peaks, _ = find_peaks(y, rel_height=0.5)
         spectral_width[i] = peak_widths(y, peaks, rel_height=0.5)[0] * 30.0
 
     return spectral_width
+
+
+def pack_level2():
+
 
 
 if __name__ == '__main__':
@@ -387,8 +399,8 @@ if __name__ == '__main__':
 
             if len(rf_distance) > 0:
                 widths = spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, doppler_shift, snr_db)
-                print(doppler_shift)
-                print(widths)
+                # print(doppler_shift)
+                # print(widths)
                 #velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'meteor_2020_12_12-15/')
             else:
                 print('\t-0 records')
