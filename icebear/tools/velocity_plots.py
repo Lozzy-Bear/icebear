@@ -177,7 +177,7 @@ def velocity_plot(sx, sv, date, time, filepath):
     gs = fig.add_gridspec(1, 4)
     fig.suptitle(f'{year}-{month}-{day} {hour}:{minute}:{second}')
     props = dict(boxstyle='square', facecolor='wheat', alpha=1.0)
-    vel_thresh = 150.0
+    vel_thresh = 1500.0
     # Altitude slice
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.set_facecolor('black')
@@ -273,7 +273,126 @@ def spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, velocit
     return spectral_width
 
 
-def pack_level2():
+def create_level3_hdf5(config, filename, year, month, day):
+    # Add general information
+    # general information
+    f = h5py.File(filename, 'w+')
+    f.create_group('info')
+    f.create_dataset('date_created', data=np.array(config.date_created))
+    f.create_dataset('version', data=np.array(config.version, dtype='S'))
+    f.create_dataset('date', data=np.array([year, month, day]))
+    f.create_dataset('experiment_name', data=np.array([config.experiment_name], dtype='S'))
+    f.create_dataset('radar_config', data=np.array([config.radar_config], dtype='S'))
+    f.create_dataset('center_freq', data=config.center_freq)
+    # receiver site information
+    f.create_dataset('rx_site_name', data=np.array([config.rx_site_name], dtype='S'))
+    f.create_dataset('rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('rx_heading', data=config.rx_heading)
+    f.create_dataset('rx_rf_path', data=np.array([config.rx_rf_path], dtype='S'))
+    f.create_dataset('rx_ant_type', data=np.array([config.rx_ant_type], dtype='S'))
+    f.create_dataset('rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('rx_feed_corr_date', data=config.rx_feed_corr_date)
+    f.create_dataset('rx_feed_corr_type', data=np.array([config.rx_feed_corr_type], dtype='S'))
+    f.create_dataset('rx_ant_mask', data=config.rx_ant_mask)
+    f.create_dataset('rx_sample_rate', data=config.rx_sample_rate)
+    # transmitter site information
+    f.create_dataset('tx_site_name', data=np.array([config.tx_site_name], dtype='S'))
+    f.create_dataset('tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('tx_heading', data=config.tx_heading)
+    f.create_dataset('tx_rf_path', data=np.array([config.tx_rf_path], dtype='S'))
+    f.create_dataset('tx_ant_type', data=np.array([config.tx_ant_type], dtype='S'))
+    f.create_dataset('tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('tx_feed_corr_date', data=config.tx_feed_corr_date)
+    f.create_dataset('tx_feed_corr_type', data=np.array([config.tx_feed_corr_type], dtype='S'))
+    f.create_dataset('tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('tx_sample_rate', data=config.tx_sample_rate)
+    # processing settings
+    f.create_dataset('decimation_rate', data=config.decimation_rate)
+    f.create_dataset('time_resolution', data=config.time_resolution)
+    f.create_dataset('coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
+    # imaging settings
+    f.create_dataset('image_method', data=np.array([config.image_method], dtype='S'))
+    f.create_dataset('swht_coeffs', data=np.array([config.swht_coeffs], dtype='S'))
+    f.create_dataset('fov', data=config.fov)
+    f.create_dataset('fov_center', data=config.fov_center)
+    f.create_dataset('resolution', data=config.resolution)
+    f.create_dataset('lmax', data=config.lmax)
+
+    # Create datasets
+    f.create_group('data')
+    f.create_dataset('time_indices', data=time_indices)
+    f.create_dataset('time', data=epoch_time)
+    f.create_dataset(f'rf_distance', data=rf_distance)
+    f.create_dataset(f'snr_db', data=snr_db)
+    f.create_dataset('latitude', data=np.array([]))
+    f.create_dataset('longitude', data=np.array([]))
+    f.create_dataset('altitude', data=np.array([]))
+    f.create_dataset('azimuth', data=np.array([]))
+    f.create_dataset('elevation', data=np.array([]))
+    f.create_dataset('slant_range', data=np.array([]))
+    f.create_dataset('velocity_azimuth', data=np.array([]))
+    f.create_dataset('velocity_elevation', data=np.array([]))
+    f.create_dataset('velocity', data=np.array([]))
+    f.create_dataset('azimuth_extent', data=np.array([]))
+    f.create_dataset('elevation_extent', data=np.array([]))
+    f.create_dataset('area', data=np.array([]))
+
+    f.close()
+
+    return None
+
+
+def append_level3_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf_distance):
+    """
+    Appends to the hdf5 the standard data sets.
+
+    Parameters
+    ----------
+    filename
+    hour
+    minute
+    second
+    doppler_shift
+    snr_db
+    rf_distance
+
+    Returns
+    -------
+
+    """
+    # append a new group for the current measurement
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    # time_indices is always length 3600 an index per second of the hour
+    f.create_dataset('time_indices', data=time_indices)
+
+    f.create_dataset('time', data=epoch_time)
+    f.create_dataset(f'rf_distance', data=rf_distance)
+    f.create_dataset(f'snr_db', data=snr_db)
+
+    f.create_dataset('latitude', data=np.array([]))
+    f.create_dataset('longitude', data=np.array([]))
+    f.create_dataset('altitude', data=np.array([]))
+
+    f.create_dataset('azimuth', data=np.array([]))
+    f.create_dataset('elevation', data=np.array([]))
+    f.create_dataset('slant_range', data=np.array([]))
+
+    f.create_dataset('velocity_azimuth', data=np.array([]))
+    f.create_dataset('velocity_elevation', data=np.array([]))
+    f.create_dataset('velocity', data=np.array([]))
+
+    f.create_dataset('azimuth_extent', data=np.array([]))
+    f.create_dataset('elevation_extent', data=np.array([]))
+    f.create_dataset('area', data=np.array([]))
+
+    f.close()
+
+    return None
 
 
 
@@ -296,9 +415,10 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     for file in files:
         f = h5py.File(file, 'r')
         print(file)
@@ -398,10 +518,10 @@ if __name__ == '__main__':
             print('\t-remaining data', len(rf_distance))
 
             if len(rf_distance) > 0:
-                widths = spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, doppler_shift, snr_db)
+                # widths = spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, doppler_shift, snr_db)
                 # print(doppler_shift)
                 # print(widths)
-                #velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'meteor_2020_12_12-15/')
+                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'scatter_2021_02_02/')
             else:
                 print('\t-0 records')
 

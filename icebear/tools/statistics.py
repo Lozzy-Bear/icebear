@@ -296,9 +296,10 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -411,23 +412,25 @@ if __name__ == '__main__':
     _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
     plt.xscale('log')
     # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
-    plt.title('E-Region Scatter 2019-12-19 Altitude Distribution')
+    # plt.title('E-Region Scatter 2019-12-19 Altitude Distribution')
+    plt.title('E-Region Scatter 2021-02-02 Altitude Distribution')
     # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
     plt.xlabel('Count')
     plt.ylabel('Altitude [km]')
-    plt.ylim((50, 450))
-    plt.xlim((10, 100_000))
-    plt.plot([0, 100_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    plt.ylim((50, 200))
+    plt.xlim((10, 10_000))
+    plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
     plt.legend(loc='upper right')
     plt.grid()
-    # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
+    # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
 
     plt.figure(figsize=[12, 12])
     mean_longitude = np.mean(lon)
     _ = plt.hist(lon, bins='auto', orientation='vertical', histtype=u'step', label=f'Total Targets {total_targets}')
     plt.yscale('log')
     # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
-    plt.title('E-Region Scatter 2019-12-19 Longitude Distribution')
+    # plt.title('E-Region Scatter 2019-12-19 Longitude Distribution')
+    plt.title('E-Region Scatter 2021-02-02 Longitude Distribution')
     # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
     plt.xlabel('Longitude [deg]')
     plt.ylabel('Count')
