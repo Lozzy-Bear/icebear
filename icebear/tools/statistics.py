@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import h5py
 import pymap3d as pm
 import icebear.utils as utils
+import datetime
+from dateutil.tz import tzutc
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -214,7 +216,7 @@ def velocity_plot(sx, sv, date, time, filepath):
 
 def package_data(time, snr_db, range, azimuth, elevation, altitude,
                  velocity_azimuth, velocity_elevation, doppler_shift):
-
+    # old version use create_level3
     config = ib.utils.Config('X://PythonProjects//icebear//dat//default.yml')
 
     f = h5py.File('cleaned_2020_06_16.h5', 'w')
@@ -277,6 +279,88 @@ def package_data(time, snr_db, range, azimuth, elevation, altitude,
     return
 
 
+def create_level3_hdf5(config, filename, epoch_time, rf_distance, snr_db,
+                       lattitude, longitude, altitude, azimuth, elevation, slant_range,
+                       velocity_azimuth, velocity_elevation, velocity, azimuth_extent, elevation_extent, area):
+    # Add general information
+    # general information
+    f = h5py.File(filename, 'w')
+    f.create_group('info')
+    f.create_dataset('info/date_created', data=np.array(config.date_created))
+    f.create_dataset('info/version', data=np.array(config.version, dtype='S'))
+    f.create_dataset('info/date', data=config.date)
+    f.create_dataset('info/experiment_name', data=np.array([config.experiment_name], dtype='S'))
+    f.create_dataset('info/radar_config', data=np.array([config.radar_config], dtype='S'))
+    f.create_dataset('info/center_freq', data=config.center_freq)
+    # receiver site information
+    f.create_dataset('info/rx_site_name', data=np.array([config.rx_site_name], dtype='S'))
+    f.create_dataset('info/rx_site_lat_long', data=config.rx_site_lat_long)
+    f.create_dataset('info/rx_heading', data=config.rx_heading)
+    f.create_dataset('info/rx_rf_path', data=np.array([config.rx_rf_path], dtype='S'))
+    f.create_dataset('info/rx_ant_type', data=np.array([config.rx_ant_type], dtype='S'))
+    f.create_dataset('info/rx_ant_coords', data=config.rx_ant_coords)
+    f.create_dataset('info/rx_feed_corr', data=config.rx_feed_corr)
+    f.create_dataset('info/rx_feed_corr_date', data=config.rx_feed_corr_date)
+    f.create_dataset('info/rx_feed_corr_type', data=np.array([config.rx_feed_corr_type], dtype='S'))
+    f.create_dataset('info/rx_ant_mask', data=config.rx_ant_mask)
+    f.create_dataset('info/rx_sample_rate', data=config.rx_sample_rate)
+    # transmitter site information
+    f.create_dataset('info/tx_site_name', data=np.array([config.tx_site_name], dtype='S'))
+    f.create_dataset('info/tx_site_lat_long', data=config.tx_site_lat_long)
+    f.create_dataset('info/tx_heading', data=config.tx_heading)
+    f.create_dataset('info/tx_rf_path', data=np.array([config.tx_rf_path], dtype='S'))
+    f.create_dataset('info/tx_ant_type', data=np.array([config.tx_ant_type], dtype='S'))
+    f.create_dataset('info/tx_ant_coords', data=config.tx_ant_coords)
+    f.create_dataset('info/tx_feed_corr', data=config.tx_feed_corr)
+    f.create_dataset('info/tx_feed_corr_date', data=config.tx_feed_corr_date)
+    f.create_dataset('info/tx_feed_corr_type', data=np.array([config.tx_feed_corr_type], dtype='S'))
+    f.create_dataset('info/tx_ant_mask', data=config.tx_ant_mask)
+    f.create_dataset('info/tx_sample_rate', data=config.tx_sample_rate)
+    # processing settings
+    f.create_dataset('info/decimation_rate', data=config.decimation_rate)
+    f.create_dataset('info/time_resolution', data=config.time_resolution)
+    f.create_dataset('info/coherent_integration_time', data=config.coherent_integration_time)
+    f.create_dataset('info/incoherent_averages', data=config.incoherent_averages)
+    f.create_dataset('info/snr_cutoff_db', data=config.snr_cutoff_db)
+    # imaging settings
+    f.create_dataset('info/image_method', data=np.array([config.image_method], dtype='S'))
+    f.create_dataset('info/swht_coeffs', data=np.array([config.swht_coeffs], dtype='S'))
+    f.create_dataset('info/fov', data=config.fov)
+    f.create_dataset('info/fov_center', data=config.fov_center)
+    f.create_dataset('info/resolution', data=config.resolution)
+    f.create_dataset('info/lmax', data=config.lmax)
+
+    # Create datasets
+    f.create_group('data')
+    #f.create_dataset('data/time_indices', data=time_indices)
+    f.create_dataset('data/time', data=epoch_time)
+    f.create_dataset('data/rf_distance', data=rf_distance)
+    f.create_dataset('data/snr_db', data=snr_db)
+    f.create_dataset('data/latitude', data=lattitude)
+    f.create_dataset('data/longitude', data=longitude)
+    f.create_dataset('data/altitude', data=altitude)
+    f.create_dataset('data/azimuth', data=azimuth)
+    f.create_dataset('data/elevation', data=elevation)
+    f.create_dataset('data/slant_range', data=slant_range)
+    f.create_dataset('data/velocity_azimuth', data=velocity_azimuth)
+    f.create_dataset('data/velocity_elevation', data=velocity_elevation)
+    f.create_dataset('data/velocity', data=velocity)
+    f.create_dataset('data/azimuth_extent', data=azimuth_extent)
+    f.create_dataset('data/elevation_extent', data=elevation_extent)
+    f.create_dataset('data/area', data=area)
+
+    f.close()
+
+    return None
+
+
+def epoch_time(start):
+    time = datetime.datetime(year=start[0], month=start[1], day=start[2], hour=start[3],
+                      minute=start[4], second=start[5], microsecond=0, tzinfo=tzutc())
+    epoch = time.timestamp()
+    return epoch
+
+
 if __name__ == '__main__':
     # Pretty plot configuration.
     from matplotlib import rc
@@ -298,8 +382,9 @@ if __name__ == '__main__':
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
     # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
+    pack_name = 'demo_ib3d_level3_20200331.h5'
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -311,6 +396,7 @@ if __name__ == '__main__':
     t = np.array([])
     for file in files:
         f = h5py.File(file, 'r')
+        config = utils.Config(file)
         print(file)
         group = f['data']
         date = f['date']
@@ -320,7 +406,11 @@ if __name__ == '__main__':
             # Filter out dropped samples
             if np.any(data['rf_distance'][()] < 250):
                 continue
-            t = np.append(t, np.ones(len(data['rf_distance'][()])) * int(key))
+            et = data['time'][()]
+            et = np.append(date, et)
+            et[5] = int(et[5]/1000)
+            et = epoch_time(et)
+            t = np.append(t, np.repeat(et, len(data['rf_distance'][()])))
             rf_distance = np.append(rf_distance, data['rf_distance'][()])
             snr_db = np.append(snr_db, np.abs(data['snr_db'][()]))
             doppler_shift = np.append(doppler_shift, data['doppler_shift'][()])
@@ -335,7 +425,7 @@ if __name__ == '__main__':
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
-    m = np.ma.masked_where(snr_db <= 3.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
+    m = np.ma.masked_where(snr_db <= 1.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
     # m = np.ma.masked_where(doppler_shift >= 50, m)  # Meteors are less than |150 m/s|
     # m = np.ma.masked_where(doppler_shift <= -50, m)  # Meteors are less than |150 m/s|
     # m = np.ma.masked_where(area >= 5.0, m)  # Meteors should have small scattering cross-sectional area
@@ -406,40 +496,48 @@ if __name__ == '__main__':
     print('\t-masking completed')
     print('\t-remaining data', len(rf_distance))
 
-    plt.figure(figsize=[12, 12])
-    mean_altitude = np.mean(altitude)
-    total_targets = len(altitude)
-    _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
-    plt.xscale('log')
-    # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
-    # plt.title('E-Region Scatter 2019-12-19 Altitude Distribution')
-    plt.title('E-Region Scatter 2021-02-02 Altitude Distribution')
-    # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
-    plt.xlabel('Count')
-    plt.ylabel('Altitude [km]')
-    plt.ylim((50, 200))
-    plt.xlim((10, 10_000))
-    plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
-    plt.legend(loc='upper right')
-    plt.grid()
-    # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
+    create_level3_hdf5(config, pack_name, t, rf_distance, snr_db,
+                       lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
+                       azimuth_extent, elevation_extent, area)
 
-    plt.figure(figsize=[12, 12])
-    mean_longitude = np.mean(lon)
-    _ = plt.hist(lon, bins='auto', orientation='vertical', histtype=u'step', label=f'Total Targets {total_targets}')
-    plt.yscale('log')
-    # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
-    # plt.title('E-Region Scatter 2019-12-19 Longitude Distribution')
-    plt.title('E-Region Scatter 2021-02-02 Longitude Distribution')
-    # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
-    plt.xlabel('Longitude [deg]')
-    plt.ylabel('Count')
-    plt.ylim((10, 100_000))
-    plt.xlim((-114.0, -96.0))
-    plt.plot([mean_longitude, mean_longitude], [10, 100_000], '--k', label=f'Mean Longitude {mean_longitude:.1f} [km]')
-    plt.legend(loc='upper right')
-    plt.grid()
-    # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
-    plt.show()
+    # plt.figure()
+    # plt.scatter(slant_range, altitude, c=snr_db)
+    # plt.show()
+
+    # plt.figure(figsize=[12, 12])
+    # mean_altitude = np.mean(altitude)
+    # total_targets = len(altitude)
+    # _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
+    # plt.xscale('log')
+    # # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
+    # # plt.title('E-Region Scatter 2019-12-19 Altitude Distribution')
+    # plt.title('E-Region Scatter 2021-02-02 Altitude Distribution')
+    # # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
+    # plt.xlabel('Count')
+    # plt.ylabel('Altitude [km]')
+    # plt.ylim((50, 200))
+    # plt.xlim((10, 10_000))
+    # plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    # plt.legend(loc='upper right')
+    # plt.grid()
+    # # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
+    #
+    # plt.figure(figsize=[12, 12])
+    # mean_longitude = np.mean(lon)
+    # _ = plt.hist(lon, bins='auto', orientation='vertical', histtype=u'step', label=f'Total Targets {total_targets}')
+    # plt.yscale('log')
+    # # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
+    # # plt.title('E-Region Scatter 2019-12-19 Longitude Distribution')
+    # plt.title('E-Region Scatter 2021-02-02 Longitude Distribution')
+    # # plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
+    # plt.xlabel('Longitude [deg]')
+    # plt.ylabel('Count')
+    # plt.ylim((10, 100_000))
+    # plt.xlim((-114.0, -96.0))
+    # plt.plot([mean_longitude, mean_longitude], [10, 100_000], '--k', label=f'Mean Longitude {mean_longitude:.1f} [km]')
+    # plt.legend(loc='upper right')
+    # plt.grid()
+    # # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
+    # plt.show()
 
 exit()  # Needs a clean exit?
