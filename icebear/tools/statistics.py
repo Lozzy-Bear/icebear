@@ -5,6 +5,8 @@ import pymap3d as pm
 import icebear.utils as utils
 import datetime
 from dateutil.tz import tzutc
+# import os
+# import re
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -361,6 +363,96 @@ def epoch_time(start):
     return epoch
 
 
+class Config:
+    def __init__(self, configuration):
+        self.update_config(configuration)
+        # Add version attribute
+        here = os.path.abspath(os.path.dirname(__file__))
+        regex = "(?<=__version__..\s)\S+"
+        with open(os.path.join(here, '__init__.py'), 'r', encoding='utf-8') as f:
+            text = f.read()
+        match = re.findall(regex, text)
+        setattr(self, 'version', '0.0.1')
+        # setattr(self, 'version', str(match[0].strip("'")))
+        # Add date_created attribute
+        now = datetime.datetime.now()
+        setattr(self, 'date_created', [now.year, now.month, now.day])
+        #setattr(self, 'date_created', [2021, 6, 28])
+
+    def update_config(self, file):
+        if file.split('.')[1] == 'yml':
+            with open(file, 'r') as stream:
+                cfg = yaml.full_load(stream)
+                for key, value in cfg.items():
+                    setattr(self, key, np.array(value))
+        if file.split('.')[1] == 'h5':
+            stream = h5py.File(file, 'r')
+            for key in list(stream.keys()):
+                if key == 'data' or key == 'coeffs':
+                    pass
+                # This horrible little patch fixes strings to UTF-8 from 'S' when loaded from HDF5's
+                # and removes unnecessary arrays
+                elif '|S' in str(stream[f'{key}'].dtype):
+                    temp_value = stream[f'{key}'][()].astype('U')
+                    if len(temp_value) == 1:
+                        temp_value = temp_value[0]
+                    setattr(self, key, temp_value)
+                else:
+                    temp_value = stream[f'{key}'][()]
+                    try:
+                        if len(temp_value) == 1:
+                            temp_value = temp_value[0]
+                        setattr(self, key, temp_value)
+                    except:
+                        setattr(self, key, temp_value)
+
+    def print_attrs(self):
+        print("experiment attributes loaded: ")
+        for item in vars(self).items():
+            print(f"\t-{item}")
+        return None
+
+    def update_attr(self, key, value):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            setattr(self, key, value)
+        return None
+
+    def check_attr(self, key):
+        if hasattr(self, key):
+            return True
+        else:
+            return False
+
+    def compare_attr(self, key, value):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            if getattr(self, key) == value:
+                return True
+            else:
+                return False
+
+    def add_attr(self, key, value):
+        if self.check_attr(key):
+            print(f'ERROR: Attribute {key} already exists')
+            exit()
+        else:
+            setattr(self, key, value)
+        return None
+
+    def remove_attr(self, key):
+        if not self.check_attr(key):
+            print(f'ERROR: Attribute {key} does not exists')
+            exit()
+        else:
+            delattr(self, key)
+        return None
+
+
 if __name__ == '__main__':
     # Pretty plot configuration.
     from matplotlib import rc
@@ -384,7 +476,21 @@ if __name__ == '__main__':
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
-    pack_name = 'demo_ib3d_level3_20200331.h5'
+    # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
+    # files = ['ib3d_normal_swht_01deg_2020_06_16_00_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_12_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_01_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_13_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_02_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_14_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_03_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_15_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_04_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_16_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_05_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_17_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_06_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_18_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_07_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_19_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_08_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_20_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_09_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_21_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_10_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_22_prelate_bakker.h5',
+    # 'ib3d_normal_swht_01deg_2020_06_16_11_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_23_prelate_bakker.h5']
+    pack_name = 'demo_ib3d_level3_20200616.h5'
+    
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -395,8 +501,10 @@ if __name__ == '__main__':
     area = np.array([])
     t = np.array([])
     for file in files:
+        # file = filepath + '2020_06_16/' + file
         f = h5py.File(file, 'r')
         config = utils.Config(file)
+        # config = Config(file)
         print(file)
         group = f['data']
         date = f['date']
@@ -416,7 +524,7 @@ if __name__ == '__main__':
             doppler_shift = np.append(doppler_shift, data['doppler_shift'][()])
             azimuth = np.append(azimuth, data['azimuth'][()])
             elevation = np.append(elevation, np.abs(data['elevation'][()]))
-            elevation_extent = np.append(elevation_extent, data['elevation_extent'][()] / 4)
+            elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
             azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
             area = np.append(area, data['area'][()])
 

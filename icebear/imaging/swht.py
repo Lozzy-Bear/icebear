@@ -217,7 +217,10 @@ def unpackage_coeffs(filename, ind):
     """
 
     f = h5py.File(filename, 'r')
-    coeffs = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
+    try:
+        coeffs = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
+    except:
+        coeffs = np.array(f['coeffs'][()], dtype=np.complex64)
     print('hdf5 coeffs:', coeffs.shape)
     return coeffs
 

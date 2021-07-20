@@ -53,10 +53,19 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
 
     idx_length = len(azimuth)
     wavelength = 299792458 / config.center_freq
-    u, v, w = utils.baselines(config.rx_ant_coords[0, :],
-                              config.rx_ant_coords[1, :],
-                              config.rx_ant_coords[2, :],
+    x = config.rx_ant_coords[0, :]
+    y = config.rx_ant_coords[1, :]
+    z = config.rx_ant_coords[2, :]
+    err = 0.0
+    x[7] += err
+    y[7] += err
+    z[7] += err
+
+    u, v, w = utils.baselines(x, #config.rx_ant_coords[0, :],
+                              y, #config.rx_ant_coords[1, :],
+                              z, #config.rx_ant_coords[2, :],
                               wavelength)
+
     azimuth = np.deg2rad(azimuth)
     elevation = np.deg2rad(elevation)
     azimuth_extent = np.deg2rad(azimuth_extent)
@@ -85,8 +94,8 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
         visibility_dist_temp.sort()
         visibility_dist[:, idx, idx, idx, idx] = [r[1] for r in visibility_dist_temp]
 
-        for p in processes:
-            p.close()
+        # for p in processes:
+        #     p.close()
 
     visibility = np.array(visibility_dist)
     for i in range(len(azimuth)):
@@ -99,7 +108,7 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
 
     # This section activates the experimental angular_frequency_beamforming()
     # for i in range(15, 95, 10):
-    #     coeffs = icebear.imaging.swht.unpackage_factors_hdf5(config.swht_coeffs, i)
+    #     coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
     #     brightness *= icebear.imaging.image.calculate_image(visibility, coeffs)
 
     brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.9)
@@ -127,17 +136,34 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
 
 
 if __name__ == '__main__':
+    # Pretty plot configuration.
+    from matplotlib import rc
+
+    rc('font', **{'family': 'serif', 'serif': ['DejaVu Serif']})
+    SMALL_SIZE = 10
+    MEDIUM_SIZE = 12
+    BIGGER_SIZE = 14
+    plt.rc('font', size=MEDIUM_SIZE)  # controls default text sizes
+    plt.rc('axes', titlesize=BIGGER_SIZE)  # fontsize of the axes title
+    plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labelsa
+    plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+    plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+    plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
+    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
     path = Path(__file__).parent.parent.parent / "dat/default.yml"
     config = utils.Config(str(path))
     # Change this to your swht_coeffs local save
 
+    # coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_01_26_360az_180el_1res_85lmax.h5'
     # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85.h5'
     # config.fov = np.array([[0, 360], [0, 180]])
     # config.fov_center = np.array([0, 0])
     # config.lmax = 85
     # config.resolution = 1
 
-    coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
     config.update_config(coeffs_file)
     config.lmax = 85
     config.fov_center = np.array([270, 90])
@@ -151,7 +177,7 @@ if __name__ == '__main__':
     config.swht_coeffs = coeffs_file
     config.print_attrs()
 
-    brightness, intensity = simulate(config, np.array([0]), np.array([20]), np.array([3]), np.array([3]))
+    brightness, intensity = simulate(config, np.array([0]), np.array([10]), np.array([3]), np.array([3]))
 
     # with open('test.npy', 'wb') as f:
     #     np.save(f, brightness)
@@ -161,32 +187,35 @@ if __name__ == '__main__':
     #     brightness = np.load(f)
     #     intensity = np.load(f)
     #
-    # plt.figure(figsize=[12, 5])
+    plt.figure(figsize=[12, 5])
     # plt.pcolormesh(intensity)
+    plt.pcolormesh(brightness)
     # plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
     # plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
-    # plt.grid()
-    # im = np.array(brightness * 255.0, dtype=np.uint8)
-    # threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
-    # contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # a, b, w, h = cv2.boundingRect(contours[0])
-    # x = contours[0][:, :, 0]
-    # x = np.append(x, x[0])
-    # y = contours[0][:, :, 1]
-    # y = np.append(y, y[0])
-    # moments = cv2.moments(contours[0])
-    # cx = int(moments['m10'] / moments['m00'])
-    # cy = int(moments['m01'] / moments['m00'])
-    # index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
+    plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
+    plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
+    plt.grid()
+    im = np.array(brightness * 255.0, dtype=np.uint8)
+    threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    a, b, w, h = cv2.boundingRect(contours[0])
+    x = contours[0][:, :, 0]
+    x = np.append(x, x[0])
+    y = contours[0][:, :, 1]
+    y = np.append(y, y[0])
+    moments = cv2.moments(contours[0])
+    cx = int(moments['m10'] / moments['m00'])
+    cy = int(moments['m01'] / moments['m00'])
+    index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
     # plt.plot(x, y, 'k', linewidth=3, label='Contour')
     # plt.plot([a, a+w, a+w, a, a], [b, b, b+h, b+h, b], 'r', linewidth=3, label='Bounding Rectangle')
     # plt.scatter(cx, cy, label='Centroid')
-    # plt.scatter(index[1], index[0], label='Maximum Intensity')
-    # plt.colorbar(label='Intensity')
-    # plt.title('')
-    # plt.xlabel('Azimuth [deg]')
-    # plt.ylabel('Elevation [deg]')
-    # #plt.xlim(300, 600)
-    # #plt.ylim(100, 300)
-    # plt.legend(loc='best')
+    plt.scatter(index[1], index[0], label='Maximum Brightness')
+    plt.colorbar(label='Normalized Brightness')
+    plt.title('')
+    plt.xlabel('Azimuth [deg]')
+    plt.ylabel('Elevation [deg]')
+    #plt.xlim(300, 600)
+    #plt.ylim(100, 300)
+    plt.legend(loc='best')
     # plt.show()
