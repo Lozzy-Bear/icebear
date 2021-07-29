@@ -156,7 +156,8 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
                           np.conjugate(special.sph_harm(m, l, p, t)) \
                           [np.newaxis, np.newaxis, :], AZ.shape[0], axis=0), AZ.shape[1], axis=1)
                 print(f"\tharmonic degree (l) = {l:02d}/{lmax:02d}, order (m) = {m:02d}/{l:02d}\r")
-            append_coeffs(filename, l, coeffs)
+            if l in [5, 15, 25, 35, 45, 55, 65, 75, 85]:
+                append_coeffs(filename, l, coeffs)
 
     elif lmax > 85:
         try:

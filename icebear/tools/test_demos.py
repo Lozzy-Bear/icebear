@@ -3,11 +3,27 @@ import h5py
 import matplotlib.pyplot as plt
 import datetime
 
+# Pretty plot configuration.
+from matplotlib import rc
+
+rc('font', **{'family': 'serif', 'serif': ['DejaVu Serif']})
+SMALL_SIZE = 10
+MEDIUM_SIZE = 12
+BIGGER_SIZE = 12
+plt.rc('font', size=MEDIUM_SIZE)  # controls default text sizes
+plt.rc('axes', titlesize=BIGGER_SIZE)  # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labelsa
+plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+
 # files = ['demo_ib3d_level3_20201212.h5', 'demo_ib3d_level3_20201213.h5',
 #          'demo_ib3d_level3_20201214.h5', 'demo_ib3d_level3_20201215.h5']
 # files = ['demo_ib3d_level3_20210202.h5']
-# files = ['demo_ib3d_level3_20191219.h5']
-files = ['demo_ib3d_level3_20200331.h5']
+files = ['demo_ib3d_level3_20191219.h5']
+# files = ['demo_ib3d_level3_20200331.h5']
 
 slant_range = np.array([])
 altitude = np.array([])
@@ -32,15 +48,15 @@ for file in files:
     altitude = np.append(altitude, f['data']['altitude'][()])
     snr_db = np.append(snr_db, f['data']['snr_db'][()])
 
-plt.figure(figsize=[12, 12])
+plt.figure()
 mean_altitude = np.mean(altitude)
 total_targets = len(altitude)
-_ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
+_ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype='step', label=f'Total Targets {total_targets}', color='k')
 plt.xscale('log')
-plt.title('Geminids 2020-12-12 to 2020-12-15 Meteor Altitude Distribution')
+plt.title('E Region Scatter Distribution\nDecember 19, 2019')
 plt.xlabel('Count')
 plt.ylabel('Altitude [km]')
-plt.ylim((50, 200))
+plt.ylim((60, 140))
 plt.xlim((10, 10_000))
 plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
 plt.legend(loc='upper right')

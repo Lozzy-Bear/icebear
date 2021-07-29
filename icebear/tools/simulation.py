@@ -142,7 +142,7 @@ if __name__ == '__main__':
     rc('font', **{'family': 'serif', 'serif': ['DejaVu Serif']})
     SMALL_SIZE = 10
     MEDIUM_SIZE = 12
-    BIGGER_SIZE = 14
+    BIGGER_SIZE = 12
     plt.rc('font', size=MEDIUM_SIZE)  # controls default text sizes
     plt.rc('axes', titlesize=BIGGER_SIZE)  # fontsize of the axes title
     plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labelsa
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     config.swht_coeffs = coeffs_file
     config.print_attrs()
 
-    brightness, intensity = simulate(config, np.array([0]), np.array([10]), np.array([3]), np.array([3]))
+    brightness, intensity = simulate(config, np.array([-15]), np.array([10]), np.array([3]), np.array([3]))
 
     # with open('test.npy', 'wb') as f:
     #     np.save(f, brightness)
@@ -187,14 +187,15 @@ if __name__ == '__main__':
     #     brightness = np.load(f)
     #     intensity = np.load(f)
     #
-    plt.figure(figsize=[12, 5])
-    # plt.pcolormesh(intensity)
-    plt.pcolormesh(brightness)
+    plt.figure(figsize=[9, 4])
+    # plt.pcolormesh(intensity, cmap='inferno')
+    plt.pcolormesh(brightness, cmap='inferno')
+    plt.colorbar(label='Normalized Brightness')
     # plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
     # plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
     plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
     plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
-    plt.grid()
+    plt.grid(linestyle='--')
     im = np.array(brightness * 255.0, dtype=np.uint8)
     threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
     contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -207,15 +208,15 @@ if __name__ == '__main__':
     cx = int(moments['m10'] / moments['m00'])
     cy = int(moments['m01'] / moments['m00'])
     index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
-    # plt.plot(x, y, 'k', linewidth=3, label='Contour')
+    # plt.plot(x, y, 'k', linewidth=2, label='Contour')
     # plt.plot([a, a+w, a+w, a, a], [b, b, b+h, b+h, b], 'r', linewidth=3, label='Bounding Rectangle')
     # plt.scatter(cx, cy, label='Centroid')
-    plt.scatter(index[1], index[0], label='Maximum Brightness')
-    plt.colorbar(label='Normalized Brightness')
-    plt.title('')
+    plt.scatter(index[1], index[0], label='Maximum Brightness', c='k')
     plt.xlabel('Azimuth [deg]')
     plt.ylabel('Elevation [deg]')
     #plt.xlim(300, 600)
     #plt.ylim(100, 300)
     plt.legend(loc='best')
-    # plt.show()
+
+    plt.tight_layout()
+    plt.show()

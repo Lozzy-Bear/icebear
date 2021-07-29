@@ -5,8 +5,6 @@ import pymap3d as pm
 import icebear.utils as utils
 import datetime
 from dateutil.tz import tzutc
-# import os
-# import re
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -81,10 +79,10 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
 
     # WGS84 Model for lat, long, alt
     sx[:, :] = pm.aer2geodetic(np.rad2deg(az), np.rad2deg(el), np.abs(r),
-                         np.repeat(rx[0], len(az)),
-                         np.repeat(rx[1], len(az)),
-                         np.repeat(rx[2], len(az)),
-                         ell=pm.Ellipsoid("wgs84"), deg=True)
+                               np.repeat(rx[0], len(az)),
+                               np.repeat(rx[1], len(az)),
+                               np.repeat(rx[2], len(az)),
+                               ell=pm.Ellipsoid("wgs84"), deg=True)
 
     # Determine the bistatic Doppler velocity vector
     x, y, z = pm.geodetic2ecef(sx[0, :], sx[1, :], sx[2, :],
@@ -135,14 +133,18 @@ def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic
     target = np.deg2rad(0.1)
     m = np.zeros((3, len(beta)))
     m[1, :] = 0.1
-    v = np.array([np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]), np.sin(beta - m[1, :])])
-    r = (rf_distance ** 2 - bistatic_distance ** 2) / (2 * (rf_distance - bistatic_distance * (np.dot(bistatic_vector, v))))
+    v = np.array(
+        [np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]), np.sin(beta - m[1, :])])
+    r = (rf_distance ** 2 - bistatic_distance ** 2) / (
+                2 * (rf_distance - bistatic_distance * (np.dot(bistatic_vector, v))))
     m[2, :] = 1 / (radius_of_earth / r + np.sin(beta) / 2)
     while np.nanmean(err) > target:
         m[0, :] = m[1, :]
         m[1, :] = m[2, :]
-        v = np.array([np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]), np.sin(beta - m[1, :])])
-        r = (rf_distance ** 2 - bistatic_distance ** 2) / (2 * (rf_distance - bistatic_distance * (np.dot(bistatic_vector, v))))
+        v = np.array([np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]),
+                      np.sin(beta - m[1, :])])
+        r = (rf_distance ** 2 - bistatic_distance ** 2) / (
+                    2 * (rf_distance - bistatic_distance * (np.dot(bistatic_vector, v))))
         m[2, :] = 1 / (radius_of_earth / r + np.sin(beta) / 2)
         err = np.abs((m[1, :] - m[2, :]) ** 2 / (2 * m[1, :] - m[0, :] - m[2, :]))
         n += 1
@@ -168,7 +170,7 @@ def velocity_plot(sx, sv, date, time, filepath):
 
     u = np.sin(np.deg2rad(sv[0, :])) * np.cos(np.deg2rad(sv[1, :]))
     v = np.cos(np.deg2rad(sv[0, :])) * np.cos(np.deg2rad(sv[1, :]))
-    n = np.sqrt(u**2 + v**2)
+    n = np.sqrt(u ** 2 + v ** 2)
     u /= n
     v /= n
     # u = np.where(sv[2, :] == 0, np.nan, u)
@@ -334,7 +336,7 @@ def create_level3_hdf5(config, filename, epoch_time, rf_distance, snr_db,
 
     # Create datasets
     f.create_group('data')
-    #f.create_dataset('data/time_indices', data=time_indices)
+    # f.create_dataset('data/time_indices', data=time_indices)
     f.create_dataset('data/time', data=epoch_time)
     f.create_dataset('data/rf_distance', data=rf_distance)
     f.create_dataset('data/snr_db', data=snr_db)
@@ -358,7 +360,7 @@ def create_level3_hdf5(config, filename, epoch_time, rf_distance, snr_db,
 
 def epoch_time(start):
     time = datetime.datetime(year=start[0], month=start[1], day=start[2], hour=start[3],
-                      minute=start[4], second=start[5], microsecond=0, tzinfo=tzutc())
+                             minute=start[4], second=start[5], microsecond=0, tzinfo=tzutc())
     epoch = time.timestamp()
     return epoch
 
@@ -377,7 +379,7 @@ class Config:
         # Add date_created attribute
         now = datetime.datetime.now()
         setattr(self, 'date_created', [now.year, now.month, now.day])
-        #setattr(self, 'date_created', [2021, 6, 28])
+        # setattr(self, 'date_created', [2021, 6, 28])
 
     def update_config(self, file):
         if file.split('.')[1] == 'yml':
@@ -460,7 +462,7 @@ if __name__ == '__main__':
     rc('font', **{'family': 'serif', 'serif': ['DejaVu Serif']})
     SMALL_SIZE = 10
     MEDIUM_SIZE = 12
-    BIGGER_SIZE = 14
+    BIGGER_SIZE = 12
     plt.rc('font', size=MEDIUM_SIZE)  # controls default text sizes
     plt.rc('axes', titlesize=BIGGER_SIZE)  # fontsize of the axes title
     plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labelsa
@@ -472,25 +474,14 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_14')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
-    # files = ['ib3d_normal_swht_01deg_2020_06_16_00_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_12_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_01_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_13_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_02_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_14_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_03_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_15_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_04_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_16_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_05_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_17_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_06_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_18_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_07_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_19_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_08_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_20_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_09_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_21_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_10_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_22_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_11_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_23_prelate_bakker.h5']
+
     pack_name = 'demo_ib3d_level3_20200616.h5'
-    
+
     rf_distance = np.array([])
     snr_db = np.array([])
     doppler_shift = np.array([])
@@ -501,10 +492,8 @@ if __name__ == '__main__':
     area = np.array([])
     t = np.array([])
     for file in files:
-        # file = filepath + '2020_06_16/' + file
         f = h5py.File(file, 'r')
         config = utils.Config(file)
-        # config = Config(file)
         print(file)
         group = f['data']
         date = f['date']
@@ -516,7 +505,7 @@ if __name__ == '__main__':
                 continue
             et = data['time'][()]
             et = np.append(date, et)
-            et[5] = int(et[5]/1000)
+            et[5] = int(et[5] / 1000)
             et = epoch_time(et)
             t = np.append(t, np.repeat(et, len(data['rf_distance'][()])))
             rf_distance = np.append(rf_distance, data['rf_distance'][()])
@@ -533,7 +522,7 @@ if __name__ == '__main__':
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
-    m = np.ma.masked_where(snr_db <= 1.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
+    m = np.ma.masked_where(snr_db <= 6.0, m)  # Weak signals close to noise or highly multipathed (meteors are strong)
     # m = np.ma.masked_where(doppler_shift >= 50, m)  # Meteors are less than |150 m/s|
     # m = np.ma.masked_where(doppler_shift <= -50, m)  # Meteors are less than |150 m/s|
     # m = np.ma.masked_where(area >= 5.0, m)  # Meteors should have small scattering cross-sectional area
@@ -560,14 +549,15 @@ if __name__ == '__main__':
     vel = sv[1, :]
     doppler_shift = sv[2, :]
     slant_range = sa[2, :]
+    bad_alt = -6378.0 + np.sqrt(6378.0**2 + slant_range**2 - 2*6328.0*slant_range*np.cos(np.deg2rad(90 + elevation)))
     elevation = sa[1, :]
     print('\t-mapping completed')
 
     # Set up a filtering mask.
     m = np.ma.masked_where(elevation == np.nan, m)  # Elevation iterations not converging (noise)
     m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
-    m = np.ma.masked_where(slant_range <= 300, m)  # Man made noise and multipath objects
-    # m = np.ma.masked_where(altitude <= 50, m)  # Man made noise and multipath objects
+    m = np.ma.masked_where(slant_range <= 275, m)  # Man made noise and multipath objects
+    m = np.ma.masked_where(altitude <= 50, m)  # Man made noise and multipath objects
     # m = np.ma.masked_where(((slant_range <= 100.0) & (altitude <= 25.0)), m)  # Beam camping location
     rf_distance = rf_distance * m
     snr_db = snr_db * m
@@ -579,6 +569,7 @@ if __name__ == '__main__':
     area = area * m
     slant_range = slant_range * m
     altitude = altitude * m
+    bad_alt = bad_alt * m
     t = t * m
     lat = lat * m
     lon = lon * m
@@ -595,6 +586,7 @@ if __name__ == '__main__':
     area = area[~area.mask].flatten()
     slant_range = slant_range[~slant_range.mask].flatten()
     altitude = altitude[~altitude.mask].flatten()
+    bad_alt = bad_alt[~bad_alt.mask].flatten()
     t = t[~t.mask].flatten()
     lat = lat[~lat.mask].flatten()
     lon = lon[~lon.mask].flatten()
@@ -604,13 +596,38 @@ if __name__ == '__main__':
     print('\t-masking completed')
     print('\t-remaining data', len(rf_distance))
 
-    # create_level3_hdf5(config, pack_name, t, rf_distance, snr_db,
-    #                    lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
-    #                    azimuth_extent, elevation_extent, area)
+    plt.figure()
+    plt.subplot(211)
+    plt.scatter(slant_range, bad_alt, c='r', marker='.')
+    plt.plot([0, 1000], [120, 120], '--k')
+    plt.plot([0, 1000], [80, 80], '--k')
+    plt.grid()
+    #plt.axis('equal')
+    plt.xlim(200, 1000)
+    plt.ylim(0, 300)
+    #plt.xlabel('Slant Range [km]')
+    plt.ylabel('Altitude [km]')
+    # plt.title('Conventional')
+    plt.title('Geminids Meteor Shower\nDecember 12-15, 2020')
 
-    # plt.figure()
-    # plt.scatter(slant_range, altitude, c=snr_db)
-    # plt.show()
+    plt.subplot(212)
+    plt.scatter(slant_range, altitude, c='b', marker='.')
+    plt.plot([0, 1000], [120, 120], '--k')
+    plt.plot([0, 1000], [80, 80], '--k')
+    #plt.axis('equal')
+    plt.grid()
+    plt.xlim(200, 1000)
+    plt.ylim(0, 300)
+    plt.xlabel('Slant Range [km]')
+    plt.ylabel('Altitude [km]')
+    # plt.title('Geo-central')
+
+    #plt.suptitle('Geminids Meteor Shower\n2020-12-15')
+    plt.tight_layout()
+    plt.savefig('/beaver/backup/images/conventional_vs_geocentral.png')
+    plt.show()
+    print(len(altitude))
+
 
     # plt.figure(figsize=[12, 12])
     # mean_altitude = np.mean(altitude)
@@ -629,7 +646,7 @@ if __name__ == '__main__':
     # plt.legend(loc='upper right')
     # plt.grid()
     # # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
-
+    #
     # plt.figure(figsize=[12, 12])
     # mean_longitude = np.mean(lon)
     # _ = plt.hist(lon, bins='auto', orientation='vertical', histtype=u'step', label=f'Total Targets {total_targets}')
