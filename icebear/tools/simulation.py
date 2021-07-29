@@ -107,11 +107,11 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
 
     # This section activates the experimental angular_frequency_beamforming()
-    # for i in range(15, 95, 10):
-    #     coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
-    #     brightness *= icebear.imaging.image.calculate_image(visibility, coeffs)
+    for i in range(15, 85, 10):
+        coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
+        brightness *= icebear.imaging.swht.swht_py(visibility, coeffs)
 
-    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.9)
+    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
     cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
     mx, my, _ = icebear.imaging.swht.max_center(brightness)
 
@@ -126,8 +126,8 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     print(f'\t-result elevation {cy} deg x {cy_extent} deg -- max {my}')
     print(f'\t-result area {area}')
     if len(azimuth) == 0:
-        if np.allclose([azimuth, elevation, azimuth_extent, elevation_extent], [cx, cy, cx_extent, cy_extent], atol=5):
-            print('\t-result matches input within error (10e-5)')
+        if np.allclose([azimuth, elevation, azimuth_extent, elevation_extent], [cx, cy, cx_extent, cy_extent], atol=1):
+            print('\t-result matches input within error (10e-1)')
 
     intensity = icebear.imaging.swht.swht_py(visibility, coeffs2)
     intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
@@ -162,7 +162,8 @@ if __name__ == '__main__':
     # config.lmax = 85
     # config.resolution = 1
 
-    coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    # coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
     # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
     config.update_config(coeffs_file)
     config.lmax = 85
@@ -179,43 +180,63 @@ if __name__ == '__main__':
 
     brightness, intensity = simulate(config, np.array([-15]), np.array([10]), np.array([3]), np.array([3]))
 
-    # with open('test.npy', 'wb') as f:
-    #     np.save(f, brightness)
-    #     np.save(f, intensity)
-
-    # with open('test.npy', 'rb') as f:
-    #     brightness = np.load(f)
-    #     intensity = np.load(f)
-    #
-    plt.figure(figsize=[9, 4])
-    # plt.pcolormesh(intensity, cmap='inferno')
-    plt.pcolormesh(brightness, cmap='inferno')
+    plt.figure(figsize=[9, 8])
+    plt.subplot(211)
+    plt.pcolormesh(intensity, cmap='inferno', vmin=0.0, vmax=1.0)
     plt.colorbar(label='Normalized Brightness')
-    # plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
-    # plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
-    plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
-    plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
-    plt.grid(linestyle='--')
-    im = np.array(brightness * 255.0, dtype=np.uint8)
-    threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
-    contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    a, b, w, h = cv2.boundingRect(contours[0])
-    x = contours[0][:, :, 0]
-    x = np.append(x, x[0])
-    y = contours[0][:, :, 1]
-    y = np.append(y, y[0])
-    moments = cv2.moments(contours[0])
-    cx = int(moments['m10'] / moments['m00'])
-    cy = int(moments['m01'] / moments['m00'])
-    index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
+    # Plot the contour, centroid, and bounding box for extent, area, and centroid locating
+    # im = np.array(intensity * 255.0, dtype=np.uint8)
+    # threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    # contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # a, b, w, h = cv2.boundingRect(contours[0])
+    # x = contours[0][:, :, 0]
+    # x = np.append(x, x[0])
+    # y = contours[0][:, :, 1]
+    # y = np.append(y, y[0])
+    # moments = cv2.moments(contours[0])
+    # cx = int(moments['m10'] / moments['m00'])
+    # cy = int(moments['m01'] / moments['m00'])
     # plt.plot(x, y, 'k', linewidth=2, label='Contour')
     # plt.plot([a, a+w, a+w, a, a], [b, b, b+h, b+h, b], 'r', linewidth=3, label='Bounding Rectangle')
     # plt.scatter(cx, cy, label='Centroid')
-    plt.scatter(index[1], index[0], label='Maximum Brightness', c='k')
+    # Plot the maximum point
+    index = np.unravel_index(np.argmax(intensity, axis=None), intensity.shape)
+    plt.scatter(index[1], index[0], label='Maximum Brightness', c='grey')
+    # Set up plot labels and bars
+    plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
+    plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
     plt.xlabel('Azimuth [deg]')
     plt.ylabel('Elevation [deg]')
-    #plt.xlim(300, 600)
-    #plt.ylim(100, 300)
+    plt.grid(linestyle='--')
+    plt.legend(loc='best')
+
+    plt.subplot(212)
+    plt.pcolormesh(brightness, cmap='inferno', vmin=0.0, vmax=1.0)
+    plt.colorbar(label='Normalized Brightness')
+    # Plot the contour, centroid, and bounding box for extent, area, and centroid locating
+    # im = np.array(brightness * 255.0, dtype=np.uint8)
+    # threshed = cv2.adaptiveThreshold(im, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    # contours, hierarchy = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # a, b, w, h = cv2.boundingRect(contours[0])
+    # x = contours[0][:, :, 0]
+    # x = np.append(x, x[0])
+    # y = contours[0][:, :, 1]
+    # y = np.append(y, y[0])
+    # moments = cv2.moments(contours[0])
+    # cx = int(moments['m10'] / moments['m00'])
+    # cy = int(moments['m01'] / moments['m00'])
+    # plt.plot(x, y, 'k', linewidth=2, label='Contour')
+    # plt.plot([a, a+w, a+w, a, a], [b, b, b+h, b+h, b], 'r', linewidth=3, label='Bounding Rectangle')
+    # plt.scatter(cx, cy, label='Centroid')
+    # Plot the maximum point
+    index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
+    plt.scatter(index[1], index[0], label='Maximum Brightness', c='grey')
+    # Set up plot labels and bars
+    plt.xticks(np.arange(0, 900 + 50, 50), np.arange(-45, 50, 5))
+    plt.yticks(np.arange(0, 450 + 50, 50), np.arange(0, 50, 5))
+    plt.xlabel('Azimuth [deg]')
+    plt.ylabel('Elevation [deg]')
+    plt.grid(linestyle='--')
     plt.legend(loc='best')
 
     plt.tight_layout()
