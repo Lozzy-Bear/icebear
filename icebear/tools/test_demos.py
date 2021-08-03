@@ -19,10 +19,10 @@ plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-# files = ['demo_ib3d_level3_20201212.h5', 'demo_ib3d_level3_20201213.h5',
-#          'demo_ib3d_level3_20201214.h5', 'demo_ib3d_level3_20201215.h5']
+files = ['demo_ib3d_level3_20201212.h5', 'demo_ib3d_level3_20201213.h5',
+         'demo_ib3d_level3_20201214.h5', 'demo_ib3d_level3_20201215.h5']
 # files = ['demo_ib3d_level3_20210202.h5']
-files = ['demo_ib3d_level3_20191219.h5']
+# files = ['demo_ib3d_level3_20191219.h5']
 # files = ['demo_ib3d_level3_20200331.h5']
 
 slant_range = np.array([])
@@ -49,17 +49,26 @@ for file in files:
     snr_db = np.append(snr_db, f['data']['snr_db'][()])
 
 plt.figure()
-mean_altitude = np.mean(altitude)
+mean_altitude = 93.2 # np.mean(altitude)
 total_targets = len(altitude)
-_ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype='step', label=f'Total Targets {total_targets}', color='k')
-plt.xscale('log')
-plt.title('E Region Scatter Distribution\nDecember 19, 2019')
+n, bins, _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype='step', label=f'Total Targets {total_targets}', color='k')
+
+counts = n
+mids = 0.5*(bins[1:] + bins[:-1])
+probs = counts / np.sum(counts)
+mean = np.sum(probs * mids)
+sd = np.sqrt(np.sum(probs * (mids - mean)**2))
+print(f'standard deviation: {sd}, mean: {mean}')
+
+# plt.xscale('log')
+# plt.title('E Region Scatter Distribution\nDecember 19, 2019')
+plt.title('Geminids Meteor Trail Distribution\nDecember 12-15, 2020')
 plt.xlabel('Count')
 plt.ylabel('Altitude [km]')
-plt.ylim((60, 140))
-plt.xlim((10, 10_000))
-plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
-plt.legend(loc='upper right')
+plt.ylim((70, 120))
+plt.xlim((10, 4_000))
+plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Peak Altitude {mean_altitude:.1f} [km]')
+plt.legend(loc='lower right')
 plt.grid()
 plt.show()
 
