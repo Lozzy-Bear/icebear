@@ -60,7 +60,7 @@ axs[0].grid(which='both')
 axs[0].axis('equal')
 axs[0].scatter(ant_posx, ant_posy, marker='v', color='k')
 
-axs[1].set_title("Visibility Domain")
+axs[1].set_title("Sampling Space")
 axs[1].set_xlabel("u")
 axs[1].set_ylabel("v")
 axs[1].grid(which='both')
@@ -76,6 +76,6 @@ axs[1].scatter(0, 0, color='k')
 
 #plt.tight_layout()
 plt.show()
-#plt.savefig('/beaver/backup/images/array_plot.png')
+#plt.savefig('/beaver/backup/images/array_map.pdf')
 
 

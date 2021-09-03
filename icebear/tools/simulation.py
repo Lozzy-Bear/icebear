@@ -5,6 +5,7 @@ import multiprocessing as mp
 import icebear
 import icebear.utils as utils
 from pathlib import Path
+import time
 import cv2
 
 
@@ -104,7 +105,10 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     visibility = np.append(np.conjugate(visibility), visibility)
     coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
     coeffs2 = np.copy(coeffs)
+
+    start_time = time.time()
     brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
+    print('time:', time.time() - start_time)
 
     # This section activates the experimental angular_frequency_beamforming()
     for i in range(15, 85, 10):
@@ -179,6 +183,7 @@ if __name__ == '__main__':
     config.print_attrs()
 
     brightness, intensity = simulate(config, np.array([-15]), np.array([10]), np.array([3]), np.array([3]))
+
 
     plt.figure(figsize=[9, 8])
     plt.subplot(211)

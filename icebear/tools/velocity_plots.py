@@ -5,6 +5,7 @@ import pymap3d as pm
 import icebear.utils as utils
 from scipy.optimize import curve_fit
 from scipy.signal import peak_widths, find_peaks
+import cartopy.crs as ccrs
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -157,6 +158,89 @@ def velocity_plot(sx, sv, date, time, filepath):
     hour = time[0:2]
     minute = time[2:4]
     second = time[4:6]
+
+    u = np.sin(np.deg2rad(sv[0, :])) * np.cos(np.deg2rad(sv[1, :]))
+    v = np.cos(np.deg2rad(sv[0, :])) * np.cos(np.deg2rad(sv[1, :]))
+    n = np.sqrt(u**2 + v**2)
+    u /= n
+    v /= n
+    # u = np.where(sv[2, :] == 0, np.nan, u)
+    # v = np.where(sv[2, :] == 0, np.nan, v)
+
+    # plt.figure(figsize=[18, 14])
+    fig = plt.figure(figsize=[10, 6], constrained_layout=True)
+    gs = fig.add_gridspec(4, 4)
+    fig.suptitle(f'{year}-{month}-{day} {hour}:{minute}:{second}')
+    props = dict(boxstyle='square', facecolor='wheat', alpha=1.0)
+    vel_thresh = 1500.0
+
+    # Altitude-Latitude slice
+    ax1 = fig.add_subplot(gs[0::, 0])
+    ax1.set_facecolor('black')
+    plt.scatter(sx[2, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
+    plt.xlabel('Altitude [km]')
+    plt.ylabel('Latitude [deg]')
+    plt.clim(-vel_thresh, vel_thresh)
+    plt.xlim([200.0, 0.0])
+    plt.ylim([50.0, 64.0])
+    plt.grid()
+
+    # Latitude-Longitude slice
+    ax2 = fig.add_subplot(gs[0::, 1::])
+    # ax2 = plt.axes(projection=ccrs.PlateCarree())
+    # ax2.set_extent([np.min(sv[0, :]), np.max(sv[0, :]), np.min(sv[1, :]), np.max(sv[1, :])], crs=ccrs.PlateCarree())
+    # ax2.lakes()
+    # ax2.coastline()
+    # ax2.rivers()
+    ax2.set_facecolor('black')
+    #plt.quiver(sx[1, :], sx[0, :], u, v, sv[2, :], cmap='RdBu')
+    plt.xlabel('Longitude [deg]')
+    plt.scatter(sx[1, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
+    plt.colorbar(label='Velocity [m/s]')
+    plt.clim(-vel_thresh, vel_thresh)
+    plt.scatter(-109.403, 50.893, c='w')
+    plt.annotate('TX', (-109.403, 50.893),
+                 xytext=(-25.0, 15.0), textcoords='offset points', ha='center', va='bottom', color='red',
+                 bbox=dict(boxstyle='round,pad=0.2', fc='wheat', alpha=1.0),
+                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1', color='r'))
+    plt.scatter(-106.450, 52.243, c='w')
+    plt.annotate('RX', (-106.450, 52.24),
+                 xytext=(-25.0, 15.0), textcoords='offset points', ha='center', va='bottom', color='blue',
+                 bbox=dict(boxstyle='round,pad=0.2', fc='wheat', alpha=1.0),
+                 arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1', color='b'))
+    #plt.text(-100.0, 50.5, f'Records {len(sx[1, :]):3d}\nSNR Cutoff 1.0 dB', bbox=props, color='k')
+    plt.xlim([-114.0, -100.0])
+    plt.ylim([50.0, 64.0])
+    #ax2.axes.xaxis.set_ticklabels([])
+    ax2.axes.yaxis.set_ticklabels([])
+    plt.grid()
+
+    # Altitude-Longitutde slice
+    # ax3 = fig.add_subplot(gs[3, 1:4])
+    # ax3.set_facecolor('black')
+    # plt.scatter(sx[1, :], sx[2, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
+    # plt.ylabel('Altitude [km]')
+    # plt.xlabel('Longitude [deg]')
+    # plt.clim(-vel_thresh, vel_thresh)
+    # plt.xlim([-114.0, -100.0])
+    # plt.ylim([0.0, 200.0])
+    # plt.grid()
+
+    plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.pdf')
+    # plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.png')
+    #plt.show()
+    plt.close()
+
+    return
+
+
+def old_velocity_plot(sx, sv, date, time, filepath):
+    year = date[0]
+    month = date[1]
+    day = date[2]
+    hour = time[0:2]
+    minute = time[2:4]
+    second = time[4:6]
     # import cartopy.crs as ccrs
     # ax = plt.axes(projection=ccrs.PlateCarree())
     # ax.set_extent([np.min(sv[0, :]),np.max(sv[0, :]), np.min(sv[1, :]), np.max(sv[1, :])], crs=ccrs.PlateCarree())
@@ -172,20 +256,20 @@ def velocity_plot(sx, sv, date, time, filepath):
     # u = np.where(sv[2, :] == 0, np.nan, u)
     # v = np.where(sv[2, :] == 0, np.nan, v)
 
-    # plt.figure(figsize=[18, 14])
     fig = plt.figure(figsize=[20, 14], constrained_layout=True)
     gs = fig.add_gridspec(1, 4)
     fig.suptitle(f'{year}-{month}-{day} {hour}:{minute}:{second}')
     props = dict(boxstyle='square', facecolor='wheat', alpha=1.0)
     vel_thresh = 1500.0
     # Altitude slice
-    ax1 = fig.add_subplot(gs[0, 0])
+    ax1 = fig.add_subplot(gs[0:3, 0])
     ax1.set_facecolor('black')
     plt.scatter(sx[2, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
     plt.xlabel('Altitude [km]')
     plt.ylabel('Latitude [deg]')
     plt.clim(-vel_thresh, vel_thresh)
-    plt.xlim([200.0, 0.0])
+    #plt.xlim([200.0, 0.0])
+    plt.xlim([0.0, 200.0])
     plt.ylim([50.0, 62.0])
     plt.grid()
 
@@ -418,8 +502,9 @@ if __name__ == '__main__':
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
     # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
+    files = [files[3]]
     for file in files:
         f = h5py.File(file, 'r')
         print(file)
@@ -482,6 +567,7 @@ if __name__ == '__main__':
             m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
             m = np.ma.masked_where(slant_range <= 300, m)  # Man made noise and multipath objects
             m = np.ma.masked_where(altitude <= 50, m)  # Man made noise and multipath objects
+            m = np.ma.masked_where(altitude >= 200, m)  # Man made noise and multipath objects
             # m = np.ma.masked_where(((slant_range <= 100.0) & (altitude <= 25.0)), m)  # Beam camping location
             rf_distance = rf_distance * m
             snr_db = snr_db * m
@@ -522,7 +608,7 @@ if __name__ == '__main__':
                 # widths = spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, doppler_shift, snr_db)
                 # print(doppler_shift)
                 # print(widths)
-                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'scatter_2021_02_02/')
+                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'scatter_2020_03_31/')
             else:
                 print('\t-0 records')
 
