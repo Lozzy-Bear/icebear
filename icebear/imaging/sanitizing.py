@@ -314,7 +314,7 @@ if __name__ == '__main__':
 
     sx, sa, sv = map_target(tx_coord, rx_coord,
                             azimuth, elevation, rf_distance,
-                            doppler_shift, config.center_freq/299_762_458.0)
+                            doppler_shift, 299_762_458.0/config.center_freq)
     lat = sx[0, :]
     lon = sx[1, :]
     altitude = sx[2, :]
@@ -371,6 +371,7 @@ if __name__ == '__main__':
                        lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
                        azimuth_extent, elevation_extent, area, raw_elevation)
 
-    # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5
-    # Level 2.dev Data: ib3d_normal_dev_swht_2020_02_20_01_prelate_bakker.h5  <-
+    # This is how we decided file naming conventions should be.
+    # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5  <- one hour
+    # Level 2.dev Data: ib3d_normal_dev_swht_2020_02_20_01_prelate_bakker.h5  <- one hour
     # Level 2 Data: ib3d_normal_swht_2020_02_20_prelate_bakker.h5  <- full day
