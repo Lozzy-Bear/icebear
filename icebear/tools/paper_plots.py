@@ -474,9 +474,9 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_14')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_14')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
 

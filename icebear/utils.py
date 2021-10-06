@@ -213,6 +213,14 @@ def fov_window(coeffs, resolution=np.array([0.1, 0.1]),
     return fov_coeffs
 
 
+def epoch_time(start):
+    # This function should be folded into the time Class object
+    time = datetime.datetime(year=start[0], month=start[1], day=start[2], hour=start[3],
+                             minute=start[4], second=start[5], microsecond=0, tzinfo=tzutc())
+    epoch = time.timestamp()
+    return epoch
+
+
 class Time:
     def __init__(self, start, stop, step):
         """
