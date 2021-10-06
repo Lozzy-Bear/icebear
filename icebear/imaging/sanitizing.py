@@ -371,6 +371,22 @@ if __name__ == '__main__':
                        lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
                        azimuth_extent, elevation_extent, area, raw_elevation)
 
+    # Draven this little bit of code can be used to make altitude histograms per day if we want one every day!
+
+    # plt.figure(figsize=[12, 12])
+    # mean_altitude = np.mean(altitude)
+    # total_targets = len(altitude)
+    # _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
+    # plt.xscale('log')
+    # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
+    # plt.xlabel('Count')
+    # plt.ylabel('Altitude [km]')
+    # plt.ylim((50, 200))
+    # plt.xlim((10, 10_000))
+    # plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    # plt.legend(loc='upper right')
+    # plt.grid()
+
     # This is how we decided file naming conventions should be.
     # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5  <- one hour
     # Level 2.dev Data: ib3d_normal_dev_swht_2020_02_20_01_prelate_bakker.h5  <- one hour
