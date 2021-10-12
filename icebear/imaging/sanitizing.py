@@ -2,6 +2,7 @@ import numpy as np
 import h5py
 import pymap3d as pm
 import icebear.utils as utils
+import matplotlib.pyplot as plt
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -243,9 +244,10 @@ def create_level2_sanitized_hdf5(config, filename,
 
 if __name__ == '__main__':
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
-    date_dir = '2020_03_31'
+    filepath = '/beaver/backup/level2_download/'  # Enter file path to level 2 directory
+    date_dir = '2021_03_31'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
+    print(f'files: {files}')
 
     rf_distance = np.array([])
     snr_db = np.array([])
@@ -307,10 +309,10 @@ if __name__ == '__main__':
 
     rx_coord = config.rx_site_lat_long
     if len(rx_coord) < 3:
-        rx_coord.append(0.0)
+        rx_coord = np.append(rx_coord, 0.0)
     tx_coord = config.tx_site_lat_long
     if len(tx_coord) < 3:
-        tx_coord.append(0.0)
+        tx_coord = np.append(tx_coord, 0.0)
 
     sx, sa, sv = map_target(tx_coord, rx_coord,
                             azimuth, elevation, rf_distance,
@@ -373,19 +375,21 @@ if __name__ == '__main__':
 
     # Draven this little bit of code can be used to make altitude histograms per day if we want one every day!
 
-    # plt.figure(figsize=[12, 12])
-    # mean_altitude = np.mean(altitude)
-    # total_targets = len(altitude)
-    # _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
-    # plt.xscale('log')
-    # plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
-    # plt.xlabel('Count')
-    # plt.ylabel('Altitude [km]')
+    plt.figure(figsize=[12, 12])
+    mean_altitude = np.mean(altitude)
+    total_targets = len(altitude)
+    _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
+    plt.xscale('log')
+    plt.title(f'Altitude Distribution {date_dir}')
+    plt.xlabel('Count')
+    plt.ylabel('Altitude [km]')
     # plt.ylim((50, 200))
     # plt.xlim((10, 10_000))
-    # plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
-    # plt.legend(loc='upper right')
-    # plt.grid()
+    plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    plt.legend(loc='upper right')
+    plt.grid()
+    plt.savefig(f'{filepath}{date_dir}/altitude_distribution_{date_dir}.png')
+    plt.show()
 
     # This is how we decided file naming conventions should be.
     # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5  <- one hour

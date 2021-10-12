@@ -230,7 +230,7 @@ def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, 
 
 if __name__ == '__main__':
     # file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
-    file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_03_prelate_bakker.h5'
+    file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_04_prelate_bakker.h5'
     config = icebear.utils.Config(file)
     # config.add_attr('imaging_destination', 'E:/icebear/level2/')
     config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
