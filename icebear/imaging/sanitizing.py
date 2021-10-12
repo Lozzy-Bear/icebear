@@ -244,8 +244,8 @@ def create_level2_sanitized_hdf5(config, filename,
 
 if __name__ == '__main__':
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2_download/'  # Enter file path to level 2 directory
-    date_dir = '2021_03_31'
+    filepath = '/beaver/backup/'  # Enter file path to level 2 directory
+    date_dir = 'bugs'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 
@@ -307,12 +307,14 @@ if __name__ == '__main__':
     t = t * m
     print('\t-pre-masking completed')
 
-    rx_coord = config.rx_site_lat_long
+    rx_coord = np.rad2deg(config.rx_site_lat_long)
     if len(rx_coord) < 3:
         rx_coord = np.append(rx_coord, 0.0)
-    tx_coord = config.tx_site_lat_long
+        print(rx_coord)
+    tx_coord = np.rad2deg(config.tx_site_lat_long)
     if len(tx_coord) < 3:
         tx_coord = np.append(tx_coord, 0.0)
+        print(tx_coord)
 
     sx, sa, sv = map_target(tx_coord, rx_coord,
                             azimuth, elevation, rf_distance,
@@ -389,7 +391,8 @@ if __name__ == '__main__':
     plt.legend(loc='upper right')
     plt.grid()
     plt.savefig(f'{filepath}{date_dir}/altitude_distribution_{date_dir}.png')
-    plt.show()
+    # plt.show()
+    plt.close()
 
     # This is how we decided file naming conventions should be.
     # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5  <- one hour
