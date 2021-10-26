@@ -220,6 +220,7 @@ def create_level2_sanitized_hdf5(config, filename,
     f.create_dataset('data/rf_distance', data=rf_distance)
     f.create_dataset('data/snr_db', data=snr_db)
     f.create_dataset('data/doppler_shift', data=doppler_shift)
+    # f.create_dataset('data/doppler_spectra', data=doppler_spectra)
     f.create_dataset('data/latitude', data=lattitude)
     f.create_dataset('data/longitude', data=longitude)
     f.create_dataset('data/altitude', data=altitude)
@@ -229,6 +230,12 @@ def create_level2_sanitized_hdf5(config, filename,
     f.create_dataset('data/velocity_azimuth', data=velocity_azimuth)
     f.create_dataset('data/velocity_elevation', data=velocity_elevation)
     f.create_dataset('data/velocity_magnitude', data=velocity)
+    # dset.attrs['units'] = 'm/s'
+    # dset.attrs['description'] = 'magnitude of the target velocity vector'
+    # dset.attrs['dtype'] = dset.dtype
+    # dset.attrs['flavor'] = 'numpy.array'
+
+
     # Create dev datasets
     f.create_group('dev')
     f.create_dataset('dev/raw_elevation', data=raw_elevation)
@@ -244,8 +251,8 @@ def create_level2_sanitized_hdf5(config, filename,
 
 if __name__ == '__main__':
     # Load the level 2 data file.
-    filepath = '/beaver/backup/'  # Enter file path to level 2 directory
-    date_dir = 'bugs'
+    filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
+    date_dir = '2019_12_19'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 
@@ -324,7 +331,7 @@ if __name__ == '__main__':
     altitude = sx[2, :]
     vaz = sv[0, :]
     vel = sv[1, :]
-    doppler_shift = sv[2, :]
+    vma = sv[2, :]
     slant_range = sa[2, :]
     raw_elevation = np.copy(elevation)
     elevation = sa[1, :]
@@ -350,6 +357,7 @@ if __name__ == '__main__':
     lon = lon * m
     vaz = vaz * m
     vel = vel * m
+    vma = vma * m
 
     rf_distance = rf_distance[~rf_distance.mask].flatten()
     snr_db = snr_db[~snr_db.mask].flatten()
@@ -367,12 +375,13 @@ if __name__ == '__main__':
     lon = lon[~lon.mask].flatten()
     vaz = vaz[~vaz.mask].flatten()
     vel = vel[~vel.mask].flatten()
+    vma = vma[~vma.mask].flatten()
 
     print('\t-masking completed')
     print('\t-remaining data', len(rf_distance))
 
     create_level2_sanitized_hdf5(config, filename, t, rf_distance, snr_db, doppler_shift,
-                       lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
+                       lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, vma,
                        azimuth_extent, elevation_extent, area, raw_elevation)
 
     # Draven this little bit of code can be used to make altitude histograms per day if we want one every day!

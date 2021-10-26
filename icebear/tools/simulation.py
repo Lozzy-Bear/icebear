@@ -2,22 +2,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import dblquad
 import multiprocessing as mp
-import icebear
-import icebear.utils as utils
 from pathlib import Path
 import time
-import cv2
+import sys
+import path as pth
+ipath = pth.Path(__file__).abspath()
+sys.path.append(ipath.parent.parent.parent)
+import icebear
+import icebear.utils as utils
 
 
 def _real_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
-    return 2 * np.real(np.exp(-(theta - theta_mean) ** 2 / (2.0 * theta_spread * theta_spread)) * 
+    return 2 * np.real(np.exp(-(theta - theta_mean) ** 2 / (2.0 * theta_spread * theta_spread)) *
                        np.exp(-(phi - phi_mean) ** 2 / (2.0 * phi_spread * phi_spread)) * np.cos(phi) * 
                        np.exp(-2.0j * np.pi * ((u_in * np.sin(theta) * np.cos(phi)) + 
                                                 (v_in * np.cos(theta) * np.cos(phi)) + (w_in * np.sin(phi)))))
 
 
 def _imag_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
-    return 2 * np.imag(np.exp(-(theta - theta_mean) ** 2 / (2.0 * theta_spread * theta_spread)) * 
+    return 2 * np.imag(np.exp(-(theta - theta_mean) ** 2 / (2.0 * theta_spread * theta_spread)) *
                        np.exp(-(phi - phi_mean) ** 2 / (2.0 * phi_spread * phi_spread)) * np.cos(phi) * 
                        np.exp(-2.0j * np.pi * ((u_in * np.sin(theta) * np.cos(phi)) + 
                                                 (v_in * np.cos(theta) * np.cos(phi)) + (w_in * np.sin(phi)))))
@@ -96,7 +99,7 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
         visibility_dist[:, idx, idx, idx, idx] = [r[1] for r in visibility_dist_temp]
 
         # for p in processes:
-        #     p.close()
+            # p.close()
 
     visibility = np.array(visibility_dist)
     for i in range(len(azimuth)):
@@ -134,9 +137,10 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
             print('\t-result matches input within error (10e-1)')
 
     intensity = icebear.imaging.swht.swht_py(visibility, coeffs2)
+    print(f'\t-max intentsity {np.max(intensity)} mean intensity {np.mean(intensity)}')
     intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
 
-    return brightness, intensity
+    return brightness, intensity, mx, my
 
 
 if __name__ == '__main__':
@@ -155,7 +159,9 @@ if __name__ == '__main__':
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-    path = Path(__file__).parent.parent.parent / "dat/default.yml"
+    # path = Path(__file__).parent.parent.parent / "dat/default.yml"
+    path = ipath.parent.parent.parent + "/dat/default.yml"
+    print(path)
     config = utils.Config(str(path))
     # Change this to your swht_coeffs local save
 
@@ -166,9 +172,10 @@ if __name__ == '__main__':
     # config.lmax = 85
     # config.resolution = 1
 
-    # coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    # 0.1 degree resolution normal fov coeffs
     coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
-    # coeffs_file = 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_02_09_090az_045el_01res_85lmax.h5'
+    # 1.0 degree resolution half sphere coeffs
+    # coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5'
     config.update_config(coeffs_file)
     config.lmax = 85
     config.fov_center = np.array([270, 90])
@@ -182,8 +189,26 @@ if __name__ == '__main__':
     config.swht_coeffs = coeffs_file
     config.print_attrs()
 
-    brightness, intensity = simulate(config, np.array([-15]), np.array([10]), np.array([3]), np.array([3]))
+    # This code is used to check all possible angles of arrival
+    # with open('f1deg.csv', 'a') as csv:
+    #     print('Testing all possible angles of arrival at 0.1 deg resolution (-45 - 45 az, 0 - 45 el):')
+    #     csv.write('x,y,cx,cy\n')
+    #     # xx = np.arange(-45.0, 45.0, config.resolution)
+    #     # yy = np.arange(0.0, 45.0, config.resolution)
+    #     xx = np.arange(-30, 30+1, config.resolution)
+    #     yy = np.arange(0, 20, config.resolution)
+    #     for x in xx:
+    #         for y in yy:
+    #             if x < 30.0:
+    #                 continue
+    #             if x <= 30.0 and y < 0.0:
+    #                 continue
+    #             print(f'computing: x={x}, y={y}')
+    #             _, _, cx, cy = simulate(config, np.array([x]), np.array([y]), np.array([3, 3]), np.array([3, 3]))
+    #             csv.write(f'{x},{y},{cx},{cy}\n')
+    # exit()
 
+    brightness, intensity, cx, cy = simulate(config, np.array([29]), np.array([5]), np.array([3]), np.array([3]))
 
     plt.figure(figsize=[9, 8])
     plt.subplot(211)
@@ -207,6 +232,7 @@ if __name__ == '__main__':
     # Plot the maximum point
     index = np.unravel_index(np.argmax(intensity, axis=None), intensity.shape)
     plt.scatter(index[1], index[0], label='Maximum Brightness', c='grey')
+    print(index)
     # Set up plot labels and bars
     plt.xticks(np.arange(0, 900+50, 50), np.arange(-45, 50, 5))
     plt.yticks(np.arange(0, 450+50, 50), np.arange(0, 50, 5))
@@ -236,6 +262,7 @@ if __name__ == '__main__':
     # Plot the maximum point
     index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
     plt.scatter(index[1], index[0], label='Maximum Brightness', c='grey')
+    print(index)
     # Set up plot labels and bars
     plt.xticks(np.arange(0, 900 + 50, 50), np.arange(-45, 50, 5))
     plt.yticks(np.arange(0, 450 + 50, 50), np.arange(0, 50, 5))

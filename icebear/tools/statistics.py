@@ -470,26 +470,13 @@ if __name__ == '__main__':
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
     # Load the level 2 data file.
-    # filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
-    filepath = '/beaver/backup/level2_download/'  # Enter file path to level 2 directory
+    filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
     # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
-    # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
-    # files = ['ib3d_normal_swht_01deg_2020_06_16_00_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_12_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_01_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_13_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_02_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_14_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_03_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_15_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_04_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_16_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_05_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_17_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_06_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_18_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_07_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_19_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_08_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_20_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_09_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_21_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_10_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_22_prelate_bakker.h5',
-    # 'ib3d_normal_swht_01deg_2020_06_16_11_prelate_bakker.h5','ib3d_normal_swht_01deg_2020_06_16_23_prelate_bakker.h5']
     pack_name = 'demo_ib3d_level3_20200616.h5'
     
     rf_distance = np.array([])
@@ -531,6 +518,7 @@ if __name__ == '__main__':
 
     print('\t-loading completed')
     azimuth += 7.0
+    elevation -= azimuth * np.tan(np.deg2rad(1.7))
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
@@ -608,16 +596,21 @@ if __name__ == '__main__':
     # create_level3_hdf5(config, pack_name, t, rf_distance, snr_db,
     #                    lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
     #                    azimuth_extent, elevation_extent, area)
-
-    # plt.figure()
+    plt.figure()
+    plt.scatter(azimuth, altitude)
+    plt.figure()
     # plt.scatter(slant_range, altitude, c=snr_db)
+    plt.subplot(121)
+    plt.hist2d(azimuth, altitude, bins=[360, 600], cmap='viridis', cmin=1)
+    plt.subplot(122)
+    plt.hist2d(lon, altitude, bins=[360, 600], cmap='viridis', cmin=1)
     # plt.show()
 
     plt.figure(figsize=[12, 12])
     mean_altitude = np.mean(altitude)
     total_targets = len(altitude)
     _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Total Targets {total_targets}')
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.title('E-Region Scatter 2020-03-31 Altitude Distribution')
     # plt.title('E-Region Scatter 2019-12-19 Altitude Distribution')
     # plt.title('E-Region Scatter 2021-02-02 Altitude Distribution')
@@ -625,8 +618,8 @@ if __name__ == '__main__':
     plt.xlabel('Count')
     plt.ylabel('Altitude [km]')
     plt.ylim((50, 200))
-    plt.xlim((10, 10_000))
-    plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    # plt.xlim((10, 10_000))
+    plt.plot([0, 1_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
     plt.legend(loc='upper right')
     plt.grid()
     # # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
@@ -647,6 +640,6 @@ if __name__ == '__main__':
     # plt.legend(loc='upper right')
     # plt.grid()
     # # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
-    # plt.show()
+    plt.show()
 
 exit()  # Needs a clean exit?
