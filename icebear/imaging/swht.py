@@ -422,8 +422,8 @@ def swht_method_advanced(visibilities, coeffs_filepath_fov, coeffs_filepath_full
     mean_jansky = np.mean(np.abs(brightness))
     max_jansky = np.max(np.abs(brightness))
     if mean_jansky <= 0.001 * average_spectra_noise:
-        print(f'-\ttarget outside the FoV, noise, or exists in a sevre blindspot; skipped')
-        return
+        print(f'-\ttarget outside the FoV, noise, or exists in a severe blindspot; skipped')
+        return None, None, None, None, None, None, mean_jansky, max_jansky
 
     # Check if the target is within the FoV using a 1 deg full sphere coeffs.
     brightness = brightness_cutoff(brightness, threshold=0.6)
@@ -435,7 +435,7 @@ def swht_method_advanced(visibilities, coeffs_filepath_fov, coeffs_filepath_full
     if not(fov[0, 0] <= full_mx <= fov[0, 1]) and not(fov[1, 0] <= full_my <= fov[1, 1]):
         # Record data at 1deg
         print('\t-target outside fov; recording 1 degree accuracy')
-        return
+        return full_mx, full_my, full_acc, full_extent_x, full_extent_y, full_area, mean_jansky, max_jansky
 
     # Create the brightness map at desired resolution and FoV.
     suppressed_brightness, brightness = suppressed_swht_py(visibilities, coeffs_filepath_fov, lmax)
@@ -456,10 +456,20 @@ def swht_method_advanced(visibilities, coeffs_filepath_fov, coeffs_filepath_full
 
     return fov_mx, fov_my, fov_acc, fov_extent_x, fov_extent_y, fov_area, mean_jansky, max_jansky
 
-    brightness, suppressed_brightness, ax, ay, acc4
-
 
 def contour_map(brightness, px, py):
+    """
+
+    Parameters
+    ----------
+    brightness
+    px
+    py
+
+    Returns
+    -------
+
+    """
     # Image processing of the brightness map using smx, smy to locate correct contour.
     image = np.array(brightness * 255, dtype=np.uint8)
     threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
@@ -480,8 +490,8 @@ def contour_map(brightness, px, py):
                 cy = int(moments['m01'] / moments['m00'])
                 extent_x = w
                 extent_y = h
-                region = brightness([x:(x + w), y:(y + h)])
-    # Todo: region
+                region = [slice(x, x + w), slice(y, y + h)]
+    # Todo: region verify works
     mx, my, _ = max_center(brightness[region])
     acc = np.sqrt((cx - mx) ** 2 + (cy - my) ** 2)
 
