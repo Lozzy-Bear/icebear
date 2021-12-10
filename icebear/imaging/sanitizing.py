@@ -252,7 +252,7 @@ def create_level2_sanitized_hdf5(config, filename,
 if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
-    date_dir = '2019_12_19'
+    date_dir = '2020_03_31'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 
@@ -274,7 +274,7 @@ if __name__ == '__main__':
         keys = group.keys()
         for key in keys:
             data = group[f'{key}']
-            # Filter out dropped samples
+            # Todo: Reminder this is here; Filter out dropped samples
             if np.any(data['rf_distance'][()] < 250):
                 continue
             et = data['time'][()]
@@ -298,6 +298,11 @@ if __name__ == '__main__':
     print('\t-loading completed')
     # Set the azimuth pointing direction
     azimuth += config.rx_heading
+    # Todo: This is a reminder that this little hack exists. I suspect we need to rotate the plane by the maximum
+    #       amount z-offset in the array. This is 1.44 [deg] about boresight and 0.35 [deg] about the horizon.
+    #       This systematically means targets west are higher, east should be lower, back is lower, and front higher.
+    # elevation -= azimuth * np.tan(np.deg2rad(1.44))
+    # elevation = np.where(np.logical_and(azimuth >= -90.0, azimuth <= 90.0), elevation + 0.35, elevation -0.35)
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
@@ -339,8 +344,8 @@ if __name__ == '__main__':
 
     # Set up a filtering mask.
     m = np.ma.masked_where(elevation == np.nan, m)  # Elevation iterations not converging (noise)
-    m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
-    m = np.ma.masked_where(slant_range <= 300.0, m)  # Man made noise and multipath objects
+    # m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
+    # m = np.ma.masked_where(slant_range <= 300.0, m)  # Man made noise and multipath objects
     rf_distance = rf_distance * m
     snr_db = snr_db * m
     doppler_shift = doppler_shift * m

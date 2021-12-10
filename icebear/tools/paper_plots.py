@@ -474,9 +474,9 @@ if __name__ == '__main__':
     # Load the level 2 data file.
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_14')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
 
@@ -626,25 +626,25 @@ if __name__ == '__main__':
     plt.tight_layout()
     # plt.savefig('/beaver/backup/images/conventional_vs_geocentral.png')
     # plt.show()
-    print(len(altitude))
+    print(len(altitude), len(altitude[altitude>110.0]))
 
 
-    plt.figure()
-    mean_altitude = np.mean(altitude)
-    total_targets = len(altitude)
-    _ = plt.hist(bad_alt, bins='auto', orientation='horizontal', histtype=u'step', label=f'Conventional')
-    _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Geocentral')
-    # plt.xscale('log')
-    plt.title('Conventional versus Geocentral Altitude Distribution')
-    plt.xlabel('Count')
-    plt.ylabel('Altitude [km]')
-    plt.ylim((50, 200))
-    plt.xlim((10, 4_000))
-    plt.plot([0, 4_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
-    plt.legend(loc='upper right')
-    plt.grid()
+    # plt.figure()
+    # mean_altitude = np.mean(altitude)
+    # total_targets = len(altitude)
+    # _ = plt.hist(bad_alt, bins='auto', orientation='horizontal', histtype=u'step', label=f'Conventional')
+    # _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype=u'step', label=f'Geocentral')
+    # # plt.xscale('log')
+    # plt.title('Conventional versus Geocentral Altitude Distribution')
+    # plt.xlabel('Count')
+    # plt.ylabel('Altitude [km]')
+    # plt.ylim((50, 200))
+    # plt.xlim((10, 4_000))
+    # plt.plot([0, 4_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
+    # plt.legend(loc='upper right')
+    # plt.grid()
     # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
-    #
+
     # plt.figure(figsize=[12, 12])
     # mean_longitude = np.mean(lon)
     # _ = plt.hist(lon, bins='auto', orientation='vertical', histtype=u'step', label=f'Total Targets {total_targets}')
@@ -661,6 +661,7 @@ if __name__ == '__main__':
     # plt.legend(loc='upper right')
     # plt.grid()
     # # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
+
     plt.show()
 
 exit()  # Needs a clean exit?

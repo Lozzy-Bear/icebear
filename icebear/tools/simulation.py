@@ -34,6 +34,145 @@ def _visibility_calculation(x, u_in1, v_in1, w_in1, theta_mean, theta_spread, ph
     output.put((x, real_vis + imag_vis * 1.0j))
 
 
+def clean(dirty_image, dirty_beam, threshold_peak, iteration=10, damping=0.5):
+    dirty_image = np.abs(dirty_image)
+    for i in range(iteration):
+        mx, my, _ = icebear.imaging.swht.max_center(dirty_image)
+        max_peak = dirty_image[mx, my]
+        dirty_image -= dirty_beam * max_peak * gamma
+        if max_peak < threshold_peak:
+            break
+    brightness = np.convolve(dirty_image, ideal_beam)
+
+    return brightness
+
+
+def overlapIndices(a1, a2, shiftx, shifty):
+    if shiftx >= 0:
+        a1xbeg = shiftx
+        a2xbeg = 0
+        a1xend = a1.shape[0]
+        a2xend = a1.shape[0] - shiftx
+    else:
+        a1xbeg = 0
+        a2xbeg = -shiftx
+        a1xend = a1.shape[0] + shiftx
+        a2xend = a1.shape[0]
+
+    if shifty >= 0:
+        a1ybeg = shifty
+        a2ybeg = 0
+        a1yend = a1.shape[1]
+        a2yend = a1.shape[1] - shifty
+    else:
+        a1ybeg = 0
+        a2ybeg = -shifty
+        a1yend = a1.shape[1] + shifty
+        a2yend = a1.shape[1]
+
+    return (int(a1xbeg), int(a1xend), int(a1ybeg), int(a1yend)), (int(a2xbeg), int(a2xend), int(a2ybeg), int(a2yend))
+
+
+def hogbom(dirty, psf, thresh, gain=0.7, niter=1000):
+    """
+    Hogbom clean
+
+    :param dirty: The dirty image, i.e., the image to be deconvolved
+
+    :param psf: The point spread-function
+
+    :param window: Regions where clean components are allowed. If
+    True, thank all of the dirty image is assumed to be allowed for
+    clean components
+
+    :param gain: The "loop gain", i.e., the fraction of the brightest
+    pixel that is removed in each iteration
+
+    :param thresh: Cleaning stops when the maximum of the absolute
+    deviation of the residual is less than this value
+
+    :param niter: Maximum number of components to make if the
+    threshold "thresh" is not hit
+    """
+    comps = np.zeros(dirty.shape)
+    res = np.array(np.abs(dirty))
+    for i in range(niter):
+        mx, my = np.unravel_index(np.fabs(res).argmax(), res.shape)
+        mval = res[mx, my] * gain
+        comps[mx, my] += mval
+        a1o, a2o = overlapIndices(dirty, psf,
+                                  mx - dirty.shape[0] / 2,
+                                  my - dirty.shape[1] / 2)
+        res[a1o[0]:a1o[1], a1o[2]:a1o[3]] -= psf[a2o[0]:a2o[1], a2o[2]:a2o[3]] * mval
+        if np.fabs(res).max() < thresh:
+            print('thresh met:', i)
+            break
+    return comps, res
+
+
+def dcos2deg(dcosx):
+    return 90 - np.rad2deg(np.arccos(dcosx))
+
+
+def beamforming(x, k):
+    """
+    Inputs:
+        x :   Coordinates of each antenna in lambdas.
+              Dimension (3, nreceivers)
+                [(x1, x2, ...); (y1, y2, ...); (z1, z2, ..)]
+        k :   array-like (3, nx, ny). Beam direction [dcosx, dcosy, dcosz] represented as direction cosine
+               "cos(\Theta_x), cos(\Theta_y), cos(\Theta_z)".
+    Return:
+        power:  array-like (nx, ny) from 0 to 1. Return the point spreadf function.
+                Which is the signal power as a function of angle of arrival (beam direction),
+                assuming a point-like target.
+    """
+    idx = np.where(~np.isfinite(k[2]))
+
+    k[2, idx[0], idx[1]] = 0
+    vk = np.exp(np.einsum('di,dxy->ixy', 2j * np.pi * x, k))  # * np.einsum('di,dxy->ixy',el,k)
+    p = np.einsum('ixy,jxy->xy', vk, np.conjugate(vk))
+    p = np.abs(p)
+
+    return p / np.max(p)
+
+
+def point_spread_function(ant_coordinates, l_max=0.4, m_max=0.4, nl=200, nm=200):
+    """
+    Inputs:
+        ant_coordinates :   Coordinates of each antenna in lambdas.
+                            Dimension (3, nreceivers)
+                                [(x1, x2, ...); (y1, y2, ...); (z1, z2, ..)]
+        l_max, m_max    :   Define the maximum direction cosine in the x and y dimension.
+                            It accepts values from 0 to 1, where 0 = 0 degrees and 1 = 90 degrees.
+
+        nl, nm          :    Number of grid points in the x and y dimension.
+    Return:
+        power:  array-like (nl, nm) from 0 to 1. Return the point spreadf function.
+                Which is the signal power as a function of angle of arrival (beam direction),
+                assuming a point-like target.
+    """
+
+    nr = len(ant_coordinates)
+
+    # Define the antenna coordinates
+    x = np.array([np.real(ant_coordinates), np.imag(ant_coordinates), np.zeros(nr)])
+
+    # Define the x and y grid
+    l = np.linspace(-l_max, l_max, nl)
+    m = np.linspace(-m_max, m_max, nm)
+
+    L, M = np.meshgrid(l, m, indexing='ij')
+    k = np.array([L, M, np.sqrt(1.0 - L ** 2 - M ** 2)])
+
+    # Estimate the point spread function
+    psf = beamforming(x, k)
+    l = dcos2deg(l)
+    m = dcos2deg(m)
+
+    return l, m, psf
+
+
 def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     """
 
@@ -117,6 +256,10 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     for i in range(15, 85, 10):
         coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
         brightness *= icebear.imaging.swht.swht_py(visibility, coeffs)
+
+    # Use the CLEAN mehthod instead of SSWHT
+    # _, _, psf = point_spread_function((x + 1j*y), 1.0, 1.0, 450, 900)
+    # comps, brightness = hogbom(brightness, psf, np.mean(np.abs(brightness)))
 
     brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
     cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
@@ -206,9 +349,23 @@ if __name__ == '__main__':
     #             print(f'computing: x={x}, y={y}')
     #             _, _, cx, cy = simulate(config, np.array([x]), np.array([y]), np.array([3, 3]), np.array([3, 3]))
     #             csv.write(f'{x},{y},{cx},{cy}\n')
+    # exit
+
+    # This code checks target spreads
+    # with open('elevation_extent_acc.csv', 'a') as csv:
+    #     print('Testing all possible angles of arrival at 0.1 deg resolution (-45 - 45 az, 0 - 45 el):')
+    #     csv.write('x,y,sx,sy,mx,my\n')
+    #     spreads = np.arange(1.0, 5.0+0.1, 0.1)
+    #     x = 0.0
+    #     y = 10.0
+    #     sx = 1.0
+    #     for sy in spreads:
+    #         print(f'computing: x={x}, y={y}')
+    #         _, _, mx, my = simulate(config, np.array([x]), np.array([y]), np.array([sx]), np.array([sy]))
+    #         csv.write(f'{x},{y},{sx},{sy},{mx},{my}\n')
     # exit()
 
-    brightness, intensity, cx, cy = simulate(config, np.array([29]), np.array([5]), np.array([3]), np.array([3]))
+    brightness, intensity, cx, cy = simulate(config, np.array([-10, 10]), np.array([10, 10]), np.array([3,3]), np.array([1,1]))
 
     plt.figure(figsize=[9, 8])
     plt.subplot(211)

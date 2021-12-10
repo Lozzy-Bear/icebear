@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.image as img
 import scipy.constants as sci
 
 
@@ -15,7 +14,6 @@ def uv_space(ant_posx, ant_posy, wavelength):
             u = np.append(u, (ant_posx[j] - ant_posx[i]) / wavelength)
             v = np.append(v, (ant_posy[j] - ant_posy[i]) / wavelength)
     return u, v
-
 
 wavelength = sci.c / 49.5e6
 ant_posx = np.array([0.,15.10,73.80,24.2,54.5,54.5,42.40,54.5,44.20,96.9])

@@ -167,68 +167,107 @@ def velocity_plot(sx, sv, date, time, filepath):
     # u = np.where(sv[2, :] == 0, np.nan, u)
     # v = np.where(sv[2, :] == 0, np.nan, v)
 
-    # plt.figure(figsize=[18, 14])
-    fig = plt.figure(figsize=[10, 6], constrained_layout=True)
-    gs = fig.add_gridspec(4, 4)
-    fig.suptitle(f'{year}-{month}-{day} {hour}:{minute}:{second}')
-    props = dict(boxstyle='square', facecolor='wheat', alpha=1.0)
+    fig = plt.figure(figsize=[10, 10])
+    gs = fig.add_gridspec(10, 10)
+    props = dict(boxstyle='square', facecolor='white', alpha=1.0)
+    textbox = f'{year}-{month:02d}-{day:02d}  ' \
+              f'{hour}:{minute}:{second}  ' \
+              f'Records {len(sx[1, :]):3d}'
+    fig.suptitle(textbox, y=0.91)
     vel_thresh = 1500.0
+    alt_major_ticks = np.arange(70, 130+20, 20)
+    alt_minor_ticks = np.arange(70, 130+5, 5)
+    lat_major_ticks = np.arange(50, 64+2, 2)
+    lat_minor_ticks = np.arange(50, 64+0.25, 0.25)
+    lon_major_ticks = np.arange(-113, -99+2, 2)
+    lon_minor_ticks = np.arange(-113.0, -99.0+0.25, 0.25)
+    facecolor = 'black'
+    colormap = 'RdBu'
 
     # Altitude-Latitude slice
-    ax1 = fig.add_subplot(gs[0::, 0])
-    ax1.set_facecolor('black')
-    plt.scatter(sx[2, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
+    ax1 = fig.add_subplot(gs[2:-1, 0:2])
+    ax1.set_facecolor(facecolor)
+    plt.scatter(sx[2, :], sx[0, :], c=sv[2, :], marker='D', cmap=colormap, vmin=-vel_thresh, vmax=vel_thresh)
     plt.xlabel('Altitude [km]')
     plt.ylabel('Latitude [deg]')
     plt.clim(-vel_thresh, vel_thresh)
-    plt.xlim([200.0, 0.0])
+    plt.xlim([130.0, 70.0])
     plt.ylim([50.0, 64.0])
-    plt.grid()
+    ax1.set_xticklabels(alt_major_ticks[::-1], rotation=0.0)
+    ax1.set_xticks(alt_major_ticks[::-1])
+    ax1.set_xticks(alt_minor_ticks[::-1], minor=True)
+    ax1.set_yticks(lat_major_ticks)
+    ax1.set_yticks(lat_minor_ticks, minor=True)
+    ax1.grid(which='minor', linestyle='--', alpha=0.25)
+    ax1.grid(which='major', linestyle='-', alpha=0.5)
+
 
     # Latitude-Longitude slice
-    ax2 = fig.add_subplot(gs[0::, 1::])
-    # ax2 = plt.axes(projection=ccrs.PlateCarree())
-    # ax2.set_extent([np.min(sv[0, :]), np.max(sv[0, :]), np.min(sv[1, :]), np.max(sv[1, :])], crs=ccrs.PlateCarree())
-    # ax2.lakes()
-    # ax2.coastline()
-    # ax2.rivers()
-    ax2.set_facecolor('black')
-    #plt.quiver(sx[1, :], sx[0, :], u, v, sv[2, :], cmap='RdBu')
+    ax2 = fig.add_subplot(gs[2:-1, 2:-1])
+    ax2.set_facecolor(facecolor)
     plt.xlabel('Longitude [deg]')
-    plt.scatter(sx[1, :], sx[0, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
-    plt.colorbar(label='Velocity [m/s]')
+    im = plt.scatter(sx[1, :], sx[0, :], c=sv[2, :], marker='D', cmap=colormap, vmin=-vel_thresh, vmax=vel_thresh)
     plt.clim(-vel_thresh, vel_thresh)
     plt.scatter(-109.403, 50.893, c='w')
+    # Annotation include setting for drawing connecting arrows that will point to the scatter point.
+    # I elected to simply overlap them but moving the xytext offset value will move the box.
     plt.annotate('TX', (-109.403, 50.893),
-                 xytext=(-25.0, 15.0), textcoords='offset points', ha='center', va='bottom', color='red',
-                 bbox=dict(boxstyle='round,pad=0.2', fc='wheat', alpha=1.0),
+                 xytext=(0.0, -2.0), textcoords='offset points', ha='center', va='bottom', color='red',
+                 bbox=dict(boxstyle='square,pad=0.1', fc='white', alpha=1.0),
                  arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1', color='r'))
     plt.scatter(-106.450, 52.243, c='w')
     plt.annotate('RX', (-106.450, 52.24),
-                 xytext=(-25.0, 15.0), textcoords='offset points', ha='center', va='bottom', color='blue',
-                 bbox=dict(boxstyle='round,pad=0.2', fc='wheat', alpha=1.0),
+                 xytext=(0.0, -2.0), textcoords='offset points', ha='center', va='bottom', color='blue',
+                 bbox=dict(boxstyle='square,pad=0.1', fc='white', alpha=1.0),
                  arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.1', color='b'))
-    #plt.text(-100.0, 50.5, f'Records {len(sx[1, :]):3d}\nSNR Cutoff 1.0 dB', bbox=props, color='k')
-    plt.xlim([-114.0, -100.0])
+    plt.xlim([-113.0, -99.0])
     plt.ylim([50.0, 64.0])
-    #ax2.axes.xaxis.set_ticklabels([])
-    ax2.axes.yaxis.set_ticklabels([])
-    plt.grid()
+    ax2.set_yticklabels([])
+    ax2.set_xticklabels(lon_major_ticks[:0:-1], rotation=0.0)
+    ax2.set_xticks(lon_major_ticks[::-1])
+    ax2.set_xticks(lon_minor_ticks[::-1], minor=True)
+    ax2.set_yticks(lat_major_ticks)
+    ax2.set_yticks(lat_minor_ticks, minor=True)
+    ax2.grid(which='minor', linestyle='--', alpha=0.25)
+    ax2.grid(which='major', linestyle='-', alpha=0.5)
 
     # Altitude-Longitutde slice
-    # ax3 = fig.add_subplot(gs[3, 1:4])
-    # ax3.set_facecolor('black')
-    # plt.scatter(sx[1, :], sx[2, :], c=sv[2, :], marker='D', cmap='RdBu', vmin=-vel_thresh, vmax=vel_thresh)
-    # plt.ylabel('Altitude [km]')
-    # plt.xlabel('Longitude [deg]')
-    # plt.clim(-vel_thresh, vel_thresh)
-    # plt.xlim([-114.0, -100.0])
-    # plt.ylim([0.0, 200.0])
-    # plt.grid()
+    ax3 = fig.add_subplot(gs[0:2, 2:-1])
+    ax3.set_facecolor(facecolor)
+    plt.scatter(sx[1, :], sx[2, :], c=sv[2, :], marker='D', cmap=colormap, vmin=-vel_thresh, vmax=vel_thresh)
+    plt.ylabel('Altitude [km]')
+    ax3.yaxis.set_label_position('right')
+    ax3.yaxis.tick_right()
+    plt.clim(-vel_thresh, vel_thresh)
+    plt.xlim([-113.0, -99.0])
+    plt.ylim([70.0, 130.0])
+    ax3.set_xticklabels([])
+    ax3.set_xticks(lon_major_ticks[::-1])
+    ax3.set_xticks(lon_minor_ticks[::-1], minor=True)
+    ax3.set_yticks(alt_major_ticks)
+    ax3.set_yticks(alt_minor_ticks, minor=True)
+    ax3.grid(which='minor', linestyle='--', alpha=0.25)
+    ax3.grid(which='major', linestyle='-', alpha=0.5)
 
-    plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.pdf')
-    # plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.png')
-    #plt.show()
+    # Add the colorbar
+    ax4 = fig.add_subplot(gs[2:-1, -1])
+    fig.colorbar(im, cax=ax4, aspect=0.1, label='Velocity [m/s]')
+
+    # Add a doppler window
+    ax5 = fig.add_subplot(gs[0:2, 0:2])
+    bins = np.arange(-1500, 1500 + 30, 30)
+    plt.hist(sv[2, :], bins=bins, histtype=u'step', color='k')
+    ax5.set_yscale('log')
+    ax5.set_ylim([1, 1000])
+    ax5.grid(which='major', linestyle='--', alpha=0.5)
+    ax5.set_yticklabels(np.array(['', '', '$10^1$', '$10^2$', '$10^3$']))
+    plt.xlabel('Velocity [km/s]')
+    plt.xticks(np.arange(-1000, 1000 + 1000, 1000), np.arange(-1.0, 1.0 + 1.0, 1.0))
+    ax5.xaxis.tick_top()
+    ax5.xaxis.set_label_position('top')
+    ax5.tick_params(axis='x', direction='in', pad=-15)
+
+    plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.pdf', bbox_inches='tight')
     plt.close()
 
     return
@@ -481,6 +520,45 @@ def append_level3_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
     return None
 
 
+def doppler_spectra(dop, snr):
+    """
+    Build a Doppler spectra from the targets passed.
+
+    Returns
+    -------
+
+    Notes
+    -----
+    We assume that the passed data is all data in a given range.
+    """
+
+    n = len(dop)  # the number of data
+    mean = sum(dop * snr) / n  # note this correction
+    sig = sum(snr * (dop - mean) ** 2) / n
+
+    def gaussian(x, x0, sigma, a):
+        return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+
+    popt, pcov = curve_fit(gaussian, dop, snr, p0=[mean, sig, 1.0])
+    x = np.arange(np.min(dop)-10, np.max(dop)+11.0, 1.0)
+    y = gaussian(x, *popt)
+    # peaks, _ = find_peaks(y, rel_height=0.5)
+    # spectral_width[i] = peak_widths(y, peaks, rel_height=0.5)[0] * 30.0
+    plt.figure()
+    # plt.plot(x, y, '--k', label='Fit spectra')
+    # plt.scatter(dop, snr, label='data')
+    # plt.legend()
+    bins = np.arange(-1500, 1500+30, 30)
+    plt.hist(dop, bins=bins, histtype=u'step',)
+    plt.yscale('log')
+    plt.xlabel('Velocity [km/s]')
+    plt.xticks(np.arange(-1500, 1500+500, 500), np.arange(-1.5, 1.5+0.5, 0.5))
+    # plt.ylabel('SNR [dB]')
+    plt.show()
+
+    return
+
+
 if __name__ == '__main__':
     # Pretty plot configuration.
     from matplotlib import rc
@@ -502,17 +580,21 @@ if __name__ == '__main__':
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
     # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
-    # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
-    files = [files[3]]
+    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
+    files = [files[1]]
     for file in files:
         f = h5py.File(file, 'r')
         print(file)
         group = f['data']
         date = f['date']
-        keys = group.keys()
-        for key in keys:
+        keys = list(group.keys())
+        # cnt = 0
+        for key in keys[252:253]: # 252 253 1340:1360
             data = group[f'{key}']
+            # print(cnt, data['time'][()])
+            # cnt += 1
+            # continue
             # Filter out dropped samples
             if np.any(data['rf_distance'][()] < 250):
                 continue
@@ -557,7 +639,7 @@ if __name__ == '__main__':
             altitude = sx[2, :]
             vaz = sv[0, :]
             vel = sv[1, :]
-            doppler_shift = sv[2, :]
+            vma = sv[2, :]
             slant_range = sa[2, :]
             elevation = sa[1, :]
             print('\t-mapping completed')
@@ -566,8 +648,8 @@ if __name__ == '__main__':
             m = np.ma.masked_where(elevation == np.nan, m)  # Elevation iterations not converging (noise)
             m = np.ma.masked_where(elevation <= 0.0, m)  # Elevation below the ground
             m = np.ma.masked_where(slant_range <= 300, m)  # Man made noise and multipath objects
-            m = np.ma.masked_where(altitude <= 50, m)  # Man made noise and multipath objects
-            m = np.ma.masked_where(altitude >= 200, m)  # Man made noise and multipath objects
+            m = np.ma.masked_where(altitude <= 70, m)  # Man made noise and multipath objects
+            m = np.ma.masked_where(altitude >= 130, m)  # Man made noise and multipath objects
             # m = np.ma.masked_where(((slant_range <= 100.0) & (altitude <= 25.0)), m)  # Beam camping location
             rf_distance = rf_distance * m
             snr_db = snr_db * m
@@ -584,6 +666,7 @@ if __name__ == '__main__':
             lon = lon * m
             vaz = vaz * m
             vel = vel * m
+            vma = vma * m
 
             rf_distance = rf_distance[~rf_distance.mask].flatten()
             snr_db = snr_db[~snr_db.mask].flatten()
@@ -600,16 +683,28 @@ if __name__ == '__main__':
             lon = lon[~lon.mask].flatten()
             vaz = vaz[~vaz.mask].flatten()
             vel = vel[~vel.mask].flatten()
+            vma = vma[~vma.mask].flatten()
 
             print('\t-masking completed')
             print('\t-remaining data', len(rf_distance))
+
+            # irng = np.arange(1000.0, 2300.0, 0.5)
+            # for i in irng:
+            #     idx = np.argwhere(rf_distance==i)
+            #     if idx.shape[0] <= 20:
+            #         continue
+            #     else:
+            #         doppler_spectra(doppler_shift[idx].flatten(), snr_db[idx].flatten())
 
             if len(rf_distance) > 0:
                 # widths = spectral_width(azimuth, elevation, azimuth_extent, elevation_extent, doppler_shift, snr_db)
                 # print(doppler_shift)
                 # print(widths)
-                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, doppler_shift]), date, key, filepath + 'scatter_2020_03_31/')
+                velocity_plot(np.array([lat, lon, altitude]), np.array([vaz, vel, vma]), date, key, filepath + 'plots_20210202/')
+                # doppler_spectra(vma, snr_db)
             else:
                 print('\t-0 records')
+
+
 
     exit()  # Needs a clean exit?

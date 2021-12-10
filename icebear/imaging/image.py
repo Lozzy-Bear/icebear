@@ -197,8 +197,14 @@ def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, 
         return
     rf_distance = data['rf_distance'][()]
     snr_db = data['snr_db'][()]
-    visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
-    visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
+
+    # Todo: Confirm clutter removal is working.
+    visibilities = np.array(data['spectra'][:, 0] - data['spectra_clutter_corr'][0], dtype=np.complex64)[:, np.newaxis]
+    visibilities = np.append(visibilities, data['xspectra'][:, :] - data['xspectra_clutter_corr'][:], axis=1)
+
+    # Todo: Turn on normal method again
+    # visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
+    # visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
     visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
     azimuth = np.empty_like(doppler_shift)
     elevation = np.empty_like(doppler_shift)
@@ -229,24 +235,33 @@ def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, 
 
 
 if __name__ == '__main__':
+    import icebear.utils as utils
     # file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
-    file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_13_prelate_bakker.h5'
-    config = icebear.utils.Config(file)
-    # config.add_attr('imaging_destination', 'E:/icebear/level2/')
-    config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
-    config.add_attr('imaging_source', file)
-    imaging_start, imaging_stop = util.get_data_file_times(file)
-    imaging_step = [0, 0, 0, 1, 0]
-    config.add_attr('imaging_start', imaging_start)
-    config.add_attr('imaging_stop', imaging_stop)
-    config.add_attr('imaging_step', imaging_step)
-    config.add_attr('lmax', 85)
-    config.add_attr('resolution', 0.1)
-    config.add_attr('image_method', 'swht')
-    # config.add_attr('fov', np.array([[0, 360], [0, 180]]))
-    config.add_attr('fov', np.array([[315, 225], [90, 45]]))
-    # config.add_attr('fov_center', np.array([90, 90]))
-    config.add_attr('fov_center', np.array([270, 90]))
-    # config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85')
-    config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
-    generate_level2(config)
+    # file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_13_prelate_bakker.h5'
+    filepath = '/beaver/backup/level1/'  # Enter file path to level 2 directory
+    date_dir = '2020_03_31'
+    files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
+    print(f'files: {files}')
+
+    for file in files:
+        config = icebear.utils.Config(file)
+        # config.add_attr('imaging_destination', 'E:/icebear/level2/')
+        config.add_attr('imaging_destination', '/beaver/backup/level2_1deg_clutter_corr/')
+        config.add_attr('imaging_source', file)
+        imaging_start, imaging_stop = util.get_data_file_times(file)
+        imaging_step = [0, 0, 0, 1, 0]
+        config.add_attr('imaging_start', imaging_start)
+        config.add_attr('imaging_stop', imaging_stop)
+        config.add_attr('imaging_step', imaging_step)
+        config.add_attr('lmax', 85)
+        config.add_attr('resolution', 1.0)
+        # config.add_attr('resolution', 0.1)
+        config.add_attr('image_method', 'swht')
+        config.add_attr('fov', np.array([[360, 0], [90, 0]]))
+        # config.add_attr('fov', np.array([[315, 225], [90, 45]]))
+        # config.add_attr('fov_center', np.array([90, 90]))
+        config.add_attr('fov_center', np.array([270, 90]))
+        # config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85')
+        # config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
+        config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5')
+        generate_level2(config)
