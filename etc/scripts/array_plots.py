@@ -4,6 +4,7 @@ import scipy.constants as sci
 
 
 def uv_space(ant_posx, ant_posy, wavelength):
+    """Generate the U,V space from X,Y,Z"""
     n = 10
     u = np.array([])
     v = np.array([])
@@ -50,6 +51,8 @@ plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
 plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
+
+lbls = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 fig, axs = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, 1]})
 axs[0].set_title("Antenna Positions")
 axs[0].set_xlabel("East-West[m]")
@@ -57,6 +60,9 @@ axs[0].set_ylabel("North-South [m]")
 axs[0].grid(which='both')
 axs[0].axis('equal')
 axs[0].scatter(ant_posx, ant_posy, marker='v', color='k')
+axs[0].set_ylim(-225, 10)
+for i , l in enumerate(lbls):
+    axs[0].annotate(l, (ant_posx[i]-3, ant_posy[i]-15))
 
 axs[1].set_title("Sampling Space")
 axs[1].set_xlabel("u")
@@ -66,14 +72,16 @@ axs[1].axis('equal')
 axs[1].scatter(u, v, color='k')
 axs[1].scatter(0, 0, color='k')
 
-# site_image = img.imread('/beaver/backup/images/bakker_built_cropped.jpg')
-# axs[2].set_title('Annotated Site Map')
-# axs[2].imshow(site_image)
-# axs[2].axis('off')
+# axs[2].set_title("Dirty Beam")
+# axs[2].set_xlabel("Az [deg]")
+# axs[2].set_ylabel("El [deg]")
+# axs[2].grid(which='both')
+# axs[2].axis('equal')
+# axs[2].pcolormesh(AZ, EL, C, cmap='inferno')
+# axs[2].colorbar()
 
-
-#plt.tight_layout()
+plt.tight_layout()
 plt.show()
-#plt.savefig('/beaver/backup/images/array_map.pdf')
+#plt.savefig('array_map.pdf')
 
 

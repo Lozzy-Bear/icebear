@@ -210,7 +210,7 @@ def velocity_plot(sx, sv, date, time, filepath):
     plt.ylim([50.0, 62.0])
     plt.grid()
 
-    plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.png')
+    # plt.savefig(filepath + f'velocity_{year}{month}{day}_{hour}{minute}{second}.png')
     plt.close()
     # plt.show()
     return
@@ -473,10 +473,10 @@ if __name__ == '__main__':
     # filepath = '/beaver/backup/level2_1deg_clutter_corr/'  # Enter file path to level 2 directory
     filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    # files = utils.get_all_data_files(filepath, '2020_12_13', '2020_12_13')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_12')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
     pack_name = 'demo_ib3d_level3_20200616.h5'
     
@@ -489,7 +489,7 @@ if __name__ == '__main__':
     azimuth_extent = np.array([])
     area = np.array([])
     t = np.array([])
-    for file in files[1:2]:
+    for file in files:
         # file = filepath + '2020_06_16/' + file
         f = h5py.File(file, 'r')
         config = utils.Config(file)
@@ -521,9 +521,16 @@ if __name__ == '__main__':
     azimuth += 7.0
     # Todo: This is a reminder that this little hack exists. I suspect we need to rotate the plane by the maximum
     #       amount z-offset in the array. This is 1.44 [deg] about boresight and 0.35 [deg] about the horizon.
-    #       This systematically means targets west are higher, east should be lower, back is lower, and front higher.
-    # elevation -= azimuth * np.tan(np.deg2rad(1.44))
-    # elevation = np.where(np.logical_and(azimuth >= -90.0, azimuth <= 90.0), elevation + 0.35, elevation -0.35)
+    #       This systematically means targets west should be higher, east should be lower, back is lower, and front higher.
+    #       Alternativley it we may need to account for the minimum baselines z-offset. This is 0.83 [deg] about boresight
+    #       and 0.42 [deg] about the horizion. We could also account for the angle from North between Tx and Rx which
+    #       is 24.568 [deg]. Observed using 2 days of data, one in the summer and one in the winter, we see that amount
+    #       of rotation required is different. About, half the rotation needed in the summer. This could all be due to
+    #       varying ground plane characteristics. A seasonal study is required. However, this hack works for now.
+    #                                                                                           ~ Adam Lozinsky, 2021
+    elevation = np.where(np.logical_and(azimuth >= -90.0, azimuth <= 90.0), elevation + 2*0.42, elevation - 2*0.42)
+    elevation -= np.rad2deg(np.arctan(np.sin(np.deg2rad(azimuth + 24.568)) * np.sin(np.deg2rad(2*0.83))))
+
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
@@ -601,12 +608,12 @@ if __name__ == '__main__':
     # create_level3_hdf5(config, pack_name, t, rf_distance, snr_db,
     #                    lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
     #                    azimuth_extent, elevation_extent, area)
-    plt.figure()
-    plt.scatter(doppler_shift, slant_range, c=snr_db)
-    plt.colorbar()
+    # plt.figure()
+    # plt.scatter(doppler_shift, slant_range, c=snr_db)
+    # plt.colorbar()
 
-    plt.figure()
-    plt.hist2d(snr_db, altitude, bins=[30, 70], cmin=1)
+    # plt.figure()
+    # plt.hist2d(snr_db, altitude, bins=[30, 70], cmin=1)
 
     plt.figure()
     plt.subplot(121)
@@ -631,7 +638,7 @@ if __name__ == '__main__':
     plt.plot([0, 1_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
     plt.legend(loc='upper right')
     plt.grid()
-    plt.savefig(f'/beaver/backup/20210202_scatter_distribution.pdf')
+    # plt.savefig(f'/beaver/backup/20210202_scatter_distribution.pdf')
 
     # plt.figure(figsize=[12, 12])
     # mean_longitude = np.mean(lon)

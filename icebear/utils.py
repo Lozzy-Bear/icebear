@@ -376,6 +376,8 @@ def get_all_data_files(directory, start_subdir='nodate', stop_subdir='nodate'):
             for file in files:
                 if 'plots' in path:
                     continue
+                elif '_01deg_' not in file:
+                    continue
                 else:
                     filepaths.append(os.path.join(path, file))
         if stop_subdir in path:
