@@ -52,13 +52,23 @@ plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
 plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-fig, axs = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, 1]})
+
+ant_labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+fig, axs = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, 1]}, figsize=[8, 6])
 axs[0].set_title("Antenna Positions")
 axs[0].set_xlabel("East-West[m]")
 axs[0].set_ylabel("North-South [m]")
 axs[0].grid(which='both')
 axs[0].axis('equal')
 axs[0].scatter(ant_posx, ant_posy, marker='v', color='k')
+axs[0].set_xlim(-20, 120)
+axs[0].set_ylim(-230, 20)
+
+# annotate the points with antenna numbers
+for i in range(len(ant_labels)):
+    axs[0].annotate(f"{ant_labels[i]}", (ant_posx[i]-3.0, ant_posy[i]-10.0))
+
 
 axs[1].set_title("Sampling Space")
 axs[1].set_xlabel("u")
@@ -74,7 +84,7 @@ axs[1].scatter(0, 0, color='k')
 # axs[2].axis('off')
 
 
-#plt.tight_layout()
+plt.tight_layout()
 plt.show()
 #plt.savefig('/beaver/backup/images/array_map.pdf')
 

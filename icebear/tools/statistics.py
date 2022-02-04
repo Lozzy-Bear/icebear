@@ -132,7 +132,7 @@ def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic
     n = 0
     radius_of_earth = 6378.0e3
     err = np.deg2rad(1.0)
-    target = np.deg2rad(0.1)
+    target = np.deg2rad(0.01)
     m = np.zeros((3, len(beta)))
     m[1, :] = 0.1
     v = np.array([np.sin(azimuth) * np.cos(beta - m[1, :]), np.cos(azimuth) * np.cos(beta - m[1, :]), np.sin(beta - m[1, :])])
@@ -470,8 +470,8 @@ if __name__ == '__main__':
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
-    # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
+    # filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
+    filepath = 'F:/icebear/level2b/'  # Enter file path to level 1 directory
     # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
@@ -518,7 +518,7 @@ if __name__ == '__main__':
 
     print('\t-loading completed')
     azimuth += 7.0
-    elevation -= azimuth * np.tan(np.deg2rad(1.7))
+    # elevation -= azimuth * np.tan(np.deg2rad(1.44))
     print('\t-total data', len(rf_distance))
     # Pre-masking
     m = np.ones_like(rf_distance)
