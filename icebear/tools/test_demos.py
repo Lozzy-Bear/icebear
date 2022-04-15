@@ -21,12 +21,24 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # files = ['demo_ib3d_level3_20201212.h5', 'demo_ib3d_level3_20201213.h5',
 #          'demo_ib3d_level3_20201214.h5', 'demo_ib3d_level3_20201215.h5']
-files = ['/beaver/backup/level2b/2020_03_31/ib3d_normal_swht_2020_03_31_prelate_bakker.h5']
+# files = ['/beaver/backup/level2b/2020_03_31/ib3d_normal_swht_2020_03_31_prelate_bakker.h5']
+# files = ['/beaver/backup/level2_3lambda/2022_02_22/ib3d_normal_swht_2022_02_22_prelate_bakker.h5']
+files = ['/beaver/backup/level2_1lambda/2022_03_05/ib3d_normal_swht_2022_03_05_prelate_bakker.h5']
 
 slant_range = np.array([])
 altitude = np.array([])
 snr_db = np.array([])
 time = np.array([])
+rf_distance = np.array([])
+doppler_shift = np.array([])
+azimuth = np.array([])
+elevation = np.array([])
+elevation_extent = np.array([])
+azimuth_extent = np.array([])
+area = np.array([])
+lat = np.array([])
+lon = np.array([])
+
 # plt.figure()
 for file in files:
     f = h5py.File(file, 'r')
@@ -47,6 +59,15 @@ for file in files:
     altitude = np.append(altitude, f['data']['altitude'][()])
     snr_db = np.append(snr_db, f['data']['snr_db'][()])
     time = np.append(time, f['data']['time'][()])
+    rf_distance = np.append(rf_distance, f['data']['rf_distance'][()])
+    doppler_shift = np.append(doppler_shift, f['data']['doppler_shift'][()])
+    azimuth = np.append(azimuth, f['data']['azimuth'][()])
+    elevation = np.append(elevation, f['data']['elevation'][()])
+    # elevation_extent = np.append(elevation_extent, f['data']['elevation_extent'][()])
+    # azimuth_extent = np.append(azimuth_extent, f['data']['azimuth_extent'][()])
+    # area = np.append(area, f['data']['area'][()])
+    lat = np.append(area, f['data']['latitude'][()])
+    lon = np.append(area, f['data']['longitude'][()])
     # idx = np.argwhere(time>time[0]+5.0*60.0*60.0)
 
 plt.figure()
@@ -71,5 +92,8 @@ plt.ylabel('Altitude [km]')
 # plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Peak Altitude {mean_altitude:.1f} [km]')
 # plt.legend(loc='lower right')
 plt.grid()
+
+plt.figure()
+
 plt.show()
 

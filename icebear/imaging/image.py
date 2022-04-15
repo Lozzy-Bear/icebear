@@ -27,6 +27,12 @@ def generate_level2(config, method='swht'):
                 config.resolution,
                 config.fov,
                 config.fov_center)
+    elif method == 'advanced':
+        calculate_image = _swht_method_advanced
+        args = (icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)),
+                config.resolution,
+                config.fov,
+                config.fov_center)
     else:
         print(f'ERROR: the imaging method {method} does not exist.')
         exit()
@@ -233,7 +239,8 @@ if __name__ == '__main__':
     file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_13_prelate_bakker.h5'
     config = icebear.utils.Config(file)
     # config.add_attr('imaging_destination', 'E:/icebear/level2/')
-    config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
+    # config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
+    config.add_attr('imaging_destination', '/beaver/backup/level2_widefov/')
     config.add_attr('imaging_source', file)
     imaging_start, imaging_stop = util.get_data_file_times(file)
     imaging_step = [0, 0, 0, 1, 0]

@@ -12,117 +12,19 @@ import icebear.utils as utils
 import h5py
 
 
-def _real_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
-    return 2 * np.real(np.exp(-(theta - theta_mean) ** 2 / (2.0 * theta_spread * theta_spread)) *
-                       np.exp(-(phi - phi_mean) ** 2 / (2.0 * phi_spread * phi_spread)) * np.cos(phi) * 
-                       np.exp(-2.0j * np.pi * ((u_in * np.sin(theta) * np.cos(phi)) + 
-                                                (v_in * np.cos(theta) * np.cos(phi)) + (w_in * np.sin(phi)))))
-
-
-def _imag_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
-    return 2 * np.imag(np.exp(-(theta - theta_mean) ** 2 / (2.0 * theta_spread * theta_spread)) *
-                       np.exp(-(phi - phi_mean) ** 2 / (2.0 * phi_spread * phi_spread)) * np.cos(phi) * 
-                       np.exp(-2.0j * np.pi * ((u_in * np.sin(theta) * np.cos(phi)) + 
-                                                (v_in * np.cos(theta) * np.cos(phi)) + (w_in * np.sin(phi)))))
-
-
-def _visibility_calculation(x, u_in1, v_in1, w_in1, theta_mean, theta_spread, phi_mean, phi_spread, output):
-    real_vis = dblquad(_real_pre_integrate, -np.pi / 2, np.pi / 2, lambda phi: -np.pi, lambda phi: np.pi,
-                       args=(u_in1, v_in1, w_in1, theta_mean, theta_spread, phi_mean, phi_spread))[0]
-    imag_vis = dblquad(_imag_pre_integrate, -np.pi / 2, np.pi / 2, lambda phi: -np.pi, lambda phi: np.pi,
-                       args=(u_in1, v_in1, w_in1, theta_mean, theta_spread, phi_mean, phi_spread))[0]
-    output.put((x, real_vis + imag_vis * 1.0j))
-
-
-def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
-    """
-
-    Parameters
-    ----------
-    config
-    azimuth
-    elevation
-    azimuth_extent
-    elevation_extent
-
-    Returns
-    -------
-
-    """
-
-    print('simulation start:')
-    print("Number of processors: ", mp.cpu_count())
-    print(f'\t-input azimuth {azimuth} deg x {azimuth_extent} deg')
-    print(f'\t-input elevation {elevation} deg x {elevation_extent} deg')
-
-    idx_length = len(azimuth)
-    wavelength = 299792458 / config.center_freq
-    x = config.rx_ant_coords[0, :]
-    y = config.rx_ant_coords[1, :]
-    z = config.rx_ant_coords[2, :]
-    err = 0.0
-    x[7] += err
-    y[7] += err
-    z[7] += err
-
-    u, v, w = utils.baselines(x, #config.rx_ant_coords[0, :],
-                              y, #config.rx_ant_coords[1, :],
-                              z, #config.rx_ant_coords[2, :],
-                              wavelength)
-
-    azimuth = np.deg2rad(azimuth)
-    elevation = np.deg2rad(elevation)
-    azimuth_extent = np.deg2rad(azimuth_extent)
-    elevation_extent = np.deg2rad(elevation_extent)
-    visibility_dist = np.zeros((int(len(u)/2), idx_length), dtype=np.complex64)
-    # visibility_dist = np.zeros((int(len(u)/2), idx_length, idx_length, idx_length, idx_length), dtype=np.complex64)
-
-    # Instantiate multi-core processing
-    output = mp.Queue()
-    pool = mp.Pool(mp.cpu_count() - 2)
-
-    # Loop process to allow for multiple targets in an image. Typically only one target is used.
-    for idx in range(idx_length):
-        processes = [mp.Process(target=_visibility_calculation,
-                                args=(x, u[x], v[x], w[x],
-                                      azimuth[idx], azimuth_extent[idx],
-                                      elevation[idx], elevation_extent[idx],
-                                      output)) for x in range(int(len(u)/2))]
-        for p in processes:
-            p.start()
-        for p in processes:
-            p.join()
-
-        # Get process results from the output queue
-        visibility_dist_temp = [output.get() for p in processes]
-
-        visibility_dist_temp.sort()
-        visibility_dist[:, idx] = [r[1] for r in visibility_dist_temp]
-
-        # for p in processes:
-            # p.close()
-
-    # visibility = np.array(visibility_dist)
-    # for i in range(len(azimuth)):
-    #     visibility[:, i, i, i, i] = visibility[:, i, i, i, i] / np.abs(visibility[0, i, i, i, i])
-    # visibility = np.sum(visibility, axis=(1, 2, 3, 4))
-    visibility = np.sum(visibility_dist, axis=1)
-    visibility = np.append(np.conjugate(visibility), visibility)
-    print(visibility)
+def sswht_processing(coeffs, visbility):
     coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
-    # coeffs2 = np.copy(coeffs)
+    coeffs2 = np.copy(coeffs)
 
     start_time = time.time()
     brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
     print('time:', time.time() - start_time)
 
-    # This section activates the experimental angular_frequency_beamforming()
     for i in range(15, 85, 10):
         coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
         brightness *= icebear.imaging.swht.swht_py(visibility, coeffs)
 
     brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
-
     cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
     mx, my, _ = icebear.imaging.swht.max_center(brightness)
     mx = mx * config.resolution - config.fov[0, 0] + config.fov_center[0]
@@ -139,20 +41,9 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
         if np.allclose([azimuth, elevation, azimuth_extent, elevation_extent], [cx, cy, cx_extent, cy_extent], atol=1):
             print('\t-result matches input within error (10e-1)')
 
-    # intensity = icebear.imaging.swht.swht_py(visibility, coeffs2)
-    # print(f'\t-max intentsity {np.max(intensity)} mean intensity {np.mean(intensity)}')
-    # intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
-
-    # Doing processing with a new faster algorithm and comparing
-    coeffs = np.zeros((450, 900, 92, 8), dtype=np.complex64)
-    idx = 0
-    for i in range(15, 95, 10):
-        coeffs[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
-        idx += 1
-    visibility = np.tile(np.array(visibility, dtype=np.complex64), (8, 1))
-    intensity = np.prod(np.einsum('ijkl,lk->ijl', coeffs, visibility), axis=2)
+    intensity = icebear.imaging.swht.swht_py(visibility, coeffs2)
+    print(f'\t-max intentsity {np.max(intensity)} mean intensity {np.mean(intensity)}')
     intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
-    print('compare the methods:', np.allclose(brightness, intensity), np.max(brightness - intensity))
 
     return brightness, intensity, mx, my
 
@@ -273,8 +164,16 @@ class Image:
         self.w = np.append(self.w, -1 * self.w)
 
         self.image_batch()
+    
+    @staticmethod
+    def swht(coeffs, visbility):
+        brightness = np.matmul(coeffs, visibility)
+        brightness = brightness_cutoff(brightness, threshold=0.6)
+        mx, my = max_center(brightness)
+        return mx, my
 
-    def sswht(self, visibility):
+    @staticmethod
+    def sswht(coeffs, visibility):
         coeffs = icebear.imaging.swht.unpackage_coeffs(self.coeffs_file, 85)
         start_time = time.time()
         brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
@@ -287,7 +186,8 @@ class Image:
         tt = time.time() - start_time
         return mx, my, tt
 
-    def vcz(self, visibility):
+    @staticmethod
+    def vcz(coeffs, visibility):
         start_time = time.time()
         l = np.arange(225, 315, 0.1)
         m = np.arange(90, 180, 0.1)
@@ -339,6 +239,16 @@ class Image:
         f.create_dataset('t2', data=np.asarray(t2))
         f.close()
 
+    @staticmethod
+    def max_center(brightness):
+        index = np.unravel_index(np.argmax(brightness, axis=None), brightness.shape)
+        return index[1], index[0]
+    
+    @staticmethod
+    def brightness_cutoff(brightness, threshold=0.0):
+        brightness = np.abs(brightness / np.max(brightness))
+        brightness[brightness < threshold] = 0.0
+        return brightness
 
 def gpu_coeffs(config, rule):
     ts = time.time()
@@ -408,6 +318,18 @@ if __name__ == '__main__':
 
     config.swht_coeffs = coeffs_file
     config.print_attrs()
+    # Block for testing GPU
+    k = gpu_coeffs(config, [35, 45, 55, 65, 75, 85])
+    ts = time.time()
+    v = gpu_visibility(np.random.random(92), 6)
+    r = np.matmul(v, k)
+    print(r.shape, r.nbytes/1e6, 'MB')
+    r = np.sum(r, axis=2)
+    print(r.shape, r.nbytes/1e6, 'MB')
+    r = np.prod(r, axis=2)
+    print(r.shape, r.nbytes/1e6, 'MB')
+    print(time.time() - ts)
+    exit()
 
     # This code is used to check all possible angles of arrival
     # with open('f1deg.csv', 'a') as csv:
@@ -428,23 +350,21 @@ if __name__ == '__main__':
     #             csv.write(f'{x},{y},{cx},{cy}\n')
     # exit()
 
-    brightness, intensity, cx, cy = simulate(config, np.array([0]), np.array([13]), np.array([3]), np.array([3]))
-
-    # Do VCZ basic processing
-    # brightness, intensity, cx, cy = simulate_vcz(config, np.array([0]), np.array([85]), np.array([3]), np.array([3]))
-    # plt.figure()
-    # plt.pcolormesh(intensity, cmap='inferno', vmin=0.0, vmax=1.0)
-    # plt.colorbar(label='Normalized Brightness')
-    # plt.xlabel('Azimuth [deg]')
-    # plt.ylabel('Elevation [deg]')
-    # plt.grid(linestyle='--')
-    # index = np.unravel_index(np.argmax(intensity, axis=None), intensity.shape)
-    # plt.scatter(index[1], index[0], label='Maximum Brightness', c='grey')
-    # print(45.0 - index[1] * 0.1, 90.0 - index[0] * 0.1)
-    # print(index)
-    # plt.axis('equal')
-    # plt.show()
-    # exit()
+    # brightness, intensity, cx, cy = simulate(config, np.array([0]), np.array([13]), np.array([3]), np.array([3]))
+    brightness, intensity, cx, cy = simulate_vcz(config, np.array([0]), np.array([85]), np.array([3]), np.array([3]))
+    plt.figure()
+    plt.pcolormesh(intensity, cmap='inferno', vmin=0.0, vmax=1.0)
+    plt.colorbar(label='Normalized Brightness')
+    plt.xlabel('Azimuth [deg]')
+    plt.ylabel('Elevation [deg]')
+    plt.grid(linestyle='--')
+    index = np.unravel_index(np.argmax(intensity, axis=None), intensity.shape)
+    plt.scatter(index[1], index[0], label='Maximum Brightness', c='grey')
+    print(45.0 - index[1] * 0.1, 90.0 - index[0] * 0.1)
+    print(index)
+    plt.axis('equal')
+    plt.show()
+    exit()
 
     plt.figure(figsize=[9, 8])
     plt.subplot(211)

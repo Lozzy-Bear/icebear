@@ -77,7 +77,7 @@ def get_target_visibility(x):
 
 
 if __name__ == '__main__':
-    targets = generate_batch_sim(0.0, 0.0, 0.0, 90.0)
+    targets = generate_batch_sim(-10.0, 10.0, 5.0, 10.0)
     print(f'starting multiprocessing (cores={int(mp.cpu_count()/2)}) simulating:')
     pool = mp.Pool(processes=int(mp.cpu_count()/2))
     visibilities = pool.map(get_target_visibility, targets)

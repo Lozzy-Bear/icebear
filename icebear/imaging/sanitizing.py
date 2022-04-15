@@ -251,8 +251,8 @@ def create_level2_sanitized_hdf5(config, filename,
 
 if __name__ == '__main__':
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2b/'  # Enter file path to level 2 directory
-    date_dir = '2019_12_19'
+    filepath = '/beaver/backup/level2_1lambda/'  # Enter file path to level 2 directory
+    date_dir = '2022_03_05'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 

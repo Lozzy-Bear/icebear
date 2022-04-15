@@ -5,8 +5,8 @@ import numpy as np
 import time
 
 
-filepath = 'E:/icebear/level1/' # Enter file path to level 1 directory
-files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15') # Enter first sub directory and last
+filepath = '/beaver/backup/level1/' # Enter file path to level 1 directory
+files = utils.get_all_data_files(filepath, '2022_03_06', '2022_03_19') # Enter first sub directory and last
 rxfd = [np.nan, np.nan, np.nan]
 rxtf = ['data median', 'instrument measured']
 txfd = [np.nan, np.nan, np.nan]
