@@ -10,6 +10,7 @@ sys.path.append(ipath.parent.parent.parent)
 import icebear
 import icebear.utils as utils
 import h5py
+import cupy as cp
 
 
 def _real_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
@@ -108,21 +109,24 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     # visibility = np.sum(visibility, axis=(1, 2, 3, 4))
     visibility = np.sum(visibility_dist, axis=1)
     visibility = np.append(np.conjugate(visibility), visibility)
-    print(visibility)
-    coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
-    # coeffs2 = np.copy(coeffs)
-
-    start_time = time.time()
-    brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
-    print('time:', time.time() - start_time)
-
-    # This section activates the experimental angular_frequency_beamforming()
-    for i in range(15, 85, 10):
-        coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
-        brightness *= icebear.imaging.swht.swht_py(visibility, coeffs)
-
-    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
-
+    
+    coeffs_np = np.zeros((450, 900, 92, 8), dtype=np.complex64)
+    idx = 0
+    for i in range(15, 95, 10):
+        coeffs_np[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
+        idx += 1
+    coeffs_cp = cp.asarray(coeffs_np)
+    
+    # Do processing the faster numpy way
+    tf = 0
+    for i in range(20):
+        ts = time.time()
+        visibility_np = np.tile(np.array(visibility, dtype=np.complex64), (8, 1))
+        brightness = np.prod(np.einsum('ijkl,lk->ijl', coeffs_np, visibility_np), axis=2)
+        brightness = np.abs(brightness / np.max(brightness))
+        tf += time.time() - ts
+    print('numpy time:', tf/20)
+    
     cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
     mx, my, _ = icebear.imaging.swht.max_center(brightness)
     mx = mx * config.resolution - config.fov[0, 0] + config.fov_center[0]
@@ -143,15 +147,19 @@ def simulate(config, azimuth, elevation, azimuth_extent, elevation_extent):
     # print(f'\t-max intentsity {np.max(intensity)} mean intensity {np.mean(intensity)}')
     # intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
 
-    # Doing processing with a new faster algorithm and comparing
-    coeffs = np.zeros((450, 900, 92, 8), dtype=np.complex64)
-    idx = 0
-    for i in range(15, 95, 10):
-        coeffs[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
-        idx += 1
-    visibility = np.tile(np.array(visibility, dtype=np.complex64), (8, 1))
-    intensity = np.prod(np.einsum('ijkl,lk->ijl', coeffs, visibility), axis=2)
-    intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
+    # Doing processing with a new faster algorithm and comparing on cupy
+    tf = 0
+    for i in range(20):
+        ts = time.time()
+        visibility_cp = cp.tile(cp.array(visibility, dtype=cp.complex64), (8, 1))
+        intensity = cp.prod(cp.einsum('ijkl,lk->ijl', coeffs_cp, visibility_cp), axis=2)
+        intensity = cp.abs(intensity / cp.max(intensity))
+        #intensity = cp.asnumpy(intensity)
+        #intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
+        tf += time.time() - ts
+    print('cupy time:', tf/20)
+    
+    intensity = cp.asnumpy(intensity)
     print('compare the methods:', np.allclose(brightness, intensity), np.max(brightness - intensity))
 
     return brightness, intensity, mx, my
@@ -392,8 +400,8 @@ if __name__ == '__main__':
     # config.resolution = 1
 
     # 0.1 degree resolution normal fov coeffs
-    coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
-    # coeffs_file = 'C:/Users/TKOCl/PythonProjects/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
+    # coeffs_file = '/home/radar/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
+    coeffs_file = 'C:/Users/TKOCl/PythonProjects/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
     # 1.0 degree resolution half sphere coeffs
     # coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5'
     config.update_config(coeffs_file)

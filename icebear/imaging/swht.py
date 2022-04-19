@@ -5,6 +5,7 @@ import icebear
 import icebear.utils as utils
 import h5py
 import cv2
+import cupy as cp
 
 
 def generate_coeffs(config, fov=np.array([[0, 360], [0, 90]]), resolution=1.0, lmax=85):
@@ -322,7 +323,7 @@ def suppressed_swht_py(visibilities, coeffs_filepath, lmax, start=15, stop=85, s
     return suppressed_brightness, brightness
 
 
-def suppressed_swht_cuda():
+def suppressed_swht_cuda(visibilities, coeffs):
     """
     CUDA implementation of the Suppressed-SWHT imaging method. Given the visibility values and
     SWHT coefficients that have been processed for various harmonic orders create a brightness map
@@ -331,16 +332,10 @@ def suppressed_swht_cuda():
     Parameters
     ----------
         visibilities
-        coeffs_filepath
-        lmax
-        start
-        stop
-        step
+        coeffs
 
     Returns
     -------
-        suppressed_brightness : complex64 np.array
-
         brightness : complex64 np.array
 
     Notes
@@ -351,10 +346,10 @@ def suppressed_swht_cuda():
     coplanar receiver array for E region observations, Radio Science, submitted 2021.
     """
 
-    print("ERROR: suppressed_swht_cuda is not implemented.")
-    exit()
+    visibilities = cp.tile(cp.array(visibilities, dtype=cp.complex64), (coeffs.shape[-1], 1))
+    brightness = cp.prod(cp.einsum('ijkl,lk->ijl', coeffs, visibilities), axis=2)
 
-    return
+    return brightness
 
 
 def swht_method(visibilities, coeffs, resolution, fov, fov_center):
@@ -455,6 +450,68 @@ def swht_method_advanced(visibilities, coeffs_filepath_fov, coeffs_filepath_full
     fov_area *= resolution ** 2
 
     return fov_mx, fov_my, fov_acc, fov_extent_x, fov_extent_y, fov_area, mean_jansky, max_jansky
+
+
+def swht_method_advanced_cuda(visibilities, coeffs_fov, coeffs_full,
+                              resolution, fov, fov_center):
+    """
+    Advanced method of the Suppressed-SWHT with selection filters for identifying noise signal,
+    dirty beam fits, and outside of the FoV targets. Additionally, the accuracy of the selection
+    is calculated as the difference between the selected target centroid and brightness maximum.
+
+    Parameters
+    ----------
+        visibilities :
+        coeffs_fov :
+        coeffs_full :
+        resolution : float
+            Angular resolution in degree per pixel.
+        fov : float np.array
+            [[start, stop], [start, stop]] azimuth, elevation angles within 0 to 360 and 0 to 180 degrees.
+        fov_center : float np.array
+            [[], []]
+
+    Returns
+    -------
+
+    """
+
+    # Create the brightness map at 1 degree resolution for a spherical cap.
+    brightness_lowres = np.abs(np.matmul(coeffs_full, visibilities))
+
+    # Check to see if the spectral flux density relative to the average spectra noise figure meets the threshold to
+    # qualify as a real target within the FoV. Noise and outside of the FoV targets are 10x less Jy. Attempts to
+    # capture false positives passed by the previous stage.
+    mean_jansky = np.mean(brightness_lowres)
+    max_jansky = np.max(brightness_lowres)
+    # if mean_jansky <= 0.001 * average_spectra_noise:
+    #     print(f'-\ttarget outside the FoV, noise, or exists in a severe blindspot; skipped')
+    #     return None, None, mean_jansky, max_jansky
+
+    # Check if the target is within the FoV using a 1 deg full sphere coeffs.
+    index = np.unravel_index(np.argmax(brightness_lowres), brightness_lowres.shape)
+    full_mx = index[1]
+    full_my = index[0]
+    full_mx = full_mx - 360 + fov_center[0]
+    full_my = full_my - 90 + fov_center[1]
+    if not(fov[0, 0] <= full_mx <= fov[0, 1]) and not(fov[1, 0] <= full_my <= fov[1, 1]):
+        # Record data at 1deg
+        print('\t-target outside fov; recording 1 degree accuracy')
+        valid = -1
+        return full_mx, full_my, mean_jansky, max_jansky, valid
+
+    # Create the brightness map at desired resolution and FoV.
+    visibilities = cp.tile(cp.array(visibilities, dtype=cp.complex64), (coeffs_fov.shape[-1], 1))
+    brightness = cp.prod(cp.einsum('ijkl,lk->ijl', coeffs_fov, visibilities), axis=2)
+    index = cp.unravel_index(cp.argmax(cp.abs(brightness)), brightness.shape)
+    fov_mx = cp.asnumpy(index[1])
+    fov_my = cp.asnumpy(index[0])
+    fov_mx = fov_mx * resolution - fov[0, 0] + fov_center[0]
+    fov_my = fov_my * resolution - fov[1, 0] + fov_center[1]
+    valid = 0
+    if np.sqrt((full_mx - fov_mx)**2 + (full_my - fov_my)**2) <= 2.0:
+        valid = 1
+    return fov_mx, fov_my, mean_jansky, max_jansky, valid
 
 
 def contour_map(brightness, px, py):
