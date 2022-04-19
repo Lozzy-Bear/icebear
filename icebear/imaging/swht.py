@@ -492,12 +492,15 @@ def swht_method_advanced_cuda(visibilities, coeffs_fov, coeffs_full,
     index = np.unravel_index(np.argmax(brightness_lowres), brightness_lowres.shape)
     full_mx = index[1]
     full_my = index[0]
-    full_mx = full_mx - 360 + fov_center[0]
-    full_my = full_my - 90 + fov_center[1]
-    if not(fov[0, 0] <= full_mx <= fov[0, 1]) and not(fov[1, 0] <= full_my <= fov[1, 1]):
+    # full_mx = full_mx - 360 + fov_center[0]
+    # full_my = full_my - 90 + fov_center[1]
+    # if not(fov[0, 0] <= full_mx <= fov[0, 1]) and not(fov[1, 0] <= full_my <= fov[1, 1]):
+    if not(225.0 <= full_mx <= 315.0) and not(0.0 <= full_my <= 45.0):
         # Record data at 1deg
         print('\t-target outside fov; recording 1 degree accuracy')
         valid = -1
+        full_mx = full_mx - 270.0
+        full_my = full_my
         return full_mx, full_my, mean_jansky, max_jansky, valid
 
     # Create the brightness map at desired resolution and FoV.

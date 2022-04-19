@@ -239,9 +239,12 @@ def create_level2_sanitized_hdf5(config, filename,
     # Create dev datasets
     f.create_group('dev')
     f.create_dataset('dev/raw_elevation', data=raw_elevation)
-    f.create_dataset('dev/azimuth_extent', data=azimuth_extent)
-    f.create_dataset('dev/elevation_extent', data=elevation_extent)
-    f.create_dataset('dev/area', data=area)
+    f.create_dataset('dev/mean_jansky', data=azimuth_extent)
+    f.create_dataset('dev/max_jansky', data=elevation_extent)
+    f.create_dataset('dev/valid', data=area)
+    # f.create_dataset('dev/azimuth_extent', data=azimuth_extent)
+    # f.create_dataset('dev/elevation_extent', data=elevation_extent)
+    # f.create_dataset('dev/area', data=area)
     # f.create_dataset('dev/doppler_spectra', data=doppler_spectra)
 
     f.close()
@@ -251,8 +254,9 @@ def create_level2_sanitized_hdf5(config, filename,
 
 if __name__ == '__main__':
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2_1lambda/'  # Enter file path to level 2 directory
-    date_dir = '2022_03_05'
+    # filepath = '/beaver/backup/level2_advanced_cuda/'  # Enter file path to level 2 directory
+    filepath = 'F:/icebear/level2_advanced_cuda/'  # Enter file path to level 2 directory
+    date_dir = '2020_12_12'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 
@@ -287,9 +291,13 @@ if __name__ == '__main__':
             doppler_shift = np.append(doppler_shift, data['doppler_shift'][()])
             azimuth = np.append(azimuth, data['azimuth'][()])
             elevation = np.append(elevation, np.abs(data['elevation'][()]))
-            elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
-            azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
-            area = np.append(area, data['area'][()])
+
+            elevation_extent = np.append(elevation_extent, data['mean_jansky'][()])
+            azimuth_extent = np.append(azimuth_extent, data['max_jansky'][()])
+            area = np.append(area, data['valid'][()])
+            # elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
+            # azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
+            # area = np.append(area, data['area'][()])
 
     filename = f'{filepath}{date_dir}/' \
                f'{config.radar_config}_{config.experiment_name}_swht_' \
