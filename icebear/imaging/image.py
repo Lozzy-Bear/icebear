@@ -2,7 +2,10 @@ import numpy as np
 import icebear
 import icebear.utils as util
 import h5py
-import cupy as cp
+try:
+    import cupy as cp
+except:
+    print('no cupy')
 
 
 def generate_level2(config, method='swht'):

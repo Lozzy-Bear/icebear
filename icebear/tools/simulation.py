@@ -10,7 +10,10 @@ sys.path.append(ipath.parent.parent.parent)
 import icebear
 import icebear.utils as utils
 import h5py
-import cupy as cp
+try:
+    import cupy as cp
+except:
+    print('no cupy')
 
 
 def _real_pre_integrate(theta, phi, u_in, v_in, w_in, theta_mean, theta_spread, phi_mean, phi_spread):
@@ -401,7 +404,8 @@ if __name__ == '__main__':
 
     # 0.1 degree resolution normal fov coeffs
     # coeffs_file = '/home/radar/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
-    coeffs_file = 'C:/Users/TKOCl/PythonProjects/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
+    coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
+    # coeffs_file = 'C:/Users/TKOCl/PythonProjects/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5'
     # 1.0 degree resolution half sphere coeffs
     # coeffs_file = '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5'
     config.update_config(coeffs_file)
@@ -436,7 +440,7 @@ if __name__ == '__main__':
     #             csv.write(f'{x},{y},{cx},{cy}\n')
     # exit()
 
-    brightness, intensity, cx, cy = simulate(config, np.array([0]), np.array([13]), np.array([3]), np.array([3]))
+    brightness, intensity, cx, cy = simulate(config, np.array([-27]), np.array([5]), np.array([3]), np.array([3]))
 
     # Do VCZ basic processing
     # brightness, intensity, cx, cy = simulate_vcz(config, np.array([0]), np.array([85]), np.array([3]), np.array([3]))

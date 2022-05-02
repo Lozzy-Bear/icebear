@@ -21,9 +21,9 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # files = ['demo_ib3d_level3_20201212.h5', 'demo_ib3d_level3_20201213.h5',
 #          'demo_ib3d_level3_20201214.h5', 'demo_ib3d_level3_20201215.h5']
-# files = ['/beaver/backup/level2b/2020_03_31/ib3d_normal_swht_2020_03_31_prelate_bakker.h5']
+files = ['/beaver/backup/level2b/2020_12_12/ib3d_normal_swht_2020_12_12_prelate_bakker.h5']
 # files = ['/beaver/backup/level2_3lambda/2022_02_22/ib3d_normal_swht_2022_02_22_prelate_bakker.h5']
-files = ['/beaver/backup/level2_1lambda/2022_03_05/ib3d_normal_swht_2022_03_05_prelate_bakker.h5']
+# files = ['/beaver/backup/level2_1lambda/2022_03_05/ib3d_normal_swht_2022_03_05_prelate_bakker.h5']
 
 slant_range = np.array([])
 altitude = np.array([])
@@ -66,9 +66,12 @@ for file in files:
     # elevation_extent = np.append(elevation_extent, f['data']['elevation_extent'][()])
     # azimuth_extent = np.append(azimuth_extent, f['data']['azimuth_extent'][()])
     # area = np.append(area, f['data']['area'][()])
-    lat = np.append(area, f['data']['latitude'][()])
-    lon = np.append(area, f['data']['longitude'][()])
+    lat = np.append(lat, f['data']['latitude'][()])
+    lon = np.append(lon, f['data']['longitude'][()])
     # idx = np.argwhere(time>time[0]+5.0*60.0*60.0)
+
+# print(np.unique(valid, return_counts=True))
+print(slant_range.shape)
 
 plt.figure()
 # mean_altitude = 93.2 # np.mean(altitude)

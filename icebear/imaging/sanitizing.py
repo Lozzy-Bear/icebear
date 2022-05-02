@@ -292,9 +292,10 @@ if __name__ == '__main__':
             azimuth = np.append(azimuth, data['azimuth'][()])
             elevation = np.append(elevation, np.abs(data['elevation'][()]))
 
-            elevation_extent = np.append(elevation_extent, data['mean_jansky'][()])
-            azimuth_extent = np.append(azimuth_extent, data['max_jansky'][()])
+            elevation_extent = np.append(elevation_extent, data['max_jansky'][()])
+            azimuth_extent = np.append(azimuth_extent, data['mean_jansky'][()])
             area = np.append(area, data['valid'][()])
+
             # elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
             # azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
             # area = np.append(area, data['area'][()])

@@ -5,7 +5,10 @@ import icebear
 import icebear.utils as utils
 import h5py
 import cv2
-import cupy as cp
+try:
+    import cupy as cp
+except:
+    print('no cupy')
 
 
 def generate_coeffs(config, fov=np.array([[0, 360], [0, 90]]), resolution=1.0, lmax=85):
