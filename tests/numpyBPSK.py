@@ -27,7 +27,7 @@ ax[0].set_title('Carrier')
 
 # Bit Sequence
 bits_unexpanded = np.random.randint(2, size=(int(symbol_rate * (tf-t0))))  # generates binary array, not same size as carrier wave yet
-bits = np.repeat(bits_unexpanded, sps)  # expands the bit sequence to match samples per symbol
+bits = np.repeat(bits_unexpanded, int(sps))  # expands the bit sequence to match samples per symbol
 
 ax[1].plot(t, bits)
 ax[1].set_title('Data')
