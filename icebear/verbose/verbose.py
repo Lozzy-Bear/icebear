@@ -1,12 +1,16 @@
-import traceback
+import dataclasses
 from datetime import datetime
 import inspect
-import logging
+#
+#
+# @dataclasses.dataclass
+# class VerboseFormat:
 
 
-class verbose:
+class Verbose:
     # Intentionally leaving verbose lowercase because I think it looks nicer when reading it when implemented.
     def __init__(self, ctx='', show=True, logfile=None, trace=True):
+
         self.ctx = ctx
         self.show = show
         if logfile is not None:
@@ -81,23 +85,3 @@ class verbose:
 
     def message(self, msg):
         self.msg = msg
-
-
-def stupid_func():
-    silly()
-    return
-
-
-def silly():
-    traceback.print_stack()
-    stk = inspect.stack()
-    for s in stk:
-        p = f'File "{s.filename}", line {s.lineno}, in {s.function}\n\t{s.code_context[0]}'#, index {s.index}'
-        print(p)
-    return
-
-
-
-silly()
-
-
