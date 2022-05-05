@@ -8,81 +8,6 @@ except ModuleNotFoundError:
     CUDA = False
 
 
-def point_diff(p1, p2, mode='lower'):
-    """
-    Finds the difference between every element of array p1 and p2, must be the same shape.
-    For the difference of each element in an array to each other element give args p1 = p2.
-    This function will attempt to use cupy for CUDA processing if available, this  is faster for arrays
-    larger than 5_000.
-
-    Parameters
-    ----------
-    p1 : float32 ndarray
-        1d array of floats.
-    p2 : float32 ndarray
-        1d array of floats.
-    mode : str
-        Select return mode
-            - 'lower' (default) is p2 - p1
-            - 'upper' is p1 - p2
-            - 'both' is p2 - p1 then appended p1 - p2, no trace
-            - 'full' is the full array flattened
-
-    Returns
-    -------
-    c : float32 ndarray
-        1d array of differences between p1 and p2.
-    """
-    n = p1.shape[0]
-    c = xp.tile(p1, n).reshape(n, n) - xp.tile(p2, n).reshape(n, n).T
-    if CUDA:
-        c = xp.asnumpy(c)
-    if mode == 'lower':
-        return c[np.tril_indices(n, k=-1)]
-    if mode == 'upper':
-        return c[np.triu_indices(n, k=1)]
-    if mode == 'both':
-        c1 = c[np.tril_indices(n, k=-1)]
-        c2 = c[np.triu_indices(n, k=1)]
-        return np.concatenate(c1, c2)
-    if mode == 'full':
-        return c.flatten()
-
-
-def haversine(p1, p2, bins, r=110.0):
-    """
-    Find the haversine product for all the two-point differences of the input latitude-longitude points.
-    Parameters
-    ----------
-    p1 : float32 ndarray
-        [(lat, lon), (), ...] list of latitudes and longitudes in radians.
-    p2 : float32 ndarray
-        [(lat, lon), (), ...] list of latitudes and longitudes in radians.
-    r : float32
-        Altitude in kilometers above Earth surface of assumed shell.
-
-    Returns
-    -------
-    result : float32 ndarray
-        Haversine product of the list of points.
-    """
-    r += 6371.0
-    n = p1.shape[0]
-    m = p2.shape[0]
-    lat1 = np.array(p1[:, 0], dtype=np.float32)
-    lon1 = np.array(p1[:, 1], dtype=np.float32)
-    lat2 = np.array(p2[:, 0], dtype=np.float32)
-    lon2 = np.array(p2[:, 1], dtype=np.float32)
-    prod_cos = np.cos(xp.tile(p1[:, 0], n).reshape(n, n)) * np.cos(np.tile(p2[:, 0], m).reshape(m, m)).T
-    prod_cos = prod_cos[np.tril_indices(prod_cos.shape[0], k=-1)]
-    delta_lat = point_diff(lat1, lat2, mode='lower')
-    delta_lon = point_diff(lon1, lon2, mode='lower')
-    a = np.sin(delta_lat/2)**2 + prod_cos * np.sin(delta_lon/2)**2
-    b = r * 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
-    h, _ = np.histogram(b, bins)
-    return h
-
-
 def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
     """
     Finds the difference between every element of latitude-longitude point arrays p1 and p2 using the
@@ -133,17 +58,20 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
         delta_lat = lat1[start:end, :] - lat2
         delta_lon = lon1[start:end, :] - lon2
         prod_cos = xp.cos(lat1[start:end, :]) * xp.cos(lat2)
-
+        if CUDA:
+            delta_lat = xp.asnumpy(delta_lat)
+            delta_lon = xp.asnumpy(delta_lon)
+            prod_cos = xp.asnumpy(prod_cos)
         if mode == 'upper':
             k = 1 + i * chunk_size
-            delta_lat = delta_lat[xp.triu_indices(delta_lat.shape[0], k=k, m=delta_lat.shape[1])]
-            delta_lon = delta_lon[xp.triu_indices(delta_lon.shape[0], k=k, m=delta_lon.shape[1])]
-            prod_cos = prod_cos[xp.triu_indices(prod_cos.shape[0], k=k, m=prod_cos.shape[1])]
+            delta_lat = delta_lat[np.triu_indices(delta_lat.shape[0], k=k, m=delta_lat.shape[1])]
+            delta_lon = delta_lon[np.triu_indices(delta_lon.shape[0], k=k, m=delta_lon.shape[1])]
+            prod_cos = prod_cos[np.triu_indices(prod_cos.shape[0], k=k, m=prod_cos.shape[1])]
         elif mode == 'lower':
             k = -1 - i * chunk_size
-            delta_lat = delta_lat[xp.tril_indices(delta_lat.shape[0], k=k, m=delta_lat.shape[1])]
-            delta_lon = delta_lon[xp.tril_indices(delta_lon.shape[0], k=k, m=delta_lon.shape[1])]
-            prod_cos = prod_cos[xp.tril_indices(prod_cos.shape[0], k=k, m=prod_cos.shape[1])]
+            delta_lat = delta_lat[np.tril_indices(delta_lat.shape[0], k=k, m=delta_lat.shape[1])]
+            delta_lon = delta_lon[np.tril_indices(delta_lon.shape[0], k=k, m=delta_lon.shape[1])]
+            prod_cos = prod_cos[np.tril_indices(prod_cos.shape[0], k=k, m=prod_cos.shape[1])]
         elif mode == 'both':
             delta_lat = delta_lat
             delta_lon = delta_lon
@@ -151,10 +79,8 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
         else:
             print(f'mode: {mode} is not an accepted mode choose; lower, upper, or both')
 
-        a = xp.sin(delta_lat / 2) ** 2 + prod_cos * xp.sin(delta_lon / 2) ** 2
-        b = r * 2 * xp.arctan2(xp.sqrt(a), xp.sqrt(1 - a))
-        if CUDA:
-            b = xp.asnumpy(b)
+        a = np.sin(delta_lat / 2) ** 2 + prod_cos * np.sin(delta_lon / 2) ** 2
+        b = r * 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
         c, _ = np.histogram(b, bins)
         h += c
     return h
@@ -162,7 +88,6 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
 
 if __name__ == '__main__':
     N = 200_000
-    # arr = np.random.random(2*N).reshape((N, 2))
     arr = np.array([np.arange(N), np.arange(N)]).T
     bins = np.array([0.0, 100.0, 1000.0, 10_000.0])
     limit = 2000
@@ -172,13 +97,6 @@ if __name__ == '__main__':
         limit = int(pool.total_bytes()/2)
         del x
     ts = time.time()
-    h = clustering_chunk(arr, arr, bins, mode='both', r=110, max_chunk=limit)
+    h = clustering_chunk(arr, arr, bins, mode='upper', r=110, max_chunk=limit)
     print('chunking time: ', time.time() - ts)
     print('result: ', h)
-
-    # ts = time.time()
-    # h = haversine(arr, arr, bins)
-    # print('array time: ', time.time() - ts)
-    # print('result: ', h)
-
-
