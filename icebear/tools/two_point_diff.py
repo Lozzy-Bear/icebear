@@ -18,9 +18,9 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
     Parameters
     ----------
     p1 : float32 ndarray
-        [[lat, lon], [lat, lon], ...] 2d array of latitude and longitude floats with shape (n, 2).
+        [[lat, lon], [lat, lon], ...] 2d array of latitude and longitude [radians] floats with shape (n, 2).
     p2 : float32 ndarray
-        [[lat, lon], [lat, lon], ...] 2d array of latitude and longitude floats with shape (m, 2).
+        [[lat, lon], [lat, lon], ...] 2d array of latitude and longitude [radians] floats with shape (m, 2).
     bins : float32 ndarray
         1d array of floats containing the bin edges for binning. Example bins=[0, 1, 5] has two bins, the
         ranges 0 <= x <= 1 and 1 <= x <= 5
@@ -87,7 +87,7 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
 
 
 if __name__ == '__main__':
-    N = 200_000
+    N = 20_000
     arr = np.array([np.arange(N), np.arange(N)]).T
     bins = np.array([0.0, 100.0, 1000.0, 10_000.0])
     limit = 2000
