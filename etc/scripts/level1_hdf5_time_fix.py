@@ -3,8 +3,9 @@ import h5py
 import os
 
 
-filepath = 'E:/icebear/level1/' # Enter file path to level 1 directory
-files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15') # Enter first sub directory and last
+filepath = 'F:/icebear/level1/'  # Enter file path to level 1 directory
+# filepath = '/beaver/backup/level1/' # Enter file path to level 1 directory
+files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19') # Enter first sub directory and last
 remove_flag = False
 for file in files:
     f = h5py.File(file, 'r+')

@@ -220,6 +220,7 @@ def create_level2_sanitized_hdf5(config, filename,
     f.create_dataset('data/rf_distance', data=rf_distance)
     f.create_dataset('data/snr_db', data=snr_db)
     f.create_dataset('data/doppler_shift', data=doppler_shift)
+    # f.create_dataset('data/doppler_spectra', data=doppler_spectra)
     f.create_dataset('data/latitude', data=lattitude)
     f.create_dataset('data/longitude', data=longitude)
     f.create_dataset('data/altitude', data=altitude)
@@ -229,12 +230,21 @@ def create_level2_sanitized_hdf5(config, filename,
     f.create_dataset('data/velocity_azimuth', data=velocity_azimuth)
     f.create_dataset('data/velocity_elevation', data=velocity_elevation)
     f.create_dataset('data/velocity_magnitude', data=velocity)
+    # dset.attrs['units'] = 'm/s'
+    # dset.attrs['description'] = 'magnitude of the target velocity vector'
+    # dset.attrs['dtype'] = dset.dtype
+    # dset.attrs['flavor'] = 'numpy.array'
+
+
     # Create dev datasets
     f.create_group('dev')
     f.create_dataset('dev/raw_elevation', data=raw_elevation)
-    f.create_dataset('dev/azimuth_extent', data=azimuth_extent)
-    f.create_dataset('dev/elevation_extent', data=elevation_extent)
-    f.create_dataset('dev/area', data=area)
+    f.create_dataset('dev/mean_jansky', data=azimuth_extent)
+    f.create_dataset('dev/max_jansky', data=elevation_extent)
+    f.create_dataset('dev/valid', data=area)
+    # f.create_dataset('dev/azimuth_extent', data=azimuth_extent)
+    # f.create_dataset('dev/elevation_extent', data=elevation_extent)
+    # f.create_dataset('dev/area', data=area)
     # f.create_dataset('dev/doppler_spectra', data=doppler_spectra)
 
     f.close()
@@ -244,8 +254,9 @@ def create_level2_sanitized_hdf5(config, filename,
 
 if __name__ == '__main__':
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2_download/'  # Enter file path to level 2 directory
-    date_dir = '2021_03_31'
+    # filepath = '/beaver/backup/level2_advanced_cuda/'  # Enter file path to level 2 directory
+    filepath = 'F:/icebear/level2_advanced_cuda/'  # Enter file path to level 2 directory
+    date_dir = '2020_12_12'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 
@@ -280,9 +291,14 @@ if __name__ == '__main__':
             doppler_shift = np.append(doppler_shift, data['doppler_shift'][()])
             azimuth = np.append(azimuth, data['azimuth'][()])
             elevation = np.append(elevation, np.abs(data['elevation'][()]))
-            elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
-            azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
-            area = np.append(area, data['area'][()])
+
+            elevation_extent = np.append(elevation_extent, data['max_jansky'][()])
+            azimuth_extent = np.append(azimuth_extent, data['mean_jansky'][()])
+            area = np.append(area, data['valid'][()])
+
+            # elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
+            # azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
+            # area = np.append(area, data['area'][()])
 
     filename = f'{filepath}{date_dir}/' \
                f'{config.radar_config}_{config.experiment_name}_swht_' \
@@ -307,12 +323,14 @@ if __name__ == '__main__':
     t = t * m
     print('\t-pre-masking completed')
 
-    rx_coord = config.rx_site_lat_long
+    rx_coord = np.rad2deg(config.rx_site_lat_long)
     if len(rx_coord) < 3:
         rx_coord = np.append(rx_coord, 0.0)
-    tx_coord = config.tx_site_lat_long
+        print(rx_coord)
+    tx_coord = np.rad2deg(config.tx_site_lat_long)
     if len(tx_coord) < 3:
         tx_coord = np.append(tx_coord, 0.0)
+        print(tx_coord)
 
     sx, sa, sv = map_target(tx_coord, rx_coord,
                             azimuth, elevation, rf_distance,
@@ -322,7 +340,7 @@ if __name__ == '__main__':
     altitude = sx[2, :]
     vaz = sv[0, :]
     vel = sv[1, :]
-    doppler_shift = sv[2, :]
+    vma = sv[2, :]
     slant_range = sa[2, :]
     raw_elevation = np.copy(elevation)
     elevation = sa[1, :]
@@ -348,6 +366,7 @@ if __name__ == '__main__':
     lon = lon * m
     vaz = vaz * m
     vel = vel * m
+    vma = vma * m
 
     rf_distance = rf_distance[~rf_distance.mask].flatten()
     snr_db = snr_db[~snr_db.mask].flatten()
@@ -365,12 +384,13 @@ if __name__ == '__main__':
     lon = lon[~lon.mask].flatten()
     vaz = vaz[~vaz.mask].flatten()
     vel = vel[~vel.mask].flatten()
+    vma = vma[~vma.mask].flatten()
 
     print('\t-masking completed')
     print('\t-remaining data', len(rf_distance))
 
     create_level2_sanitized_hdf5(config, filename, t, rf_distance, snr_db, doppler_shift,
-                       lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, doppler_shift,
+                       lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, vma,
                        azimuth_extent, elevation_extent, area, raw_elevation)
 
     # Draven this little bit of code can be used to make altitude histograms per day if we want one every day!
@@ -389,7 +409,8 @@ if __name__ == '__main__':
     plt.legend(loc='upper right')
     plt.grid()
     plt.savefig(f'{filepath}{date_dir}/altitude_distribution_{date_dir}.png')
-    plt.show()
+    # plt.show()
+    plt.close()
 
     # This is how we decided file naming conventions should be.
     # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5  <- one hour

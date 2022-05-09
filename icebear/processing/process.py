@@ -404,6 +404,42 @@ def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen):
     return result, variance
 
 
+def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen):
+    """
+    Formats measured data and CUDA function inputs and calls wrapped function for determining the cross-correlation spectra of
+    selected antenna pair.
+
+    Args:
+        v0 (complex64 np.array): First antenna voltages loaded from HDF5 with phase and magnitude corrections.
+        v1 (complex64 np.array): Second antenna voltages loaded from HDF5 with phase and magnitude corrections.
+        code (float32 np.array): Transmitted psuedo-random code sequence.
+        navg (int): The number of 0.1 second averages to be performed on the GPU.
+        nrng (int): Number of range gates being processed. Nominally 2000.
+        fdec (int): Decimation rate to be used by GPU processing, effects Doppler resolution. Nominally 200.
+        codelen (int): Length of the transmitted psuedo-random code sequence.
+
+    Returns:
+        S (complex64 np.array): 2D Spectrum output for antenna pair (Doppler shift x Range).
+    """
+
+    nfreq = int(codelen / fdec)
+    result_size = nfreq * nrang
+    code = code.astype(np.complex64)
+    result = np.zeros((nrang, nfreq), dtype=np.complex64)
+    variance = np.zeros((nrang, nfreq), dtype=np.complex64)
+
+    # Create pointers to convert python tpyes to C types
+    m_p0 = meas0.ctypes.data_as(C.POINTER(C.c_float))
+    m_p1 = meas1.ctypes.data_as(C.POINTER(C.c_float))
+    c_p = code.ctypes.data_as(C.POINTER(C.c_float))
+    r_p = result.ctypes.data_as(C.POINTER(C.c_float))
+    v_p = variance.ctypes.data_as(C.POINTER(C.c_float))
+    # Runs ssmf.cu on data set using defined pointers
+    __fmed(m_p0, m_p1, c_p, r_p, v_p, len(meas0), codelen, result_size, averages, 1)
+
+    return result, variance
+
+
 def decx(config, time, data, bcode, channel1, channel2, correction1, correction2):
     """
     Performs cross-correlation and decimation for inputed baseline from the radar data

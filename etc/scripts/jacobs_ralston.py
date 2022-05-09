@@ -27,10 +27,10 @@ class JacobsRalston():
     def __init__(self):
         self.fov_azimuth = np.deg2rad(np.array([-45, 45]))
         self.fov_elevation = np.deg2rad(np.array([45, 89]))
-                                                          # b12 result = 16.0
-        x1, y1 = self.find_position(0.0, 16.0, 0.001, 1.5)  # b13 result = 2.50
-        x2, y2 = self.find_position(2.462, 16.0, 0.001, 1.5)  # b14 result = 2.50
-        x3, y3 = self.find_position(3.98, 16.0, 0.001, 1.5)  # result = 2.50
+        n = 16.2                                         # b12 result = 16.0
+        x1, y1 = self.find_position(0.0, n, 0.001, 1.5)  # b13 result = 2.50
+        x2, y2 = self.find_position(2.5, n, 0.001, 1.5)  # b14 result = 2.50
+        x3, y3 = self.find_position(4.0, n, 0.001, 1.5)  # result = 2.50
         x2, y2 = self.pad_arr(x2, y2, x1)
         x3, y3 = self.pad_arr(x3, y3, x1)
         y1 += 1
@@ -38,19 +38,59 @@ class JacobsRalston():
         y3 += 1
 
         x = np.copy(x1)
-        y = (y1 * y2 * y3) / 3
+        y = (y1 + y2 + y3) / 3
+
+        # plt.figure(figsize=[6, 4])
+        # plt.plot(x, y, 'k')
 
         plt.figure(figsize=[6, 4])
-        plt.plot(x, y, 'k')
-
-        plt.figure(figsize=[6, 4])
-        plt.plot(x, y1, 'k', label='Between Antenna 1 and 2')
-        # plt.plot(x, y2, 'm', label='Between Antenna 1 and 3')
-        # plt.plot(x, y3, 'g', label='Between Antenna 1 and 4')
+        plt.plot(x, y1, color='orange', label='Between Antenna 1 and 2')
         plt.title("Minimum Separation vs. Baseline")
         plt.xlabel("Baseline")
         plt.ylabel("Minimum Phase Lines Separation")
         plt.legend(loc='upper right')
+        # plt.xlim(1.5, 6)
+        plt.savefig('jr_minsep_12.pdf')
+        # plt.close()
+
+        plt.figure(figsize=[6, 4])
+        plt.plot(x, y2, 'm', label='Between Antenna 1 and 3')
+        plt.title("Minimum Separation vs. Baseline")
+        plt.xlabel("Baseline")
+        plt.ylabel("Minimum Phase Lines Separation")
+        plt.legend(loc='upper right')
+        # plt.xlim(1.5, 6)
+        plt.savefig('jr_minsep_13.pdf')
+        # plt.close()
+
+        plt.figure(figsize=[6, 4])
+        plt.plot(x, y3, 'g', label='Between Antenna 1 and 4')
+        plt.title("Minimum Separation vs. Baseline")
+        plt.xlabel("Baseline")
+        plt.ylabel("Minimum Phase Lines Separation")
+        plt.legend(loc='upper right')
+        # plt.xlim(1.5, 6)
+        plt.savefig('jr_minsep_14.pdf')
+        # plt.close()
+
+        plt.figure(figsize=[6, 4])
+        plt.plot(x, y, 'k', label='Averaged')
+        plt.title("Minimum Separation vs. Baseline")
+        plt.xlabel("Baseline")
+        plt.ylabel("Minimum Phase Lines Separation")
+        plt.legend(loc='upper right')
+        # plt.xlim(1.5, 6)
+        plt.savefig('jr_minsep_combine.pdf')
+
+        plt.figure(figsize=[6, 4])
+        plt.plot(x, y, 'k', label='Averaged')
+        plt.title("Minimum Separation vs. Baseline")
+        plt.xlabel("Baseline")
+        plt.ylabel("Minimum Phase Lines Separation")
+        plt.legend(loc='upper right')
+        plt.xlim(8.7, 9.3)
+        plt.savefig('jr_minsep_combine_zoom.pdf')
+
         plt.show()
         return
 

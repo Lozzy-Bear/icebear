@@ -2,6 +2,10 @@ import numpy as np
 import icebear
 import icebear.utils as util
 import h5py
+try:
+    import cupy as cp
+except:
+    print('no cupy')
 
 
 def generate_level2(config, method='swht'):
@@ -27,11 +31,26 @@ def generate_level2(config, method='swht'):
                 config.resolution,
                 config.fov,
                 config.fov_center)
+    elif method == 'advanced':
+        calculate_image = _swht_method_advanced
+        coeffs_full = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs_lowres, int(config.lmax))
+        coeffs_fov = np.zeros((450, 900, 92, 8), dtype=np.complex64)
+        idx = 0
+        for i in range(15, 95, 10):
+            coeffs_fov[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
+            idx += 1
+        coeffs_fov = cp.asarray(coeffs_fov)
+        args = (coeffs_fov,
+                coeffs_full,
+                config.resolution,
+                config.fov,
+                config.fov_center)
     else:
         print(f'ERROR: the imaging method {method} does not exist.')
         exit()
 
     print('imaging start:')
+    print(f'\t-imaging method: {method}')
 
     file = h5py.File(config.imaging_source, 'r')
     time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
@@ -228,12 +247,78 @@ def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, 
     return
 
 
+def _swht_method_advanced(filename, hour, minute, second, data, coeffs_fov, coeffs_full, resolution, fov, fov_center):
+    """
+    Sets up the environment for imaging with the SWHT method with standard parameters and appends the level 2 HDF5 file
+    for both standard measurements and SWHT specific ones.
+
+    Parameters
+    ----------
+        filename : string
+            Name of the hdf5 file to be appended.
+        hour : int
+            Hour of the data passed.
+        minute : int
+            Minute of the data passed.
+        second : int
+            Second of the data passed.
+        data : dict hdf5
+            HDF5 structure of the level 1 data
+        coeffs : complex128 np.array
+            Complex matrix of coefficients for the SWHT with dimension fov / resolution.
+
+    Returns
+    -------
+        None
+    """
+
+    doppler_shift = data['doppler_shift'][()]
+    # This is a little hack to check if we are seeing a dropped sample.
+    # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
+    if len(doppler_shift) >= 9000:#28000:
+        print('\t-dropped sample detected; skipped')
+        return
+    rf_distance = data['rf_distance'][()]
+    snr_db = data['snr_db'][()]
+    visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
+    visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
+    visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
+    azimuth = np.empty_like(doppler_shift)
+    elevation = np.empty_like(doppler_shift)
+    mean_jansky = np.empty_like(doppler_shift)
+    max_jansky = np.empty_like(doppler_shift)
+    valid = np.empty_like(doppler_shift)
+
+    for idx, visibility in enumerate(visibilities):
+        azimuth[idx], elevation[idx], mean_jansky[idx], max_jansky[idx], valid[idx] = \
+            icebear.imaging.swht.swht_method_advanced_cuda(visibility, coeffs_fov, coeffs_full,
+                                                           resolution, fov, fov_center)
+
+    # Custom data appending for SWHT image data sets
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    f.create_group(f'data/{time}')
+    f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
+    f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
+    f.create_dataset(f'data/{time}/snr_db', data=snr_db)
+    f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
+    f.create_dataset(f'data/{time}/azimuth', data=azimuth)
+    f.create_dataset(f'data/{time}/elevation', data=elevation)
+    f.create_dataset(f'data/{time}/mean_jansky', data=mean_jansky)
+    f.create_dataset(f'data/{time}/max_jansky', data=max_jansky)
+    f.create_dataset(f'data/{time}/valid', data=valid)
+    f.close()
+
+    return
+
+
 if __name__ == '__main__':
-    # file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
-    file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_04_prelate_bakker.h5'
+    file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
+    # file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_13_prelate_bakker.h5'
     config = icebear.utils.Config(file)
-    # config.add_attr('imaging_destination', 'E:/icebear/level2/')
-    config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
+    config.add_attr('imaging_destination', 'E:/icebear/level2_advanced_cuda/')
+    # config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
+    # config.add_attr('imaging_destination', '/beaver/backup/level2_widefov/')
     config.add_attr('imaging_source', file)
     imaging_start, imaging_stop = util.get_data_file_times(file)
     imaging_step = [0, 0, 0, 1, 0]
@@ -247,6 +332,7 @@ if __name__ == '__main__':
     config.add_attr('fov', np.array([[315, 225], [90, 45]]))
     # config.add_attr('fov_center', np.array([90, 90]))
     config.add_attr('fov_center', np.array([270, 90]))
-    # config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85')
-    config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
-    generate_level2(config)
+    config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
+    config.add_attr('swht_coeffs_lowres', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5')
+    # config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
+    generate_level2(config, method='advanced')

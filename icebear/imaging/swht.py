@@ -1,9 +1,14 @@
 import numpy as np
 import scipy.special as special
 import time
+import icebear
 import icebear.utils as utils
 import h5py
 import cv2
+try:
+    import cupy as cp
+except:
+    print('no cupy')
 
 
 def generate_coeffs(config, fov=np.array([[0, 360], [0, 90]]), resolution=1.0, lmax=85):
@@ -203,13 +208,16 @@ def calculate_coeffs(filename, az, el, ko, r, t, p, lmax=85):
     return None
 
 
-def unpackage_coeffs(filename, ind):
+def unpackage_coeffs(filename, index):
     """
+    Unpack the coefficient values from a given hdf5 file of pre-calculated SWHT coefficients.
 
     Parameters
     ----------
-    filename
-    ind
+        filename : str
+            File and path to the HDF5 file containing the SWHT coefficients to unpack.
+        index :
+            The harmonic order index to unpack.
 
     Returns
     -------
@@ -219,10 +227,10 @@ def unpackage_coeffs(filename, ind):
 
     f = h5py.File(filename, 'r')
     try:
-        coeffs = np.array(f['coeffs'][f'{ind:02d}'][()], dtype=np.complex64)
+        coeffs = np.array(f['coeffs'][f'{index:02d}'][()], dtype=np.complex64)
     except:
         coeffs = np.array(f['coeffs'][()], dtype=np.complex64)
-    print('hdf5 coeffs:', coeffs.shape)
+    print(f'hdf5 coeffs: index = {index}, shape = {coeffs.shape}')
     return coeffs
 
 
@@ -250,9 +258,7 @@ def swht_py(visibilities, coeffs):
         * np.matmul method is faster than CUDA for array size less than 10e6.
     """
 
-    #start_time = time.time()
     brightness = np.matmul(coeffs, visibilities)
-    #print(f"\t-swht_py time: \t{time.time()-start_time}")
     
     return brightness
 
@@ -273,11 +279,85 @@ def swht_cuda():
         intensity : complex64 np.array
             Array of image domain intensity values.
     """
+
+    print("ERROR: swht_cuda is not implemented.")
+    exit()
+
     return
+
+
+def suppressed_swht_py(visibilities, coeffs_filepath, lmax, start=15, stop=85, step=10):
+    """
+    Python implementation of the Suppressed-SWHT imaging method. Given the visibility values and
+    SWHT coefficients that have been processed for various harmonic orders create a brightness map
+    and suppressed brightness map for imaging and spatial locating.
+
+    Parameters
+    ----------
+        visibilities
+        coeffs_filepath
+        lmax
+        start
+        stop
+        step
+
+    Returns
+    -------
+        suppressed_brightness : complex64 np.array
+
+        brightness : complex64 np.array
+
+    Notes
+    -----
+    For details on the Suppressed-SWHT see below paper.
+
+    Lozinsky, A., et. al. ICEBEAR-3D: A low elevation imaging radar using a non-uniform
+    coplanar receiver array for E region observations, Radio Science, submitted 2021.
+    """
+
+    # Returns a brightness map and suppressed brightness map
+    coeffs = unpackage_coeffs(coeffs_filepath, lmax)
+    brightness = swht_py(visibilities, coeffs)
+    suppressed_brightness = np.copy(brightness)
+    for i in range(start, stop, step):
+        coeffs = unpackage_coeffs(coeffs_filepath, i)
+        suppressed_brightness *= swht_py(visibilities, coeffs)
+
+    return suppressed_brightness, brightness
+
+
+def suppressed_swht_cuda(visibilities, coeffs):
+    """
+    CUDA implementation of the Suppressed-SWHT imaging method. Given the visibility values and
+    SWHT coefficients that have been processed for various harmonic orders create a brightness map
+    and suppressed brightness map for imaging and spatial locating.
+
+    Parameters
+    ----------
+        visibilities
+        coeffs
+
+    Returns
+    -------
+        brightness : complex64 np.array
+
+    Notes
+    -----
+    For details on the Suppressed-SWHT see below paper.
+
+    Lozinsky, A., et. al. ICEBEAR-3D: A low elevation imaging radar using a non-uniform
+    coplanar receiver array for E region observations, Radio Science, submitted 2021.
+    """
+
+    visibilities = cp.tile(cp.array(visibilities, dtype=cp.complex64), (coeffs.shape[-1], 1))
+    brightness = cp.prod(cp.einsum('ijkl,lk->ijl', coeffs, visibilities), axis=2)
+
+    return brightness
 
 
 def swht_method(visibilities, coeffs, resolution, fov, fov_center):
     """
+    Todo: This is not implementing the proper algorithm. This is using a shortcut.
 
     Parameters
     ----------
@@ -305,10 +385,180 @@ def swht_method(visibilities, coeffs, resolution, fov, fov_center):
     return mx, my, cx_extent, cy_extent, area
 
 
-def frequency_difference_beamform():
-    # This function is to be added. It provides exceptional target locating but sacrifices extent information.
-    # Todo
-    return
+def swht_method_advanced(visibilities, coeffs_filepath_fov, coeffs_filepath_full, lmax,
+                         average_spectra_noise, resolution, fov, fov_center):
+    """
+    Advanced method of the Suppressed-SWHT with selection filters for identifying noise signal,
+    dirty beam fits, and outside of the FoV targets. Additionally, the accuracy of the selection
+    is calculated as the difference between the selected target centroid and brightness maximum.
+
+    Parameters
+    ----------
+        visibilities
+        coeffs_filepath : str
+            Absolute filepath to the coeffeicents hdf5 file.
+        average_spectra_noise : float
+            The average noise computed from the cross spectra.
+        resolution : float
+            Angular resolution in degree per pixel.
+        fov : float np.array
+            [[start, stop], [start, stop]] azimuth, elevation angles within 0 to 360 and 0 to 180 degrees.
+        fov_center : float np.array
+            [[], []]
+
+    Returns
+    -------
+
+    """
+
+    # Create the brightness map at 1 degree resolution for a spherical cap.
+    suppressed_brightness, brightness = suppressed_swht_py(visibilities, coeffs_filepath_full, lmax)
+
+    # Check to see if the spectral flux density relative to the average spectra noise figure meets the threshold to
+    # qualify as a real target within the FoV. Noise and outside of the FoV targets are 10x less Jy. Attempts to
+    # capture false positives passed by the previous stage.
+    mean_jansky = np.mean(np.abs(brightness))
+    max_jansky = np.max(np.abs(brightness))
+    if mean_jansky <= 0.001 * average_spectra_noise:
+        print(f'-\ttarget outside the FoV, noise, or exists in a severe blindspot; skipped')
+        return None, None, None, None, None, None, mean_jansky, max_jansky
+
+    # Check if the target is within the FoV using a 1 deg full sphere coeffs.
+    brightness = brightness_cutoff(brightness, threshold=0.6)
+    suppressed_brightness = brightness_cutoff(suppressed_brightness, threshold=0.0)
+    full_mx, full_my, _ = max_center(suppressed_brightness)
+    full_mx, full_my, full_acc, full_extent_x, full_extent_y, full_area = contour_map(brightness, full_mx, full_my)
+    full_mx = full_mx - 360 + fov_center[0]
+    full_my = full_my - 90 + fov_center[1]
+    if not(fov[0, 0] <= full_mx <= fov[0, 1]) and not(fov[1, 0] <= full_my <= fov[1, 1]):
+        # Record data at 1deg
+        print('\t-target outside fov; recording 1 degree accuracy')
+        return full_mx, full_my, full_acc, full_extent_x, full_extent_y, full_area, mean_jansky, max_jansky
+
+    # Create the brightness map at desired resolution and FoV.
+    suppressed_brightness, brightness = suppressed_swht_py(visibilities, coeffs_filepath_fov, lmax)
+
+    # Apply Suppressed-SWHT to image to spatial locate the target
+    mean_jansky = np.mean(np.abs(brightness))
+    max_jansky = np.max(np.abs(brightness))
+    brightness = brightness_cutoff(brightness, threshold=0.6)
+    suppressed_brightness = brightness_cutoff(suppressed_brightness, threshold=0.0)
+    fov_mx, fov_my, _ = max_center(suppressed_brightness)
+    fov_mx, fov_my, fov_acc, fov_extent_x, fov_extent_y, fov_area = contour_map(brightness, fov_mx, fov_my)
+    fov_mx = fov_mx * resolution - fov[0, 0] + fov_center[0]
+    fov_my = fov_my * resolution - fov[1, 0] + fov_center[1]
+    fov_acc *= resolution
+    fov_extent_x *= resolution
+    fov_extent_y *= resolution
+    fov_area *= resolution ** 2
+
+    return fov_mx, fov_my, fov_acc, fov_extent_x, fov_extent_y, fov_area, mean_jansky, max_jansky
+
+
+def swht_method_advanced_cuda(visibilities, coeffs_fov, coeffs_full,
+                              resolution, fov, fov_center):
+    """
+    Advanced method of the Suppressed-SWHT with selection filters for identifying noise signal,
+    dirty beam fits, and outside of the FoV targets. Additionally, the accuracy of the selection
+    is calculated as the difference between the selected target centroid and brightness maximum.
+
+    Parameters
+    ----------
+        visibilities :
+        coeffs_fov :
+        coeffs_full :
+        resolution : float
+            Angular resolution in degree per pixel.
+        fov : float np.array
+            [[start, stop], [start, stop]] azimuth, elevation angles within 0 to 360 and 0 to 180 degrees.
+        fov_center : float np.array
+            [[], []]
+
+    Returns
+    -------
+
+    """
+
+    # Create the brightness map at 1 degree resolution for a spherical cap.
+    brightness_lowres = np.abs(np.matmul(coeffs_full, visibilities))
+
+    # Check to see if the spectral flux density relative to the average spectra noise figure meets the threshold to
+    # qualify as a real target within the FoV. Noise and outside of the FoV targets are 10x less Jy. Attempts to
+    # capture false positives passed by the previous stage.
+    mean_jansky = np.mean(brightness_lowres)
+    max_jansky = np.max(brightness_lowres)
+    # if mean_jansky <= 0.001 * average_spectra_noise:
+    #     print(f'-\ttarget outside the FoV, noise, or exists in a severe blindspot; skipped')
+    #     return None, None, mean_jansky, max_jansky
+
+    # Check if the target is within the FoV using a 1 deg full sphere coeffs.
+    index = np.unravel_index(np.argmax(brightness_lowres), brightness_lowres.shape)
+    full_mx = index[1]
+    full_my = index[0]
+    # full_mx = full_mx - 360 + fov_center[0]
+    # full_my = full_my - 90 + fov_center[1]
+    # if not(fov[0, 0] <= full_mx <= fov[0, 1]) and not(fov[1, 0] <= full_my <= fov[1, 1]):
+    if not(225.0 <= full_mx <= 315.0) and not(0.0 <= full_my <= 45.0):
+        # Record data at 1deg
+        print('\t-target outside fov; recording 1 degree accuracy')
+        valid = -1
+        full_mx = full_mx - 270.0
+        full_my = full_my
+        return full_mx, full_my, mean_jansky, max_jansky, valid
+
+    # Create the brightness map at desired resolution and FoV.
+    visibilities = cp.tile(cp.array(visibilities, dtype=cp.complex64), (coeffs_fov.shape[-1], 1))
+    brightness = cp.prod(cp.einsum('ijkl,lk->ijl', coeffs_fov, visibilities), axis=2)
+    index = cp.unravel_index(cp.argmax(cp.abs(brightness)), brightness.shape)
+    fov_mx = cp.asnumpy(index[1])
+    fov_my = cp.asnumpy(index[0])
+    fov_mx = fov_mx * resolution - fov[0, 0] + fov_center[0]
+    fov_my = fov_my * resolution - fov[1, 0] + fov_center[1]
+    valid = 0
+    if np.sqrt((full_mx - fov_mx)**2 + (full_my - fov_my)**2) <= 2.0:
+        valid = 1
+    return fov_mx, fov_my, mean_jansky, max_jansky, valid
+
+
+def contour_map(brightness, px, py):
+    """
+
+    Parameters
+    ----------
+    brightness
+    px
+    py
+
+    Returns
+    -------
+
+    """
+    # Image processing of the brightness map using smx, smy to locate correct contour.
+    image = np.array(brightness * 255, dtype=np.uint8)
+    threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    contours, _ = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    area = 0
+    cx = np.nan
+    cy = np.nan
+    extent_x = np.nan
+    extent_y = np.nan
+    for index, contour in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(contour)
+        temp_area = cv2.contourArea(contour)
+        if (x <= px < (x + w)) and (y <= py <= (y + h)):
+            if temp_area > area:
+                area = temp_area
+                moments = cv2.moments(contour)
+                cx = int(moments['m10'] / moments['m00'])
+                cy = int(moments['m01'] / moments['m00'])
+                extent_x = w
+                extent_y = h
+                region = [slice(x, x + w), slice(y, y + h)]
+    # Todo: region verify works
+    mx, my, _ = max_center(brightness[region])
+    acc = np.sqrt((cx - mx) ** 2 + (cy - my) ** 2)
+
+    return mx, my, acc, extent_x, extent_y, area
 
 
 def brightness_cutoff(brightness, threshold=0.5):
