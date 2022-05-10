@@ -115,7 +115,7 @@ for file in files:
 
         # calc median time distance of nearest 2*di_t points
         # todo: make this use the actual nearest 2*di_t points instead of the points centred around p1_idx
-        dt[p1_idx] = xp.median(abs(p1[0] - time[max(0, p1_idx-di_t):min(len(time), p1_idx+di_t)]))
+        dt[p1_idx] = xp.median(abs(p1[0] - xp.asnumpy(time)[max(0, p1_idx-di_t):min(len(time), p1_idx+di_t)]))
 
     endtime = tm.time()
     print("took about " + str(round(endtime - starttime)) + " seconds to execute, with " + str(len(time)) + " points")
