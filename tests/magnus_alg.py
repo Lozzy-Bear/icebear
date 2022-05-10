@@ -1,11 +1,12 @@
 import datetime
 import numpy as np
 try:
-    import cupy as xp
-    CUDA = True
+   import cupy as xp
+   CUDA = True
 except ModuleNotFoundError:
-    import numpy as xp
-    CUDA = False
+   import numpy as xp
+   CUDA = False
+#import numpy as xp
 import h5py
 import matplotlib.pyplot as plt
 import time as tm
@@ -38,7 +39,7 @@ def haversine(p1, p2, r):
 
 # files = ['/beaver/backup/level2b/ib3d_normal_swht_2021_02_20_prelate_bakker.h5']
 files = [str(sys.argv[1])]
-
+print("current device is: " + str(xp.cuda.Device().id))
 
 # slant_range = np.array([])
 # altitude = np.array([])
@@ -97,7 +98,7 @@ for file in files:
         tspan_seconds = int(tspan*60*60)
 
         # find indices of all points within the timespan
-        p2_idx = ((time < p1[0] + tspan_seconds//2) & (time > p1[0] - tspan_seconds//2))
+        p2_idx = xp.asnumpy(((time < p1[0] + tspan_seconds//2) & (time > p1[0] - tspan_seconds//2)))
 
         # populate p2 with all points within the timespan
         p2 = xp.ndarray([3, len(time[p2_idx])], dtype=xp.float32)
