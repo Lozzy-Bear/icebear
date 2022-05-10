@@ -75,6 +75,10 @@ for file in files:
     lon = np.append(lon, f['data']['longitude'][()])
     # idx = np.argwhere(time>time[0]+5.0*60.0*60.0)
 
+    time = xp.asarray(time)
+    lat = xp.asarray(lat)
+    lon = xp.asarray(lon)
+
     #ts = datetime.datetime.fromtimestamp(time[0])
 
     starttime = tm.time()
@@ -98,13 +102,13 @@ for file in files:
         tspan_seconds = int(tspan*60*60)
 
         # find indices of all points within the timespan
-        p2_idx = xp.asnumpy((xp.asnumpy(time) < (xp.asnumpy(p1)[0]) + tspan_seconds//2) & (xp.asnumpy(time) > (xp.asnumpy(p1)[0]) - tspan_seconds//2))
+        p2_idx = ((time < p1[0]) + tspan_seconds//2) & (time > p1[0] - tspan_seconds//2)
 
         # populate p2 with all points within the timespan
         p2 = xp.ndarray([3, len(time[p2_idx])], dtype=xp.float32)
-        p2[0, :] = xp.asarray(time)[p2_idx]
-        p2[1, :] = xp.asarray(lat)[p2_idx]
-        p2[2, :] = xp.asarray(lon)[p2_idx]
+        p2[0, :] = time[p2_idx]
+        p2[1, :] = lat[p2_idx]
+        p2[2, :] = lon[p2_idx]
 
         # get haversine distances between the point p1 and all points within tspan hours p2
         drs = haversine(p1, p2, 110)
@@ -115,7 +119,7 @@ for file in files:
 
         # calc median time distance of nearest 2*di_t points
         # todo: make this use the actual nearest 2*di_t points instead of the points centred around p1_idx
-        dt[p1_idx] = xp.median(abs(p1[0] - xp.asarray(time)[max(0, p1_idx-di_t):min(len(time), p1_idx+di_t)]))
+        dt[p1_idx] = xp.median(abs(p1[0] - time[max(0, p1_idx-di_t):min(len(time), p1_idx+di_t)]))
 
     endtime = tm.time()
     print("took about " + str(round(endtime - starttime)) + " seconds to execute, with " + str(len(time)) + " points")
