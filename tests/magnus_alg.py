@@ -98,7 +98,7 @@ for file in files:
         tspan_seconds = int(tspan*60*60)
 
         # find indices of all points within the timespan
-        p2_idx = xp.asnumpy(((time < p1[0] + tspan_seconds//2) & (time > p1[0] - tspan_seconds//2)))
+        p2_idx = ((xp.asnumpy(time) < p1[0] + tspan_seconds//2) & (xp.asnumpy(time) > p1[0] - tspan_seconds//2))
 
         # populate p2 with all points within the timespan
         p2 = xp.ndarray([3, len(time[p2_idx])], dtype=xp.float32)
