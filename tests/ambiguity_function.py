@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
-
 def ambiguityFunctionFFT(data, half_tau_length):
 
     n = len(data)
@@ -54,7 +53,7 @@ def ambiguityFunctionFFT(data, half_tau_length):
 
 def createBitSequence():
     """
-    Creates a random NRZ bit sequence with 10000 bits and one samples per bit
+    Creates a random NRZ bit sequence with 10000 bits and one sample per bit
 
     Parameters
     ----------
