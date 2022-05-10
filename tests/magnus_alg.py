@@ -9,6 +9,7 @@ except ModuleNotFoundError:
 import h5py
 import matplotlib.pyplot as plt
 import time as tm
+import sys
 
 def haversine(p1, p2, r):
     """
@@ -35,8 +36,9 @@ def haversine(p1, p2, r):
 
     return R * b
 
+# files = ['/beaver/backup/level2b/ib3d_normal_swht_2021_02_20_prelate_bakker.h5']
+files = [str(sys.argv[1])]
 
-files = ['/beaver/backup/level2b/ib3d_normal_swht_2021_02_20_prelate_bakker.h5']
 
 # slant_range = np.array([])
 # altitude = np.array([])
