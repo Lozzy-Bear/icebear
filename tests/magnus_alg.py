@@ -57,11 +57,12 @@ lon = np.array([])
 for file in files:
     f = h5py.File(file, 'r')
 
+    # todo: change these to xp.append once cupy is updated on ibp3
     # Example: Reading in data from multiple files (days) into one larger
     # slant_range = np.append(slant_range, f['data']['slant_range'][()])
     # altitude = np.append(altitude, f['data']['altitude'][()])
     # snr_db = np.append(snr_db, f['data']['snr_db'][()])
-    time = xp.append(time, f['data']['time'][()])
+    time = np.append(time, f['data']['time'][()])
     # rf_distance = np.append(rf_distance, f['data']['rf_distance'][()])
     # doppler_shift = np.append(doppler_shift, f['data']['doppler_shift'][()])
     # azimuth = np.append(azimuth, f['data']['azimuth'][()])
@@ -69,8 +70,8 @@ for file in files:
     # elevation_extent = np.append(elevation_extent, f['data']['elevation_extent'][()])
     # azimuth_extent = np.append(azimuth_extent, f['data']['azimuth_extent'][()])
     # area = np.append(area, f['data']['area'][()])
-    lat = xp.append(lat, f['data']['latitude'][()])
-    lon = xp.append(lon, f['data']['longitude'][()])
+    lat = np.append(lat, f['data']['latitude'][()])
+    lon = np.append(lon, f['data']['longitude'][()])
     # idx = np.argwhere(time>time[0]+5.0*60.0*60.0)
 
     #ts = datetime.datetime.fromtimestamp(time[0])
