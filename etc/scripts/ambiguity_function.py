@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import cupy as cp
 
 
 def generate_bcode(filepath):
@@ -29,13 +30,66 @@ def generate_bcode(filepath):
     return b_code
 
 
-def ambiguity(waveform, bcode, freq):
+def shift_2d_replace(data, dx, dy=0, constant=0.0):
+    shifted_data = np.roll(data, dx, axis=1)
+    if dx < 0:
+        shifted_data[:, dx:] = constant
+    elif dx > 0:
+        shifted_data[:, 0:dx] = constant
+
+    shifted_data = np.roll(shifted_data, dy, axis=0)
+    if dy < 0:
+        shifted_data[dy:, :] = constant
+    elif dy > 0:
+        shifted_data[0:dy, :] = constant
+    return shifted_data
+
+
+def ambiguity2d(bcode):
+    n = len(bcode)
+    b = cp.zeros(300 + n)
+    b[150:-150] = cp.copy(bcode)
+    taus = cp.arange(0, 301, 1)
+    m = cp.zeros((len(taus), n))
+    for idx, tau in enumerate(taus):
+        m[idx, :] = cp.fft.fftshift(cp.fft.fft(
+                                    bcode * cp.conj(b[tau:tau+n])
+                                    ))
+    m = cp.abs(m) ** 2
+    m /= cp.max(m)
+    m = 10 * cp.log10(m)
+    m = cp.asnumpy(m)
+    return m
+
+
+def ambiguity(waveform, bcode):
+    y = cp.convolve(bcode, waveform[::-1], mode='same')
+    # y = cp.fft.fftshift(cp.fft.fft(y))
+    y = cp.abs(y/cp.max(y))
+    y = cp.asnumpy(y)
+    t = np.arange(len(y))
     return t, y
 
 
 def ambiguity_plot(t, y):
     plt.figure()
     plt.plot(t, y)
+    plt.title('Pseudo-Random Noise Auto-correlation Response')
+    plt.xlabel('Normalized Delay Time t/τ')
+    plt.ylabel('Normalized Magnitude')
+    plt.show()
+    return
+
+
+def ambiguity_plot2d(y):
+    plt.figure()
+    plt.imshow(y, vmin=0, vmax=-36)
+    plt.title('Pseudo-Random Noise Auto-correlation Response')
+    plt.xlabel('Doppler [Hz]')
+    plt.ylabel('Range [km]')
+
+    plt.xlim((9500, 10500))
+    plt.colorbar(label='Power [dB]')
     plt.show()
     return
 
@@ -56,8 +110,12 @@ if __name__ == '__main__':
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-    bcode = generate_bcode('/home/arl203/icebear/icebear/dat/pseudo_random_code_test_8_lpf.txt')
-    waveform = np.copy(bcode)
+    bcode = generate_bcode('C:/Users/TKOCl/PythonProjects/icebear/dat/pseudo_random_code_test_8_lpf.txt')
+    waveform = cp.asarray(bcode)
     freq = 49.5e6
-    t, y = ambiguity(waveform, bcode, freq)
-    ambiguity_plot(t, y)
+    # t, y = ambiguity(waveform, waveform)
+    # ambiguity_plot(t, y)
+
+    y = ambiguity2d(waveform)
+    ambiguity_plot2d(y)
+
