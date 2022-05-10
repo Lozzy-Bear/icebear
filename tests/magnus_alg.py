@@ -102,9 +102,9 @@ for file in files:
 
         # populate p2 with all points within the timespan
         p2 = xp.ndarray([3, len(time[p2_idx])], dtype=xp.float32)
-        p2[0, :] = time[p2_idx]
-        p2[1, :] = lat[p2_idx]
-        p2[2, :] = lon[p2_idx]
+        p2[0, :] = xp.asarray(time)[p2_idx]
+        p2[1, :] = xp.asarray(lat)[p2_idx]
+        p2[2, :] = xp.asarray(lon)[p2_idx]
 
         # get haversine distances between the point p1 and all points within tspan hours p2
         drs = haversine(p1, p2, 110)
