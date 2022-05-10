@@ -1,25 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cupy as cp
 
 
-def generate_bcode(filepath):
-    """
-       Uses the pseudo-random code file to generate the binary code for signal matching
-
-    todo
-        Make function able to take any code length and resample at any rate
-    """
+def generate_bcode_10k(filepath):
     # Array for storing the code to be analyzed
-    b_code = np.zeros(20000, dtype=np.float32)
-
+    b_code = np.zeros(10000, dtype=np.float32)
     # Read in code to be tested
     test_sig = np.fromfile(open(filepath), dtype=np.complex64)
-
     # Sample code at 1/4 of the tx rate
     y = 0
     for x in range(80000):
-        if (x + 1) % 4 == 0:
+        if (x + 1) % 8 == 0:
             if test_sig[x] > 0.0:
                 b_code[y] = 1.0
                 y += 1
@@ -30,43 +21,9 @@ def generate_bcode(filepath):
     return b_code
 
 
-def shift_2d_replace(data, dx, dy=0, constant=0.0):
-    shifted_data = np.roll(data, dx, axis=1)
-    if dx < 0:
-        shifted_data[:, dx:] = constant
-    elif dx > 0:
-        shifted_data[:, 0:dx] = constant
-
-    shifted_data = np.roll(shifted_data, dy, axis=0)
-    if dy < 0:
-        shifted_data[dy:, :] = constant
-    elif dy > 0:
-        shifted_data[0:dy, :] = constant
-    return shifted_data
-
-
-def ambiguity2d(bcode):
-    n = len(bcode)
-    b = cp.zeros(300 + n)
-    b[150:-150] = cp.copy(bcode)
-    taus = cp.arange(0, 301, 1)
-    m = cp.zeros((len(taus), n))
-    for idx, tau in enumerate(taus):
-        m[idx, :] = cp.fft.fftshift(cp.fft.fft(
-                                    bcode * cp.conj(b[tau:tau+n])
-                                    ))
-    m = cp.abs(m) ** 2
-    m /= cp.max(m)
-    m = 10 * cp.log10(m)
-    m = cp.asnumpy(m)
-    return m
-
-
-def ambiguity(waveform, bcode):
-    y = cp.convolve(bcode, waveform[::-1], mode='same')
-    # y = cp.fft.fftshift(cp.fft.fft(y))
-    y = cp.abs(y/cp.max(y))
-    y = cp.asnumpy(y)
+def ambiguity(bcode):
+    y = np.convolve(bcode, bcode[::-1], mode='same')
+    y = np.abs(y/np.max(y))
     t = np.arange(len(y))
     return t, y
 
@@ -81,15 +38,31 @@ def ambiguity_plot(t, y):
     return
 
 
-def ambiguity_plot2d(y):
+def ambiguity2d(bcode, nrang):
+    n = len(bcode)
+    b = np.zeros(2 * nrang + n, dtype=np.complex64)
+    b[nrang:nrang+n] = bcode
+    taus = np.arange(2*nrang)
+    m = np.zeros((2*nrang, n), dtype=float)
+    for idx, tau in enumerate(taus):
+        m[idx, :] = 20 * np.log10(np.abs(np.fft.fft(np.conj(b[tau:tau+n]) * bcode)) + 0.000000000001)  # log 0 avoided
+        m[idx, :] = np.fft.fftshift(m[idx, :])
+    m -= np.max(m)
+    f = np.fft.fftshift(np.fft.fftfreq(n, 1.0 / 100_000.0))  # code length [chips], chip length [s]
+    return m, f
+
+
+def ambiguity_plot2d(y, f, nrang):
     plt.figure()
-    plt.imshow(y, vmin=0, vmax=-36)
+    plt.imshow(y[:, 4800:5200], vmax=np.amax(y), vmin=np.amax(y)-36, origin='lower',
+               aspect='auto', interpolation='none', cmap='viridis',
+               extent=[f[4800] - 5.0, f[5200] - 5.0, (nrang * -1.5) - 0.75, (nrang * 1.5) - 0.75])
     plt.title('Pseudo-Random Noise Auto-correlation Response')
     plt.xlabel('Doppler [Hz]')
     plt.ylabel('Range [km]')
-
-    plt.xlim((9500, 10500))
     plt.colorbar(label='Power [dB]')
+    plt.xlim((-1500, 1500))
+    plt.ylim((-150, 150))
     plt.show()
     return
 
@@ -97,7 +70,6 @@ def ambiguity_plot2d(y):
 if __name__ == '__main__':
     # Pretty plot configuration.
     from matplotlib import rc
-
     rc('font', **{'family': 'serif', 'serif': ['DejaVu Serif']})
     SMALL_SIZE = 10
     MEDIUM_SIZE = 12
@@ -110,12 +82,11 @@ if __name__ == '__main__':
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-    bcode = generate_bcode('C:/Users/TKOCl/PythonProjects/icebear/dat/pseudo_random_code_test_8_lpf.txt')
-    waveform = cp.asarray(bcode)
-    freq = 49.5e6
-    # t, y = ambiguity(waveform, waveform)
-    # ambiguity_plot(t, y)
+    bcode = generate_bcode_10k('../../dat/pseudo_random_code_test_8_lpf.txt')
+    nrang = 100
 
-    y = ambiguity2d(waveform)
-    ambiguity_plot2d(y)
+    t, y = ambiguity(bcode)
+    ambiguity_plot(t, y)
 
+    m, f = ambiguity2d(bcode, nrang)
+    ambiguity_plot2d(m, f, nrang)
