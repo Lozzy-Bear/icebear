@@ -96,11 +96,11 @@ starttime = tm.time()
 di_r = 512
 di_t = int(di_r/2)
 # dr holds median spatial distances to nearest di_r neighbours (within tspan hour window)
-dr = xp.zeros([len(time)], dtype=xp.float64)
+dr = xp.zeros([len(time)], dtype=xp.float32)
 # dt holds median temporal distances to nearest 2*di_t neighbours
-dt = xp.zeros([len(time)], dtype=xp.float64)
+dt = xp.zeros([len(time)], dtype=xp.float32)
 # p1 will hold the point of interest : p1 = [time, lat, lon] (hopefully this can be expanded to an array later)
-p1 = xp.ndarray([3, 1], dtype=xp.float64)
+p1 = xp.ndarray([3, 1], dtype=xp.float32)
 # span of points in time to include when doing spatial median
 tspan = 4  # hours
 tspan_seconds = int(tspan * 60.0 * 60.0)
@@ -116,7 +116,7 @@ for p1_idx in range(0, len(time)):
     p2_idx = (time < (time[p1_idx] + tspan_seconds/2)) & (time > (time[p1_idx] - tspan_seconds/2))
 
     # populate p2 with all points within the timespan
-    p2 = xp.ndarray([3, len(time[p2_idx])], dtype=xp.float64)
+    p2 = xp.ndarray([3, len(time[p2_idx])], dtype=xp.float32)
     p2[0, :] = time[p2_idx]
     p2[1, :] = lat[p2_idx]
     p2[2, :] = lon[p2_idx]
