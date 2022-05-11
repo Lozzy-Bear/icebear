@@ -71,7 +71,7 @@ def cluster_plot(fig_num, dt, dr):
     plt.show()
 
 # Matlab calculated dr and dt (these are definitely correct)
-f = genfromtxt('DRDT.csv', delimiter=',')
+f = genfromtxt('./DRDT.csv', delimiter=',')
 dr1 = f[:, 0]
 dt1 = f[:, 1]
 
@@ -79,10 +79,10 @@ dt1 = f[:, 1]
 cluster_plot(1, dt1, dr1)
 
 # load in the lat, lon and time data used to calculate the above dr and dt
-f = genfromtxt('LATLON.csv', delimiter=',')
+f = genfromtxt('./LATLON.csv', delimiter=',')
 lat = xp.asarray(f[:, 0])
 lon = xp.asarray(f[:, 1])
-f = genfromtxt('T.csv', delimiter=',')
+f = genfromtxt('./T.csv', delimiter=',')
 time = xp.asarray(f[:])
 
 # convert to seconds
