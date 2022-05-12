@@ -1,15 +1,60 @@
 import numpy as np
 from numpy import genfromtxt
+import h5py
 try:
-   import cupy as xp
-   CUDA = True
+    import cupy as xp
+    CUDA = True
 except ModuleNotFoundError:
-   import numpy as xp
-   CUDA = False
+    import numpy as xp
+    CUDA = False
 import matplotlib.pyplot as plt
 import time as tm
 
-def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512, time_shift=True):
+
+def beam_finder(azimuth, elevation):
+    # linear model val(x) = p1*x + p2
+    beam = xp.zeros(len(azimuth))
+    coeffs = xp.array([[-0.3906, 0.1125],  # west0 coefficients [p1, p2]
+                       [-0.3814, 5.934],   # west1      "          "
+                       [-0.5422, 8.47],    # centre0    "          "
+                       [-0.6575, 19.79],   # centre1    "          "
+                       [-10.38, 32.45],    # east0      "          "
+                       [-1.229, 59.03]])   # east1      "          "
+
+    # discretize into azimuth bins
+    azimuth_bins = xp.arange(-60.0, 60.0, 0.5)
+    azimuth_centres = azimuth_bins[0:len(azimuth_bins)-1] + 0.25
+    data_bins = xp.digitize(azimuth, azimuth_bins)
+
+    for data_bin in range(0, len(azimuth_bins)-1):
+        # indices of elements matching current bin
+        cur_idx = (data_bins == data_bin)
+        if any(cur_idx):
+            # temporary elevation and beam vars
+            temp_elevation = elevation[cur_idx]
+            temp_beam = azimuth[cur_idx]
+
+            # using linear functions to cut out unnecessary data
+            el_west0   = float(coeffs[0][0] * azimuth_centres[data_bin] + coeffs[0][1])
+            el_west1   = float(coeffs[1][0] * azimuth_centres[data_bin] + coeffs[1][1])
+            el_centre0 = float(coeffs[2][0] * azimuth_centres[data_bin] + coeffs[2][1])
+            el_centre1 = float(coeffs[3][0] * azimuth_centres[data_bin] + coeffs[3][1])
+            el_east0   = float(coeffs[4][0] * azimuth_centres[data_bin] + coeffs[4][1])
+            el_east1   = float(coeffs[5][0] * azimuth_centres[data_bin] + coeffs[5][1])
+
+            WEST   = (el_west0   < temp_elevation) & (temp_elevation < el_west1)
+            CENTRE = (el_centre0 < temp_elevation) & (temp_elevation < el_centre1)
+            EAST   = (el_east0   < temp_elevation) & (temp_elevation < el_east1)
+
+            # numbering to match Magnus
+            temp_beam[WEST]   = 3
+            temp_beam[CENTRE] = 2
+            temp_beam[EAST]   = 1
+            beam[cur_idx] = temp_beam
+
+    return beam
+
+def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
     """
     Calculates the spatial and temporal medians for each point in the array arr
     using CuPy / CUDA optimization.
@@ -26,20 +71,14 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512, time_shift=True):
         total time in hours to window the spatial median (default 4)
     di_r : int
         number of points centred on the point of interest used to calculate the medians (default 512)
-    time_shift : bool
-        if True, indices will be shifted so that temporal medians are calculated using di_r number of points
-        that fall within 60 seconds of the point of interest
-        if False, no shifting. temporal median calculated using di_r number of points centred on the point of interest
 
     Returns
     -------
     dr: float32 ndarray
-        array of median spatial distances
+        1d array of median spatial distances
     dt: float32 ndarray
-        array of median temporal distances
+        1d array of median temporal distances
     """
-    # todo : look into implementing a cutoff for spatial points
-    # todo : implement chunking
 
     # grab points and use GPU arrays
     time = xp.asarray(arr[0, :])
@@ -66,13 +105,6 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512, time_shift=True):
     # convert tspan to seconds
     tspan_seconds = int(tspan * 60.0 * 60.0)
 
-    timer = 0.0
-
-    # shift for the temporal median. after going through the loop once, this will have a value
-    # to shift the indices of the temporal median calculation to ensure that all points
-    # are within 60 seconds of the point of interest. this only happens if parameter time_shift = True
-    index_shift = 0
-
     # go through every point in time[] array.
     for p1_idx in range(0, Nt):
 
@@ -80,6 +112,10 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512, time_shift=True):
         p1[0] = time[p1_idx]
         p1[1] = lat[p1_idx]
         p1[2] = lon[p1_idx]
+
+        ###################
+        # Spatial Average #
+        ###################
 
         # find indices of all points within the timespan for spatial average
         p2_idx = (time < (time[p1_idx] + tspan_seconds / 2)) & (time > (time[p1_idx] - tspan_seconds / 2))
@@ -92,49 +128,26 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512, time_shift=True):
         p2[:, len(time[p2_idx])+1:] = 0.0
 
         # get haversine distances between the point of interest (p1) and all points within tspan hours (p2)
-        drs = haversine(p1, p2[:, 0:len(time[p2_idx])], r)
+        drs = xp.asarray(haversine(p1, p2[:, 0:len(time[p2_idx])], r))
 
         # calc median space distance of nearest di_r points
         drs = xp.sort(drs)
         dr[p1_idx] = xp.median(drs[0:di_r])
 
+        ####################
+        # Temporal Average #
+        ####################
+
+        # indices of the earliest and latest points to use in calculating the temporal average
+        earliest = max(0, p1_idx - di_t)
+        latest = min(len(time)-1, p1_idx + di_t)
+
         # calc median time distance of nearest 2*di_t points
-        earliest = max(0, p1_idx - di_t + index_shift)
-        latest = min(len(time)-1, p1_idx + di_t + index_shift)
-
-        if time_shift:
-            # shift the window so that it takes the actual nearest 2*di_t points within 60 seconds
-            # (not necessarily centred around p1_idx).
-            # only done when not near the edges of the array and while p1_idx is still between earliest and latest
-
-            start = tm.time()
-
-            # time difference going forward in time
-            pos_time_diff = time[latest] - time[p1_idx]
-            # time difference going backward in time
-            neg_time_diff = time[p1_idx] - time[earliest]
-            while pos_time_diff - neg_time_diff > 60.0 and latest != len(time)-1 and earliest != 0 and earliest < p1_idx < latest:
-                if pos_time_diff > neg_time_diff:
-                    latest      -= 1
-                    earliest    -= 1
-                    index_shift -= 1
-                else:
-                    earliest    += 1
-                    latest      += 1
-                    index_shift += 1
-                pos_time_diff = time[latest] - time[p1_idx]
-                neg_time_diff = time[p1_idx] - time[earliest]
-
-            end = tm.time()
-            timer += (end-start)
-
         dt[p1_idx] = xp.median(abs(time[p1_idx] - time[earliest:latest]))
 
     # minimum temporal and spatial distances
     dt[dt < 1] = 1
     dr[dr == 0] = min(dr[dr > 0])
-
-    print('adding accurate temporal median took ' + str(round(timer)) + ' seconds for ' + str(len(time)) + ' points.')
 
     if CUDA:
         return dr.get(), dt.get()
@@ -165,6 +178,8 @@ def haversine(p1, p2, r):
     b = 2 * R * xp.arctan2(xp.sqrt(a), xp.sqrt(1 - a))
 
     return b
+
+
 
 def cluster_plot(fig_num, dt, dr):
     logbinsdt = np.logspace(np.log10(1), np.log10(max(dt)), 300)
@@ -200,36 +215,3 @@ def cluster_plot(fig_num, dt, dr):
     ax3.sharey(ax1)
 
     plt.show()
-
-
-f = genfromtxt('./DRDT.csv', delimiter=',')
-dr1 = f[:, 0]
-dt1 = f[:, 1]
-
-# plot Matlab results
-# cluster_plot(1, dt1, dr1)
-
-# load in the lat, lon and time data used to calculate the above dr and dt
-f = genfromtxt('./LATLON.csv', delimiter=',')
-
-lat = np.array(f[:, 0])
-lon = np.array(f[:, 1])
-f = genfromtxt('./T.csv', delimiter=',')
-time = np.array(f[:])
-
-arr = np.ndarray((3, len(lat)))
-arr[0, :] = time
-arr[1, :] = lat
-arr[2, :] = lon
-
-# start timer
-starttime = tm.time()
-
-dr, dt = cluster_medians(arr, r=110.0, tspan=4.0, di_r=512)
-
-# end timer
-endtime = tm.time()
-print("took about " + str(round(endtime - starttime)) + " seconds to execute, with " + str(len(time)) + " points")
-
-# plot Cupy results
-cluster_plot(2, dt, dr)
