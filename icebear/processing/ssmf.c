@@ -18,11 +18,11 @@ int ssmf(float *meas, float *code, float *result)
     {
       for(int di=0 ; di<DEC ; di++)
       {
-	int ci=ti*DEC+di;
-	// re
-	result[2*(rg*RESLEN+ti)]+=meas[2*(ci+rg)]*code[ci];
-	// im
-	result[2*(rg*RESLEN+ti)+1]+=meas[2*(ci+rg)+1]*code[ci];
+        int ci=ti*DEC+di;
+        // re
+        result[2*(rg*RESLEN+ti)]+=meas[2*(ci+rg)]*code[ci];
+        // im
+        result[2*(rg*RESLEN+ti)+1]+=meas[2*(ci+rg)+1]*code[ci];
       }
     }
   }
