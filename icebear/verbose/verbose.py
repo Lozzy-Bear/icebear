@@ -7,7 +7,7 @@ import inspect
 # class VerboseFormat:
 
 
-class Verbose:
+class verbose:
     # Intentionally leaving verbose lowercase because I think it looks nicer when reading it when implemented.
     def __init__(self, ctx='', show=True, logfile=None, trace=True):
 

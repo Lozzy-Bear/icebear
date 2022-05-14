@@ -1,1 +1,1 @@
-from verbose import Verbose as verbose
+from .verbose import verbose

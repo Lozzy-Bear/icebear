@@ -4,9 +4,9 @@ from scipy.integrate import dblquad
 import multiprocessing as mp
 import time
 import sys
-import path as pth
-ipath = pth.Path(__file__).abspath()
-sys.path.append(ipath.parent.parent.parent)
+# import path as pth
+# ipath = pth.Path(__file__).abspath()
+# sys.path.append(ipath.parent.parent.parent)
 import icebear
 import icebear.utils as utils
 import h5py
