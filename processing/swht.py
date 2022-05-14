@@ -1,8 +1,7 @@
 import numpy as np
 import scipy.special as special
 import time
-import icebear
-import icebear.utils as utils
+import common.utils as utils
 import h5py
 import cv2
 try:

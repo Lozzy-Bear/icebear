@@ -1,5 +1,4 @@
-import icebear.utils as utils
-import icebear
+import common.utils as utils
 import numpy as np
 
 
@@ -8,7 +7,7 @@ filepath = 'E:/icebear/level1/'  # Enter file path to level 1 directory
 files = ['E:/icebear/level1/2019_12_19/ib3d_normal_01dB_1000ms_2019_12_19_05_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
 
 for file in files:
-    config = icebear.utils.Config(file)
+    config = common.utils.Config(file)
     config.lmax = 85
 
     # config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_01res_218lmax.h5')
@@ -31,4 +30,4 @@ for file in files:
     config.add_attr('imaging_source', file)
     config.add_attr('image_method', 'swht')
 
-    icebear.imaging.image.generate_level2(config, method='swht')
+    processing.image.generate_level2(config, method='swht')

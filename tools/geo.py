@@ -2,10 +2,9 @@ import numpy as np
 import nvector as nv
 import h5py
 import matplotlib.pyplot as plt
-import icebear.utils as utils
+import common.utils as utils
 import pymap3d as pm
 import pyproj
-import icebear as ib
 
 
 def map_target(tx, rx, az, el, rf):
@@ -403,7 +402,7 @@ def append_level2_hdf5(filename, hour, minute, second, doppler_shift, snr_db, rf
 def package_data(time, snr_db, range, azimuth, elevation, altitude,
                  velocity_azimuth, velocity_elevation, doppler_shift):
 
-    config = ib.utils.Config('X://PythonProjects//icebear//dat//default.yml')
+    config = common.utils.Config('X://PythonProjects//icebear//dat//default.yml')
 
     f = h5py.File('cleaned_2020_06_16.h5', 'w')
     f.create_dataset('date_created', data=np.array([2021, 4, 1]))

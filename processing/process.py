@@ -3,7 +3,7 @@ import numba
 import numpy as np
 import ctypes as C
 import digital_rf
-import icebear.utils
+import common.utils
 
 
 def generate_level1(config):
@@ -39,7 +39,7 @@ def generate_level1(config):
 
     if not config.processing_step:
         config.processing_step = [0, 0, 0, config.incoherent_averages * config.time_resolution, 0]
-    time = icebear.utils.Time(config.processing_start, config.processing_stop, config.processing_step)
+    time = common.utils.Time(config.processing_start, config.processing_stop, config.processing_step)
     if config.incoherent_averages * config.time_resolution > time.step_epoch:
         print(f'WARNING: averaging time length {config.incoherent_averages * config.time_resolution}s'
               f' is greater than step time length {time.step_epoch}s')

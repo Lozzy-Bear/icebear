@@ -1,9 +1,7 @@
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import icebear.utils as utils
-import icebear
-
+import common.utils as utils
 
 filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
 files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last

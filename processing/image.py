@@ -1,6 +1,5 @@
 import numpy as np
-import icebear
-import icebear.utils as util
+import common.utils as util
 import h5py
 try:
     import cupy as cp
@@ -27,17 +26,17 @@ def generate_level2(config, method='swht'):
         args = () # Devin any specific args you need to handle should be passed as a tuple
     elif method == 'swht':
         calculate_image = _swht_method
-        args = (icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)),
+        args = (processing.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)),
                 config.resolution,
                 config.fov,
                 config.fov_center)
     elif method == 'advanced':
         calculate_image = _swht_method_advanced
-        coeffs_full = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs_lowres, int(config.lmax))
+        coeffs_full = processing.swht.unpackage_coeffs(config.swht_coeffs_lowres, int(config.lmax))
         coeffs_fov = np.zeros((450, 900, 92, 8), dtype=np.complex64)
         idx = 0
         for i in range(15, 95, 10):
-            coeffs_fov[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
+            coeffs_fov[:, :, :, idx] = processing.swht.unpackage_coeffs(config.swht_coeffs, i)
             idx += 1
         coeffs_fov = cp.asarray(coeffs_fov)
         args = (coeffs_fov,
@@ -53,7 +52,7 @@ def generate_level2(config, method='swht'):
     print(f'\t-imaging method: {method}')
 
     file = h5py.File(config.imaging_source, 'r')
-    time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
+    time = common.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         now = time.get_date(t)
@@ -227,7 +226,7 @@ def _swht_method(filename, hour, minute, second, data, coeffs, resolution, fov, 
 
     for idx, visibility in enumerate(visibilities):
         azimuth[idx], elevation[idx], azimuth_extent[idx], elevation_extent[idx], area[idx] = \
-            icebear.imaging.swht.swht_method(visibility, coeffs, resolution, fov, fov_center)
+            processing.swht.swht_method(visibility, coeffs, resolution, fov, fov_center)
 
     # Custom data appending for SWHT image data sets
     time = f'{hour:02d}{minute:02d}{second:05d}'
@@ -291,8 +290,8 @@ def _swht_method_advanced(filename, hour, minute, second, data, coeffs_fov, coef
 
     for idx, visibility in enumerate(visibilities):
         azimuth[idx], elevation[idx], mean_jansky[idx], max_jansky[idx], valid[idx] = \
-            icebear.imaging.swht.swht_method_advanced_cuda(visibility, coeffs_fov, coeffs_full,
-                                                           resolution, fov, fov_center)
+            processing.swht.swht_method_advanced_cuda(visibility, coeffs_fov, coeffs_full,
+                                                      resolution, fov, fov_center)
 
     # Custom data appending for SWHT image data sets
     time = f'{hour:02d}{minute:02d}{second:05d}'
@@ -315,7 +314,7 @@ def _swht_method_advanced(filename, hour, minute, second, data, coeffs_fov, coef
 if __name__ == '__main__':
     file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
     # file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_13_prelate_bakker.h5'
-    config = icebear.utils.Config(file)
+    config = common.utils.Config(file)
     config.add_attr('imaging_destination', 'E:/icebear/level2_advanced_cuda/')
     # config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
     # config.add_attr('imaging_destination', '/beaver/backup/level2_widefov/')

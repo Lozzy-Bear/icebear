@@ -4,7 +4,6 @@ import math as mat
 from scipy.integrate import dblquad
 import multiprocessing as mp
 import cv2
-import icebear
 
 
 # gaussian shape in image space
@@ -118,14 +117,14 @@ if __name__ == '__main__':
                                                              azi_rad_extent_number, ele_rad_location_number,
                                                              ele_rad_extent_number])))
 
-    factors = icebear.imaging.swht.unpackage_factors_hdf5(
+    factors = processing.swht.unpackage_factors_hdf5(
         f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', 5)
-    B = icebear.imaging.swht.swht_py(V, factors[:, :, 0:len(V)])
+    B = processing.swht.swht_py(V, factors[:, :, 0:len(V)])
 
     for i in range(85, 95, 10):
-        factors = icebear.imaging.swht.unpackage_factors_hdf5(
+        factors = processing.swht.unpackage_factors_hdf5(
             f'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2020-9-22_360-180-10-85', i)
-        B *= icebear.imaging.swht.swht_py(V, factors[:, :, 0:len(V)])
+        B *= processing.swht.swht_py(V, factors[:, :, 0:len(V)])
 
     # B = swht(V, factors[:, :, 0:len(V)])
     B = np.abs(B / np.max(B))

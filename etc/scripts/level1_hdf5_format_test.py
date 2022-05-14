@@ -1,4 +1,3 @@
-import icebear.utils as util
 import h5py
 
 

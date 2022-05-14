@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import argparse
-import icebear.utils
-import icebear
+import common.utils
 
 
 class Processing:
     def __init__(self, config):
-        filename = icebear.processing.process.generate_level1(config)
+        filename = processing.process.generate_level1(config)
         config.add_attr('level1_data_files', filename)
 
 
@@ -18,7 +17,7 @@ class Imaging:
     def check_coeffs(self, config):
         if config.check_attr('swht_coeffs'):
             if config.compare_attr('swht_coeffs', None):
-                filename = icebear.imaging.swht.generate_coeffs(config)
+                filename = processing.swht.generate_coeffs(config)
                 config.update_attr('swht_coeffs', filename)
             pass
         else:
@@ -28,8 +27,8 @@ class Imaging:
 
 class Plotting:
     def __init__(self, config):
-        time = icebear.utils.Time(config.plotting_start, config.plotting_stop, config.plotting_step)
-        icebear.plotting.plot.range_doppler_snr(config, time)
+        time = common.utils.Time(config.plotting_start, config.plotting_stop, config.plotting_step)
+        plotting.plot.range_doppler_snr(config, time)
         pass
 
 
@@ -57,10 +56,10 @@ def main():
 def run(args):
     if args.configuration is None:
         path = Path(__file__).parent.parent.parent / "dat/default.yml"
-        config = icebear.utils.Config(str(path))
+        config = common.utils.Config(str(path))
         print('running with default configuration: default.yml')
     else:
-        config = icebear.utils.Config(args.configuration)
+        config = common.utils.Config(args.configuration)
     config.print_attrs()
 
     if args.processing:

@@ -1,8 +1,8 @@
-import icebear.utils as utils
+import common.utils as utils
 import numpy as np
 
 
-import icebear.imaging.image as ibi
+import processing.image as ibi
 filepath = 'F:/icebear/level1/'  # Enter file path to level 1 directory
 # filepath = '/beaver/backup/level1/'
 date_dir = '2020_12_12'

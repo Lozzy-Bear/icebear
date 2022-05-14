@@ -1,8 +1,7 @@
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import icebear.utils as utils
-from mpl_toolkits.mplot3d import Axes3D
+import common.utils as utils
 
 
 def meteor_distribution(alt):

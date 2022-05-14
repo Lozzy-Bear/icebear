@@ -1,32 +1,30 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import dblquad
 import multiprocessing as mp
 import time
 import sys
 import path as pth
 ipath = pth.Path(__file__).abspath()
 sys.path.append(ipath.parent.parent.parent)
-import icebear
-import icebear.utils as utils
+import common.utils as utils
 import h5py
 
 
 def sswht_processing(coeffs, visbility):
-    coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
+    coeffs = processing.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax))
     coeffs2 = np.copy(coeffs)
 
     start_time = time.time()
-    brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
+    brightness = processing.swht.swht_py(visibility, coeffs)
     print('time:', time.time() - start_time)
 
     for i in range(15, 85, 10):
-        coeffs = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
-        brightness *= icebear.imaging.swht.swht_py(visibility, coeffs)
+        coeffs = processing.swht.unpackage_coeffs(config.swht_coeffs, i)
+        brightness *= processing.swht.swht_py(visibility, coeffs)
 
-    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
-    cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
-    mx, my, _ = icebear.imaging.swht.max_center(brightness)
+    brightness = processing.swht.brightness_cutoff(brightness, threshold=0.0)
+    cx, cy, cx_extent, cy_extent, area = processing.swht.centroid_center(brightness)
+    mx, my, _ = processing.swht.max_center(brightness)
     mx = mx * config.resolution - config.fov[0, 0] + config.fov_center[0]
     my = my * config.resolution - config.fov[1, 0] + config.fov_center[1]
     cx = cx * config.resolution - config.fov[0, 0] + config.fov_center[0]
@@ -41,9 +39,9 @@ def sswht_processing(coeffs, visbility):
         if np.allclose([azimuth, elevation, azimuth_extent, elevation_extent], [cx, cy, cx_extent, cy_extent], atol=1):
             print('\t-result matches input within error (10e-1)')
 
-    intensity = icebear.imaging.swht.swht_py(visibility, coeffs2)
+    intensity = processing.swht.swht_py(visibility, coeffs2)
     print(f'\t-max intentsity {np.max(intensity)} mean intensity {np.mean(intensity)}')
-    intensity = icebear.imaging.swht.brightness_cutoff(intensity, threshold=0.0)
+    intensity = processing.swht.brightness_cutoff(intensity, threshold=0.0)
 
     return brightness, intensity, mx, my
 
@@ -117,10 +115,10 @@ def simulate_vcz(config, azimuth, elevation, azimuth_extent, elevation_extent):
     brightness *= 299792458.0 * wavelength ** 2 / (4 * (2 * np.pi) ** 3)
     print('time:', time.time() - start_time)
 
-    brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
+    brightness = processing.swht.brightness_cutoff(brightness, threshold=0.0)
     intensity = np.copy(brightness)
-    cx, cy, cx_extent, cy_extent, area = icebear.imaging.swht.centroid_center(brightness)
-    mx, my, _ = icebear.imaging.swht.max_center(brightness)
+    cx, cy, cx_extent, cy_extent, area = processing.swht.centroid_center(brightness)
+    mx, my, _ = processing.swht.max_center(brightness)
     mx = mx * config.resolution - config.fov[0, 0] + config.fov_center[0]
     my = my * config.resolution - config.fov[1, 0] + config.fov_center[1]
     cx = cx * config.resolution - config.fov[0, 0] + config.fov_center[0]
@@ -174,15 +172,15 @@ class Image:
 
     @staticmethod
     def sswht(coeffs, visibility):
-        coeffs = icebear.imaging.swht.unpackage_coeffs(self.coeffs_file, 85)
+        coeffs = processing.swht.unpackage_coeffs(self.coeffs_file, 85)
         start_time = time.time()
-        brightness = icebear.imaging.swht.swht_py(visibility, coeffs)
+        brightness = processing.swht.swht_py(visibility, coeffs)
         # This section activates the experimental angular_frequency_beamforming()
         for i in range(15, 85, 10):
-            coeffs = icebear.imaging.swht.unpackage_coeffs(self.coeffs_file, i)
-            brightness *= icebear.imaging.swht.swht_py(visibility, coeffs)
-        brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
-        mx, my, _ = icebear.imaging.swht.max_center(brightness)
+            coeffs = processing.swht.unpackage_coeffs(self.coeffs_file, i)
+            brightness *= processing.swht.swht_py(visibility, coeffs)
+        brightness = processing.swht.brightness_cutoff(brightness, threshold=0.0)
+        mx, my, _ = processing.swht.max_center(brightness)
         tt = time.time() - start_time
         return mx, my, tt
 
@@ -198,8 +196,8 @@ class Image:
         for cnt in range(92):
             brightness += visibility[cnt] * np.exp(1j * 2 * np.pi * (self.u[cnt] * ll + self.v[cnt] * mm))
         brightness *= 299792458.0 * self.wavelength ** 2 / (4 * (2 * np.pi) ** 3)
-        brightness = icebear.imaging.swht.brightness_cutoff(brightness, threshold=0.0)
-        mx, my, _ = icebear.imaging.swht.max_center(brightness)
+        brightness = processing.swht.brightness_cutoff(brightness, threshold=0.0)
+        mx, my, _ = processing.swht.max_center(brightness)
         tt = time.time() - start_time
         return mx, my, tt
 
@@ -255,7 +253,7 @@ def gpu_coeffs(config, rule):
     k = np.zeros((450, 900, 92, len(rule)), dtype=np.complex64)
     idx = 0
     for i in rule:
-        k[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
+        k[:, :, :, idx] = processing.swht.unpackage_coeffs(config.swht_coeffs, i)
         idx += 1
     print(k.shape, k.nbytes/1e9, 'GB', time.time() - ts)
     return k

@@ -1,7 +1,7 @@
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import icebear.utils as utils
+import common.utils as utils
 from scipy.optimize import curve_fit
 
 filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory

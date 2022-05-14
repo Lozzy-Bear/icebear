@@ -1,5 +1,4 @@
-import icebear
-import icebear.utils as util
+import common.utils as util
 import os
 
 # Set plotting step size
@@ -25,6 +24,6 @@ for file in files:
     plotting_start, plotting_stop = util.get_data_file_times(file)
     print(config.plotting_destination, plotting_start, plotting_stop)
     time = util.Time(plotting_start, plotting_stop, plotting_step)
-    icebear.plotting.plot.range_doppler_snr(config, time, plotting_spacing)
+    plotting.plot.range_doppler_snr(config, time, plotting_spacing)
 
 

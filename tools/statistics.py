@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 import pymap3d as pm
-import icebear.utils as utils
+import common.utils as utils
 import datetime
 from dateutil.tz import tzutc
 # import os
