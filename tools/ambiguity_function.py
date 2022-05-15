@@ -82,7 +82,7 @@ if __name__ == '__main__':
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-    bcode = generate_bcode_10k('../../dat/pseudo_random_code_test_8_lpf.txt')
+    bcode = generate_bcode_10k('../dat/pseudo_random_code_test_8_lpf.txt')
     nrang = 100
 
     t, y = ambiguity(bcode)
