@@ -1,17 +1,9 @@
-# Spread Spectrum Matched Filter function. Computes a decimation at a rate of 200
-
-import numpy as np
-import sys
-from numpy import genfromtxt
-import h5py
 try:
     import cupy as xp
     CUDA = True
 except ModuleNotFoundError:
     import numpy as xp
     CUDA = False
-import matplotlib.pyplot as plt
-import time as tm
 
 def windowed_view(ndarray, window_len, step):
     """
@@ -42,9 +34,9 @@ def ssmf_kernel(meas, code, N=20000, r=2000, dec_rate=200):
     Performs matched filtering and decimation on a set of complex measurements. Uses Cupy to run on the GPU
     Parameters
     ----------
-    meas : complex64 ndarray
+    meas : complex64 ndarray with shape (N + r)
         1D array of measurements
-    code : complex64 ndarray
+    code : complex64 ndarray with shape (N)
         1D array of PRN code values
     N : int
         length of PRN code in samples (default 20000)
@@ -101,41 +93,63 @@ def ssmf_kernel(meas, code, N=20000, r=2000, dec_rate=200):
 
     return result
 
-N = 20000
-r = 2000
-dec_rate = 200
-meas = xp.arange(0, N+r)
-code = xp.arange(0, N)
-
-print(ssmf_kernel(meas, code, N, r, dec_rate))
 
 
-# these two operations should give same result:
+def conj_kernel(arr1, arr2, averages):
+    """
+    Performs conjugate multiplication between two ndarrays ie: arr1 * conj(arr2)
+    This is the cross-correlation of arr1 and arr2 in fourier space
+    This function is performed assuming that multiple cross-correlations will be averaged together
+    ----------
+    arr1 : complex64 ndarray with shape (r+1, n)
+        2D array [range gate, frequency] in fourier space. This array will NOT be conjugated
+    arr2 : complex64 ndarray with shape (r+1, n)
+        2D array [range gate, frequency] in fourier space. This array WILL be conjugated
+    averages : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed
+    Returns
+    -------
+    result : complex64 ndarray with shape (r+1, n)
+        2D array [range gate, frequency] containing the cross-correlation divided by the number of results used to
+        find an averages
+    """
+    xcorr = arr1*xp.conj(arr2)
 
-# A = xp.array(  [[[0, 1, 0],
-#                  [1, 1, 0],
-#                  [1, 1, 1]],
-#                 [[0, 2, 0],
-#                  [2, 2, 0],
-#                  [2, 2, 2]],
-#                 [[0, 5, 0],
-#                  [5, 5, 0],
-#                  [5, 5, 5]]])
+    #todo: may need draven's floating point corrections
+    result = xcorr/averages
 
-# B = xp.array([[2, 3, 1], [1, 5, 0], [4, 4, 3]])
-#
-# print(xp.einsum('ijk,jk->ij', A, B))
-#
-# A = xp.array(  [[[0, 1, 0],
-#                  [0, 2, 0],
-#                  [0, 5, 0]],
-#                 [[1, 1, 0],
-#                  [2, 2, 0],
-#                  [5, 5, 0]],
-#                 [[1, 1, 1],
-#                  [2, 2, 2],
-#                  [5, 5, 5]]])
-#
-# B = xp.array([[2, 3, 1], [1, 5, 0], [4, 4, 3]])
-#
-# print(xp.einsum('ijk,ik->ji', A, B))
+    return result
+
+
+if __name__ == '__main__':
+    check = 0
+    N = 20000
+    r = 2000
+    dec_rate = 200
+    meas1 = xp.arange(0, N+r)
+    meas2 = xp.arange(0, N+r)
+    code = xp.arange(0, N)
+    averages = 10
+
+    if check == 0:
+        result1 = xp.zeros((r + 1, int(N / dec_rate)))
+        for i in range(0, averages):
+            result1 += ssmf_kernel(meas1, code, N=20000, r=2000, dec_rate=200)/averages
+
+            # take FFT
+            # result1_fft =
+
+    elif check == 1:
+        result1 = xp.zeros((r + 1, int(N / dec_rate)))
+        result2 = xp.zeros((r + 1, int(N / dec_rate)))
+        xcorr = xp.zeros((r + 1, int(N / dec_rate)))
+        for i in range(0, averages):
+            result1 += ssmf_kernel(meas1, code, N=20000, r=2000, dec_rate=200)/averages
+            result2 += ssmf_kernel(meas2, code, N=20000, r=2000, dec_rate=200)/averages
+
+            # take FFTs
+            # result1_fft =
+            # result2_fft =
+
+            # xcorr += conj_kernel(result1_fft, result2_fft, averages)
+

@@ -88,7 +88,6 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
     # convert time to seconds
     time = time*24.0*60.0*60.0
     Nt = len(time)
-
     di_t = int(di_r / 2)
 
     # create GPU arrays
