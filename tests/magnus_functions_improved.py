@@ -10,6 +10,8 @@ except ModuleNotFoundError:
     CUDA = False
 import cProfile
 
+
+
 def windowed_view(ndarray, window_len, step):
     """
     Creates a strided and windowed view of the ndarray. This allows us to skip samples that will
@@ -33,6 +35,7 @@ def windowed_view(ndarray, window_len, step):
     new_strides[-2] *= step
 
     return xp.lib.stride_tricks.as_strided(ndarray, shape=new_shape, strides=new_strides)
+
 
 def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
     """
@@ -60,7 +63,7 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
         1d array of median temporal distances
     """
 
-    # arr[0, :] *= 24.0 * 60.0 * 60.0
+    arr[0, :] *= 24.0 * 60.0 * 60.0
     n = arr.shape[1]
     di_t = int(di_r / 2)
     tspan = int(tspan * 60.0 * 60.0)
@@ -85,8 +88,7 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
 
         # I think partition should be faster than sort but in practice they seem to be about the same
         # dr[idx] = xp.median(xp.sort(haversine(window[:, i, :], arr[:, pointspan], r))[:, 0:di_r], axis=1)
-        dr[idx] = xp.median(xp.partition(haversine(window[:, i, :], arr[:, pointspan], r), min(di_r, idx.shape[0]-1))[:, 0:di_r], axis=1)
-
+        dr[idx] = xp.median(xp.partition(haversine(window[:, i, :], arr[:, pointspan], r), di_r)[:, 0:di_r], axis=1)
         # Temporal Median
 
         # if idx contains only points more than di_t away from the edges, we can use the time_window
@@ -110,6 +112,37 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
         dt = dt.get()
 
     return dr, dt
+
+
+def haversine(p1, p2, r):
+    """
+    Calculates haversine distance between each point in p1 and every point in p2
+    Parameters
+    ----------
+    p1 : float32 ndarray
+        2d array of points with shape (3, n). [time, latitude, longitude]
+    p2 : float32 ndarray
+        2d array of points with shape (3, m). [time, latitude, longitude]
+    r  : float32
+        distance above surf of earth to calculate (in km)
+
+    Returns
+    -------
+    dr: float32 ndarray
+        2d array of haversine distances between each point in p2 and p1 with shape (n, m).
+        dr[n, :] holds the distance between p1[n] and every point in p2
+
+
+    """
+    # distance from earth's centre
+    r += 6371.0
+    delta_lat = p1[1, :][:, xp.newaxis] - p2[1, :]
+    delta_lon = p1[2, :][:, xp.newaxis] - p2[2, :]
+    prod_cos = xp.cos(xp.deg2rad(p1[1, :]))[:, xp.newaxis] * xp.cos(xp.deg2rad(p2[1, :]))
+    a = (xp.sin(xp.deg2rad(delta_lat / 2))) ** 2 + prod_cos * ((xp.sin(xp.deg2rad(delta_lon / 2))) ** 2)
+    b = 2 * r * xp.arctan2(xp.sqrt(a), xp.sqrt(1 - a))
+    return b
+
 
 def cluster_plot(fig_num, dt, dr):
     logbinsdt = np.logspace(np.log10(1), np.log10(max(dt)), 300)
@@ -146,60 +179,22 @@ def cluster_plot(fig_num, dt, dr):
 
     plt.show()
 
-def haversine(p1, p2, r):
-    """
-    Calculates haversine distance between each point in p1 and every point in p2
-    Parameters
-    ----------
-    p1 : float32 ndarray
-        2d array of points with shape (3, n). [time, latitude, longitude]
-    p2 : float32 ndarray
-        2d array of points with shape (3, m). [time, latitude, longitude]
-    r  : float32
-        distance above surf of earth to calculate (in km)
-
-    Returns
-    -------
-    dr: float32 ndarray
-        2d array of haversine distances between each point in p2 and p1 with shape (n, m).
-        dr[n, :] holds the distance between p1[n] and every point in p2
-
-
-    """
-    # distance from earth's centre
-    r += 6371.0
-    delta_lat = p1[1, :][:, xp.newaxis] - p2[1, :]
-    delta_lon = p1[2, :][:, xp.newaxis] - p2[2, :]
-    prod_cos = xp.cos(xp.deg2rad(p1[1, :]))[:, xp.newaxis] * xp.cos(xp.deg2rad(p2[1, :]))
-    a = (xp.sin(xp.deg2rad(delta_lat / 2))) ** 2 + prod_cos * ((xp.sin(xp.deg2rad(delta_lon / 2))) ** 2)
-    b = 2 * r * xp.arctan2(xp.sqrt(a), xp.sqrt(1 - a))
-    return b
 
 if __name__ == '__main__':
     import h5py
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_31_prelate_bakker.h5'  # 976_000
-    filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_21_prelate_bakker.h5'  # 159_000
-    # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_15_prelate_bakker.h5'  # 38_000
+    # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_21_prelate_bakker.h5'  # 159_000
+    filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_15_prelate_bakker.h5'  # 38_000
     f = h5py.File(filepath, 'r')
     la = f['data']['latitude'][()]
     lo = f['data']['longitude'][()]
     ti = f['data']['time'][()]
 
-    # from numpy import genfromtxt
-    #
-    # f = genfromtxt('./LATLON.csv', delimiter=',')
-    # la = f[:, 0]
-    # lo = f[:, 1]
-    # f = genfromtxt('./T.csv', delimiter=',')
-    # ti = f[:]
-
     arr = xp.array([ti, la, lo])
     print(arr.shape)
 
     start = time.perf_counter()
-    cProfile.run('cluster_medians(arr)')
-    # dr, dt = cluster_medians(arr[:, 0:500_000])
+    # cProfile.run('cluster_medians(arr)')
     end = time.perf_counter()
     print(f'time: {end - start}')
-    print(dr.shape, dt.shape)
-    cluster_plot(1, dt, dr)
+
