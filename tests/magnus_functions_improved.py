@@ -69,7 +69,7 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
     tspan = int(tspan * 60.0 * 60.0)
     dr = xp.zeros(n, dtype=xp.float32)
     dt = xp.zeros(n, dtype=xp.float32)
-    stride = 250
+    stride = 500
 
     # shape = (3, ~n/stride, stride)
     window = windowed_view(arr, window_len=stride, step=stride)
@@ -86,9 +86,8 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
         # pointspan is tspan/2 hours before the first point, tspan/2 hours after the last point
         pointspan = (arr[0, :] < (window[:, i, :])[0, -1] + tspan / 2) & (arr[0, :] > (window[:, i, :])[0, 0] - tspan / 2)
 
-        # I think partition should be faster than sort but in practice they seem to be about the same
-        # dr[idx] = xp.median(xp.sort(haversine(window[:, i, :], arr[:, pointspan], r))[:, 0:di_r], axis=1)
-        dr[idx] = xp.median(xp.partition(haversine(window[:, i, :], arr[:, pointspan], r), di_r)[:, 0:di_r], axis=1)
+        # I think partition should be faster than sort but in practice they seem to be about the same.
+        dr[idx] = xp.median(xp.sort(haversine(window[:, i, :], arr[:, pointspan], r))[:, 0:di_r], axis=1)
         # Temporal Median
 
         # if idx contains only points more than di_t away from the edges, we can use the time_window
@@ -132,7 +131,6 @@ def haversine(p1, p2, r):
         2d array of haversine distances between each point in p2 and p1 with shape (n, m).
         dr[n, :] holds the distance between p1[n] and every point in p2
 
-
     """
     # distance from earth's centre
     r += 6371.0
@@ -142,43 +140,6 @@ def haversine(p1, p2, r):
     a = (xp.sin(xp.deg2rad(delta_lat / 2))) ** 2 + prod_cos * ((xp.sin(xp.deg2rad(delta_lon / 2))) ** 2)
     b = 2 * r * xp.arctan2(xp.sqrt(a), xp.sqrt(1 - a))
     return b
-
-
-def cluster_plot(fig_num, dt, dr):
-    logbinsdt = np.logspace(np.log10(1), np.log10(max(dt)), 300)
-    logbinsdr = np.logspace(np.log10(1), np.log10(max(dr)), 300)
-
-    fig = plt.figure(fig_num)
-    gs = fig.add_gridspec(4, 4)
-    ax1 = fig.add_subplot(gs[1:4, 0:3])
-    ax2 = fig.add_subplot(gs[0, 0:3])
-    ax3 = fig.add_subplot(gs[1:4, 3])
-
-    ax1.grid(b=True, which='major', color='#666666', linestyle='-', linewidth=0.3)
-    ax1.minorticks_on()
-    ax1.grid(b=True, which='minor', color='#999999', linestyle='-', linewidth=0.1)
-    ax1.scatter(dt, dr, marker='.')
-    ax1.set_yscale('log')
-    ax1.set_xscale('log')
-
-    ax2.grid(b=True, which='major', color='#666666', linestyle='-', linewidth=0.3)
-    ax2.minorticks_on()
-    ax2.grid(b=True, which='minor', color='#999999', linestyle='-', linewidth=0.1)
-    ax2.hist(dt, bins=logbinsdt, rwidth=3)
-    ax2.set_xscale('log')
-    ax2.set_yscale('log')
-    ax2.sharex(ax1)
-
-    ax3.grid(b=True, which='major', color='#666666', linestyle='-', linewidth=0.3)
-    ax3.minorticks_on()
-    ax3.grid(b=True, which='minor', color='#999999', linestyle='-', linewidth=0.1)
-    ax3.hist(dr, bins=logbinsdr, orientation='horizontal', rwidth=3)
-    ax3.set_xscale('log')
-    ax3.set_yscale('log')
-    ax3.sharey(ax1)
-
-    plt.show()
-
 
 if __name__ == '__main__':
     import h5py
@@ -194,7 +155,21 @@ if __name__ == '__main__':
     print(arr.shape)
 
     start = time.perf_counter()
-    # cProfile.run('cluster_medians(arr)')
+    cProfile.run('cluster_medians(arr)')
     end = time.perf_counter()
     print(f'time: {end - start}')
 
+    # Times (stride=100):
+    # 1) cupy 0.8429  s, numpy 0.5449  s -- 38_000 pts
+    # 2) cupy 4.4642  s, numpy 9.2786  s -- 159_000 pts
+    # 3) cupy 29.8358 s, numpy 72.4494 s -- 976_000 pts
+
+    # Times (stride=250):
+    # 1) cupy 0.7161  s, numpy 0.9445  s -- 38_000 pts
+    # 2) cupy 4.5760  s, numpy 10.6436 s -- 159_000 pts              winna winna chicken dinna
+    # 3) cupy 22.6554 s, numpy 70.4448 s -- 976_000 pts
+
+    # Times (stride=500):
+    # 1) cupy 0.9408  s, numpy 1.6564  s -- 38_000 pts
+    # 2) cupy 3.8720  s, numpy 13.0249 s -- 159_000 pts
+    # 3) cupy 23.9578 s, numpy 80.5099 s -- 976_000 pts
