@@ -6,82 +6,93 @@ import h5py
 # Info
 @dataclass
 class Prelate:
-    tx_site_name: str = field(default='prelate', metadata={
-        'type': 'str',
-        'units': 'alphabet',
-        'shape': '',
-        'version': '',
-        'description': 'name of the transmitter site'})
-    tx_site_lat_lon: np.ndarray((2,), dtype=float) = field(default=np.asarray([50.893, -109.403]), metadata={
-        'type': 'ndarray[float]',
-        'units': 'degrees',
-        'shape': (2,),
-        'version': '',
-        'description': 'global North-Easting [latitude, longitude] coordinates of the site in degrees'})
-    tx_heading: float = field(default=16.0, metadata={
-        'type': 'float',
-        'units': 'degrees',
-        'shape': (1,),
-        'version': '',
-        'description': 'transmitter array boresight pointing direction in degrees East of North'})
-    tx_rf_path: str = field(default='X300->amplifier->bulkhead->feedline->antenna', metadata={
-        'type': 'str',
-        'units': 'alphabet',
-        'shape': '',
-        'version': '',
-        'description': 'RF hardware signal path chain string'})
-    tx_ant_type: str = field(default='Cushcraft A50-5S', metadata={
-        'type': 'str',
-        'units': 'alphabet',
-        'shape': '',
-        'version': '',
-        'description': 'brand and model of the antenna used'})
-    tx_ant_coords: np.ndarray((3, 10), dtype=float) = field(default=np.asarray(
-                                                       [[0., 6.0, 12.0, 18.0, 24.0, 30.0, 36.0, 42.0, 48.0, 54.0],
-                                                        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-                                                        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]), metadata={
-        'type': 'ndarray[float]',
-        'units': 'meters',
-        'shape': (3, 10),
-        'version': '',
-        'description': '[[x0, ...],[y0, ...],[z0, ...]] transmitter antenna locations in meters from antenna 0'})
-    tx_feed_corr: np.ndarray = field(default=np.asarray([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-                                                         [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]), metadata={
-        'type': 'ndarray[float]',
-        'units': 'volts, degrees',
-        'shape': (2, 10),
-        'version': '',
-        'description': '[[ant 0 magnitude, ...],[ant 0 phase, ...]] feedline calibration correction per antenna'})
-    tx_feed_corr_date: np.ndarray((3,), dtype=int) = field(default=np.asarray([0, 0, 0]), metadata={
-        'type': 'ndarray[float]',
-        'units': 'years, months, days',
-        'shape': (3, ),
-        'version': '',
-        'description': '[year, month, day] date of the last feed line calibration correction'})
-    tx_feed_corr_type: str = field(default='manual', metadata={
-        'type': 'str',
-        'units': 'alphabet',
-        'shape': '',
-        'version': '',
-        'description': 'type of procedure used to measure calibration values (ex; manual, closure angle)'})
-    tx_ant_mask: np.ndarray((10,), dtype=int) = field(default=np.asarray([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), metadata={
-        'type': 'ndarray[float]',
-        'units': '',
-        'shape': (10,),
-        'version': '',
-        'description': '[ant 0, ...] boolean mask (0 off, 1 on) indicating which antennas were used and/or functional'})
-    tx_sample_rate: float = field(default=800_000.0, metadata={
-        'type': 'float',
-        'units': 'Hz',
-        'shape': (1,),
-        'version': '',
-        'description': 'sample rate of transmitted code in Hz'})
-    tx_cw_code: np.ndarray((20_000,), dtype=int) = field(default=np.load('_prn_code.npy'), metadata={
-        'type': 'ndarray[int]',
-        'units': '',
-        'shape': (20_000,),
-        'version': '',
-        'description': 'pseudo-random noise like code transmitted (contains full sequence)'})
+    tx_site_name: str = field(
+        default='prelate',
+        metadata={'type': 'str',
+                  'units': 'alphabet',
+                  'shape': '',
+                  'version': '',
+                  'description': 'name of the transmitter site'})
+    tx_site_lat_lon: np.ndarray((2,), dtype=float) = field(
+        default=np.asarray([50.893, -109.403]),
+        metadata={'type': 'ndarray[float]',
+                  'units': 'degrees',
+                  'shape': (2,),
+                  'version': '',
+                  'description': 'global North-Easting [latitude, longitude] coordinates of the site in degrees'})
+    tx_heading: float = field(
+        default=16.0,
+        metadata={'type': 'float',
+                  'units': 'degrees',
+                  'shape': (1,),
+                  'version': '',
+                  'description': 'transmitter array boresight pointing direction in degrees East of North'})
+    tx_rf_path: str = field(
+        default='X300->amplifier->bulkhead->feedline->antenna',
+        metadata={'type': 'str',
+                  'units': 'alphabet',
+                  'shape': '',
+                  'version': '',
+                  'description': 'RF hardware signal path chain string'})
+    tx_ant_type: str = field(
+        default='Cushcraft A50-5S',
+        metadata={'type': 'str',
+                  'units': 'alphabet',
+                  'shape': '',
+                  'version': '',
+                  'description': 'brand and model of the antenna used'})
+    tx_ant_coords: np.ndarray((3, 10), dtype=float) = field(
+        default=np.asarray([[0., 6.0, 12.0, 18.0, 24.0, 30.0, 36.0, 42.0, 48.0, 54.0],
+                            [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+                            [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]),
+        metadata={'type': 'ndarray[float]',
+                  'units': 'meters',
+                  'shape': (3, 10),
+                  'version': '',
+                  'description': '[[x0, ...],[y0, ...],[z0, ...]] transmitter antenna locations in meters from antenna 0'})
+    tx_feed_corr: np.ndarray = field(
+        default=np.asarray([[0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+                            [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]),
+        metadata={'type': 'ndarray[float]',
+                  'units': 'volts, degrees',
+                  'shape': (2, 10),
+                  'version': '',
+                  'description': '[[ant 0 magnitude, ...],[ant 0 phase, ...]] feedline calibration correction per antenna'})
+    tx_feed_corr_date: np.ndarray((3,), dtype=int) = field(
+        default=np.asarray([0, 0, 0]),
+        metadata={'type': 'ndarray[float]',
+                  'units': 'years, months, days',
+                  'shape': (3, ),
+                  'version': '',
+                  'description': '[year, month, day] date of the last feed line calibration correction'})
+    tx_feed_corr_type: str = field(
+        default='manual',
+        metadata={'type': 'str',
+                  'units': 'alphabet',
+                  'shape': '',
+                  'version': '',
+                  'description': 'type of procedure used to measure calibration values (ex; manual, closure angle)'})
+    tx_ant_mask: np.ndarray((10,), dtype=int) = field(
+        default=np.asarray([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+        metadata={'type': 'ndarray[float]',
+                  'units': '',
+                  'shape': (10,),
+                  'version': '',
+                  'description': '[ant 0, ...] boolean mask (0 off, 1 on) indicating which antennas were used and/or functional'})
+    tx_sample_rate: float = field(
+        default=800_000.0,
+        metadata={'type': 'float',
+                  'units': 'Hz',
+                  'shape': (1,),
+                  'version': '',
+                  'description': 'sample rate of transmitted code in Hz'})
+    tx_cw_code: np.ndarray((20_000,), dtype=int) = field(
+        default=np.load('_prn_code.npy'),
+        metadata={'type': 'ndarray[int]',
+                  'units': '',
+                  'shape': (20_000,),
+                  'version': '',
+                  'description': 'pseudo-random noise like code transmitted (contains full sequence)'})
 
 
 @dataclass
@@ -274,6 +285,9 @@ class Validator:
 
 @dataclass()
 class Container(Validator, Packer):
+    info: type
+    data: type
+
     def __init__(self, tx, rx, level):
         self.info = Info(tx, rx)
         self.data = level
