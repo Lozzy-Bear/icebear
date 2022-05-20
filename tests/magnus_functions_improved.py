@@ -9,8 +9,50 @@ except ModuleNotFoundError:
     import numpy as xp
     CUDA = False
 import cProfile
+import sys
 
+def beam_finder(azimuth, elevation):
+    # linear model val(x) = p1*x + p2
+    beam = xp.zeros(len(azimuth))
+    coeffs = xp.array([[-0.3906, 0.1125],  # west0 coefficients [p1, p2]
+                       [-0.3814, 5.934],   # west1      "          "
+                       [-0.5422, 8.47],    # centre0    "          "
+                       [-0.6575, 19.79],   # centre1    "          "
+                       [-10.38, 32.45],    # east0      "          "
+                       [-1.229, 59.03]])   # east1      "          "
 
+    # discretize into azimuth bins
+    azimuth_bins = xp.arange(-60.0, 60.0, 0.5)
+    azimuth_centres = azimuth_bins[0:azimuth_bins.shape[0]-1] + 0.25
+    data_bins = xp.digitize(azimuth, azimuth_bins)
+
+    for data_bin in range(azimuth_bins.shape[0]-1):
+        # indices of elements matching current bin
+        cur_idx = (data_bins == data_bin)
+        if xp.any(cur_idx):
+            # temporary elevation and beam vars
+            temp_elevation = elevation[cur_idx]
+            temp_beam = azimuth[cur_idx]
+
+            # using linear functions to cut out unnecessary data
+            el_west0   = xp.float32(coeffs[0][0] * azimuth_centres[data_bin] + coeffs[0][1])
+            el_west1   = xp.float32(coeffs[1][0] * azimuth_centres[data_bin] + coeffs[1][1])
+            el_centre0 = xp.float32(coeffs[2][0] * azimuth_centres[data_bin] + coeffs[2][1])
+            el_centre1 = xp.float32(coeffs[3][0] * azimuth_centres[data_bin] + coeffs[3][1])
+            el_east0   = xp.float32(coeffs[4][0] * azimuth_centres[data_bin] + coeffs[4][1])
+            el_east1   = xp.float32(coeffs[5][0] * azimuth_centres[data_bin] + coeffs[5][1])
+
+            WEST   = (el_west0   < temp_elevation) & (temp_elevation < el_west1)
+            CENTRE = (el_centre0 < temp_elevation) & (temp_elevation < el_centre1)
+            EAST   = (el_east0   < temp_elevation) & (temp_elevation < el_east1)
+
+            # numbering to match Magnus
+            temp_beam[WEST]   = 3
+            temp_beam[CENTRE] = 2
+            temp_beam[EAST]   = 1
+            beam[cur_idx] = temp_beam
+
+    return beam
 
 def windowed_view(ndarray, window_len, step):
     """
@@ -69,9 +111,9 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
     tspan = int(tspan * 60.0 * 60.0)
     dr = xp.zeros(n, dtype=xp.float32)
     dt = xp.zeros(n, dtype=xp.float32)
-    stride = 500
+    stride = 250  # 250 seems optimal
 
-    # shape = (3, ~n/stride, stride)
+    # window.shape = (3, ~n/stride, stride)
     window = windowed_view(arr, window_len=stride, step=stride)
     # time_window[0, 0:2*di_t] corresponds to 2*di_t points around idx=255,
     # time_window[1, 0:2*di_t] corresponds to 2*di_t points around idx=256, etc
@@ -88,6 +130,7 @@ def cluster_medians(arr, r=110.0, tspan=4.0, di_r=512):
 
         # I think partition should be faster than sort but in practice they seem to be about the same.
         dr[idx] = xp.median(xp.sort(haversine(window[:, i, :], arr[:, pointspan], r))[:, 0:di_r], axis=1)
+
         # Temporal Median
 
         # if idx contains only points more than di_t away from the edges, we can use the time_window
@@ -143,9 +186,11 @@ def haversine(p1, p2, r):
 
 if __name__ == '__main__':
     import h5py
+    filepath = str(sys.argv[1])
+    # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_20_prelate_bakker.h5'  # 9_025_008
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_31_prelate_bakker.h5'  # 976_000
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_21_prelate_bakker.h5'  # 159_000
-    filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_15_prelate_bakker.h5'  # 38_000
+    # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_15_prelate_bakker.h5'  # 38_000
     f = h5py.File(filepath, 'r')
     la = f['data']['latitude'][()]
     lo = f['data']['longitude'][()]
@@ -163,13 +208,16 @@ if __name__ == '__main__':
     # 1) cupy 0.8429  s, numpy 0.5449  s -- 38_000 pts
     # 2) cupy 4.4642  s, numpy 9.2786  s -- 159_000 pts
     # 3) cupy 29.8358 s, numpy 72.4494 s -- 976_000 pts
+    # 4) cupy  s, numpy  s -- 9_025_008 pts
 
     # Times (stride=250):
     # 1) cupy 0.7161  s, numpy 0.9445  s -- 38_000 pts
-    # 2) cupy 4.5760  s, numpy 10.6436 s -- 159_000 pts              winna winna chicken dinna
+    # 2) cupy 4.5760  s, numpy 10.6436 s -- 159_000 pts
     # 3) cupy 22.6554 s, numpy 70.4448 s -- 976_000 pts
+    # 4) cupy  s, numpy  s -- 9_025_008 pts
 
     # Times (stride=500):
     # 1) cupy 0.9408  s, numpy 1.6564  s -- 38_000 pts
     # 2) cupy 3.8720  s, numpy 13.0249 s -- 159_000 pts
     # 3) cupy 23.9578 s, numpy 80.5099 s -- 976_000 pts
+    # 4) cupy  s, numpy  s -- 9_025_008 pts
