@@ -5,6 +5,31 @@ except ModuleNotFoundError:
     import numpy as xp
 
 
+def windowed_view(ndarray, window_len, step):
+    """
+    Creates a strided and windowed view of the ndarray. This allows us to skip samples that will
+    otherwise be dropped without missing samples needed for the convolutions windows. The
+    strides will also not extend out of bounds meaning we do not need to pad extra samples and
+    then drop bad samples after the fact.
+    :param      ndarray:     The input ndarray
+    :type       ndarray:     ndarray
+    :param      window_len:  The window length(filter length)
+    :type       window_len:  int
+    :param      step:        The step(dm rate)
+    :type       step:        int
+    :returns:   The array with a new view.
+    :rtype:     ndarray
+    """
+
+    nrows = ((ndarray.shape[-1] - window_len) // step) + 1
+    last_dim_stride = ndarray.strides[-1]
+    new_shape = ndarray.shape[:-1] + (nrows, window_len)
+    new_strides = list(ndarray.strides + (last_dim_stride,))
+    new_strides[-2] *= step
+
+    return xp.lib.stride_tricks.as_strided(ndarray, shape=new_shape, strides=new_strides)
+
+
 def calibration_correction(samples, calibration):
     """
     Applies a complex magnitude and phase correction to all complex voltage samples.
@@ -60,11 +85,24 @@ def unmatched_filtering(samples, code, code_length, averages, ranges, decimation
     filtered : complex64 ndarray
         Output decimated and unmatched filtered samples.
     """
-    filtered = xp.array()  # Todo: Convert Dravens code to cupy
+    # todo: test on real data/ against draven's results
+    # todo: look for a better way to make the input_samples array besides the for-loop
+    # decimation and matched filtering
+
+    filtered = xp.ndarray((ranges + 1, int(code_length / decimation_rate)), xp.complex64)
+
+    input_samples = xp.ndarray((int(code_length / decimation_rate), ranges + 1, decimation_rate), xp.int)
+    for i in range(0, int(code_length / decimation_rate)):
+        entry = windowed_view(samples[i * decimation_rate:ranges + (i + 1) * decimation_rate], window_len=decimation_rate, step=1)
+        input_samples[i, :, :] = entry
+
+    code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
+
+    filtered = xp.einsum('ijk,ik->ji', input_samples, xp.conj(code_samples)) / averages
     return filtered
 
 
-def wiener_khinchin(samples1, samples2):
+def wiener_khinchin(samples1, samples2, clutter_gates):
     """
     Apply the Wiener-Khinchin theorem. Do not take the finally FFT() as we want the power spectral density (PSD).
 
@@ -74,6 +112,8 @@ def wiener_khinchin(samples1, samples2):
         Filtered and decimated complex magnitude and phase voltage samples.
     samples2 : complex64 ndarray
         Filtered and decimated complex magnitude and phase voltage samples.
+    clutter_gates : float32
+        Range gate to go out to for calculating clutter correction
 
     Returns
     -------
@@ -83,13 +123,18 @@ def wiener_khinchin(samples1, samples2):
         samples1 != samples2. These are all called Visibility (the value for a baseline at u,v,w
         sampling space coordinates) for radar imaging.
         Shape (doppler bins, range bins).
-    variance : complex64 ndarray
-        Shape (doppler bins, range bins)
+    spectra_median : complex64
+        median value of the calculated spectra
+    clutter_correction : complex64
+        mean of the spectra values for the first clutter_gates range gates
     """
+    #todo: investigate the transpose issue
+
     spectra = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
-    variance = xp.zeroes_like(result)  # Todo: Figure out how and why Draven gets variance
+    spectra_median = xp.median(spectra)
+    clutter_correction = xp.mean(spectra[:, 0:clutter_gates])
     # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
-    return spectra, variance, spectra_median, clutter_correction
+    return spectra, spectra_median, clutter_correction
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
@@ -127,7 +172,9 @@ def clutter_correction(spectra, correction):
     corrected_spectra : complex64 ndarray
         Shape (doppler bins, range bins, antennas)
     """
-    # Todo: do this
+
+    spectra -= correction
+
     return
 
 
@@ -139,16 +186,31 @@ def snr(power, method='mean'):
     power : complex64 ndarray
         Shape (range bins, doppler bins)
     method : str
-        There can be serveral methods for determing the noise value.
+        There can be several methods for determining the noise value.
         - 'mean' (default) determine noise floor as the mean of power
         - 'median' determine noise floor as the median of power
         - 'galeschuk' determine noise floor as the mean of farthest 100 ranges
 
     Returns
     -------
-    snr : float32 ndarray
-    noise :
+    snr : complex64 ndarray
+        Shape (range bins, doppler bins). The SNR given by (Power - Noise) / Noise (logarithm'd)
+
+    noise : float32
+        the noise floor as determined by the method given
     """
+    if method == 'mean':
+        noise = xp.mean(power)
+    elif method == 'median':
+        noise = xp.median(power)
+    elif method == 'galeschuk':
+        noise = xp.mean(power[-100:-1, :])
+    else:
+        raise ValueError('argument \'method\' must be one of: mean, median, galeschuk')
+
+    snr = (power - noise) / noise
+    snr = xp.ma.masked_where(snr < 0.0, snr)
+    snr = 10 * xp.log10(snr.filled(1))
     return snr, noise
 
 

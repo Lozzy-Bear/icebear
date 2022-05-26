@@ -49,7 +49,7 @@ def cluster_medians(arr, k, r=110.0, tspan=4, di_r=512):
             - time is in units of seconds and sorted earliest to latest
             - latitude and longitude in units of degrees
     k : float32
-        1/3 number of points in each chunk. Interpreted as the maximum number of points occurring within tspan
+        1/3 number of points in each chunk. Interpreted as the 1/2 the maximum number of points occurring within tspan
     r  : float32
         distance above surface of earth in km to calculate haversine (default 110)
     tspan : float32
