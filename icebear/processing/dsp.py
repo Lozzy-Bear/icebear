@@ -55,7 +55,7 @@ def calibration_correction(samples, calibration):
     return calibrated_samples
 
 
-def unmatched_filtering(samples, code, code_length, averages, ranges, decimation_rate):
+def unmatched_filtering(samples, code, code_length, ranges, decimation_rate):
     """
     Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
     first decimates the input signal then applies a 'matched filter' like correlation using a
@@ -73,8 +73,6 @@ def unmatched_filtering(samples, code, code_length, averages, ranges, decimation
         Transmitted pseudo-random code sequence.
     code_length : int
         Length of the transmitted psuedo-random code sequence.
-    averages : int
-        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
     ranges : int
         Number of range gates being processed. Nominally 2000.
     decimation_rate : float32
@@ -98,13 +96,13 @@ def unmatched_filtering(samples, code, code_length, averages, ranges, decimation
 
     code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
 
-    filtered = xp.einsum('ijk,ik->ji', input_samples, xp.conj(code_samples)) / averages
+    filtered = xp.einsum('ijk,ik->ji', input_samples, xp.conj(code_samples))
     return filtered
 
 
 def wiener_khinchin(samples1, samples2, clutter_gates):
     """
-    Apply the Wiener-Khinchin theorem. Do not take the finally FFT() as we want the power spectral density (PSD).
+    Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
 
     Parameters
     ----------
@@ -114,6 +112,8 @@ def wiener_khinchin(samples1, samples2, clutter_gates):
         Filtered and decimated complex magnitude and phase voltage samples.
     clutter_gates : float32
         Range gate to go out to for calculating clutter correction
+    averages : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
 
     Returns
     -------
@@ -129,12 +129,15 @@ def wiener_khinchin(samples1, samples2, clutter_gates):
         mean of the spectra values for the first clutter_gates range gates
     """
     #todo: investigate the transpose issue
+    #todo: sort out the averages issue. I don't think they belong in unmatched_filtering
+    #todo: if needed, calculated variance
 
     spectra = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
     spectra_median = xp.median(spectra)
     clutter_correction = xp.mean(spectra[:, 0:clutter_gates])
+    variance = xp.zeros_like(spectra.shape)
     # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
-    return spectra, spectra_median, clutter_correction
+    return spectra, variance, spectra_median, clutter_correction
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
