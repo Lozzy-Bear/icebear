@@ -100,7 +100,7 @@ def unmatched_filtering(samples, code, code_length, ranges, decimation_rate):
     return filtered
 
 
-def wiener_khinchin(samples1, samples2, clutter_gates):
+def wiener_khinchin(samples1, samples2, clutter_gates, averages):
     """
     Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
 
@@ -123,21 +123,46 @@ def wiener_khinchin(samples1, samples2, clutter_gates):
         samples1 != samples2. These are all called Visibility (the value for a baseline at u,v,w
         sampling space coordinates) for radar imaging.
         Shape (doppler bins, range bins).
+        Final spectra is divided by the number of averages provided
+    variance : complex64 ndarray
+        the un-averaged spectra value. To calculate the variance with the variance function, it is necessary to keep
+        these values for each application of the WK function
     spectra_median : complex64
-        median value of the calculated spectra
+        median value of the calculated spectra (averaged)
     clutter_correction : complex64
-        mean of the spectra values for the first clutter_gates range gates
+        mean of the spectra values for the first clutter_gates range gates (averaged)
     """
-    #todo: investigate the transpose issue
-    #todo: sort out the averages issue. I don't think they belong in unmatched_filtering
-    #todo: if needed, calculated variance
+    # todo: investigate the transpose issue
+    # todo: confirm that this is how variance works
 
-    spectra = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
+    variance = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
+    spectra = variance / averages
     spectra_median = xp.median(spectra)
     clutter_correction = xp.mean(spectra[:, 0:clutter_gates])
-    variance = xp.zeros_like(spectra.shape)
     # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
     return spectra, variance, spectra_median, clutter_correction
+
+def variance(variance_samples, spectra, averages):
+    """
+    Calculate the variance of the sum of the non-averaged spectra results with respect to the averaged spectra results.
+
+    Parameters
+    ----------
+    variance_samples : complex64 ndarray
+        Shape (averages, doppler bins, range bins)
+    spectra : complex64 ndarray
+        The incoherently averaged results of the wiener-khinchin calculation
+    averages : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
+
+    Returns
+    -------
+    variance : complex64 ndarray
+        Shape (doppler bins, range bins)
+        Contains the variance of each point over the incoherent averages
+    """
+    variance = xp.sqrt(xp.sum((variance_samples - spectra)**2, axis=0)/averages)
+    return variance
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
