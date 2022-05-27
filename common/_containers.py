@@ -69,7 +69,7 @@ class Info:
                   'units': 'None',
                   'shape': None,
                   'version': __version__,
-                  'description': 'offset steps of unit time to adjust for the start of a sample sequence'})
+                  'description': 'offset to correct for the time stamping difference between TX and RX FPGA propagation delays'})
     time_resolution: float = field(
         default_factory=float,
         metadata={'type': 'float64',
@@ -84,6 +84,28 @@ class Info:
                   'shape': None,
                   'version': __version__,
                   'description': 'the coherent integration time is the time resolution times number of incoherent averages'})
+    snr_cutoff_db: float = field(
+        default=1.0,
+        metadata={'type': 'float64',
+                  'units': 'decibel',
+                  'shape': None,
+                  'version': __version__,
+                  'description': 'signal-to-noise ratio cutoff under which spectra and cross-spectra data is thrown out'})
+    spectra_descriptors: np.ndarray((2, 10), dtype=int) = field(
+        default=np.asarray([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], dtype=int),
+        metadata={'type': 'int32',
+                  'units': 'None',
+                  'shape': (2, 10),
+                  'version': __version__,
+                  'description': 'helpful indexing descriptors aid for the ordering of spectra data sets'})
+    xspectra_descriptors: np.ndarray((2, 10), dtype=int) = field(
+        default=np.asarray([[0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8],
+                            [1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 7, 8, 9, 7, 8, 9, 8, 9, 9]], dtype=int),
+        metadata={'type': 'int32',
+                  'units': 'None',
+                  'shape': (2, 45),
+                  'version': __version__,
+                  'description': 'helpful indexing descriptors aid for the ordering of xspectra data sets'})
 
     def __post_init__(self):
         self.time_resolution = self.tx_code_length * self.tx_chip_length
@@ -305,6 +327,17 @@ class Dev:
     fake: int = 8
 
 
+@dataclass(slots=True)
+class Settings:
+    level0_dir: str
+    level1_dir: str
+    level2_dir: str
+    level3_dir: str
+    start_time: list[int]
+    stop_time: list[int]
+    step_time: list[int]
+
+
 @dataclass(slots=True, order=True)
 class Container:
     info: Info
@@ -398,5 +431,4 @@ class Container:
 
 if __name__ == '__main__':
     d = Container(info=PrelateBakker(), data=Level1Data(), dev=Dev())
-    print(d)
     print(d.show())
