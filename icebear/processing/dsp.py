@@ -202,9 +202,9 @@ def clutter_correction(spectra, correction):
         Shape (doppler bins, range bins, antennas)
     """
 
-    spectra -= correction
+    corrected_spectra = spectra - correction
 
-    return
+    return corrected_spectra
 
 
 def snr(power, method='mean'):
