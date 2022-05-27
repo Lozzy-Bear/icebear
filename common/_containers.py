@@ -5,7 +5,7 @@ import h5py
 __version__ = '1.0'
 
 
-@dataclass
+@dataclass(slots=True)
 class Info:
     experiment_name: str = field(
         default='normal',
@@ -90,7 +90,7 @@ class Info:
         self.coherent_integration_time = self.time_resolution * self.incoherent_averages
 
 
-@dataclass
+@dataclass(slots=True)
 class PrelateBakker(Info):
     tx_site_name: str = field(
         default='prelate',
@@ -277,12 +277,12 @@ class PrelateBakker(Info):
                   'description': 'the raw recorded sample rate at the receiver in Hz'})
 
 
-@dataclass(order=True)
+@dataclass(slots=True, order=True)
 class Data:
     pass
 
 
-@dataclass(order=True)
+@dataclass(slots=True, order=True)
 class Level1Data(Data):
     itemB: float = 70.0
 
@@ -295,26 +295,26 @@ class Level2Data:
 
 
 @dataclass(order=True)
-class Level3Data:
+class Level3Data(Data):
     itemG: int = 6
     itemH: float = 70.0
 
 
-@dataclass()
+@dataclass(slots=True)
 class Dev:
     fake: int = 8
 
 
-@dataclass(order=True)
+@dataclass(slots=True, order=True)
 class Container:
     info: Info
     data: Data
     dev: Dev
 
     def __repr__(self):
-        return f'info: {self.info()!r}\n' \
-               f'data: {self.data()!r}\n' \
-               f'dev: {self.dev()!r}\n'
+        return f'info: {self.info!r}\n' \
+               f'data: {self.data!r}\n' \
+               f'dev: {self.dev!r}\n'
 
     def show(self):
         msg = f'{"="*200}\n' \
@@ -332,12 +332,20 @@ class Container:
                    f'{str(x.metadata["shape"]):^15} | ' \
                    f'{x.metadata["version"]:^5} | ' \
                    f'{x.metadata["description"]:<}\n'
-        # msg += 'data\n'
-        # for x in fields(self.data):
-        #     msg += f'{x.name:>20} | {x.metadata}\n'
-        # msg += 'dev\n'
-        # for x in fields(self.dev):
-        #     msg += f'{x.name:>20} | {x.metadata}\n'
+        for x in fields(self.data):
+            msg += f'{"data."+x.name:<30} | ' \
+                   # f'{x.metadata["units"]:^20} | ' \
+                   # f'{x.metadata["type"]:^15} | ' \
+                   # f'{str(x.metadata["shape"]):^15} | ' \
+                   # f'{x.metadata["version"]:^5} | ' \
+                   # f'{x.metadata["description"]:<}\n'
+        for x in fields(self.dev):
+            msg += f'{"dev."+x.name:<30} | ' \
+                   # f'{x.metadata["units"]:^20} | ' \
+                   # f'{x.metadata["type"]:^15} | ' \
+                   # f'{str(x.metadata["shape"]):^15} | ' \
+                   # f'{x.metadata["version"]:^5} | ' \
+                   # f'{x.metadata["description"]:<}\n'
         return msg
 
     @classmethod
@@ -390,8 +398,5 @@ class Container:
 
 if __name__ == '__main__':
     d = Container(info=PrelateBakker(), data=Level1Data(), dev=Dev())
-    print(d.info.experiment_name)
-    print(d.info.time_resolution)
-    # print(d.info.__annotations__)
-    # print(d.info.__dataclass_fields__['time_resolution'])
-    # d._to_hdf5()
+    print(d)
+    print(d.show())
