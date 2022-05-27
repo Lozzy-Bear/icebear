@@ -134,6 +134,7 @@ def wiener_khinchin(samples1, samples2, clutter_gates, averages):
     """
     # todo: investigate the transpose issue
     # todo: confirm that this is how variance works
+    # todo: spectra_median shouldn't be here?
 
     variance = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
     spectra = variance / averages
@@ -222,7 +223,7 @@ def snr(power, method='mean'):
     Returns
     -------
     snr : complex64 ndarray
-        Shape (range bins, doppler bins). The SNR given by (Power - Noise) / Noise (logarithm'd)
+        Shape (range bins, doppler bins). The SNR given by (Power - Noise) / Noise
 
     noise : float32
         the noise floor as determined by the method given
@@ -237,8 +238,7 @@ def snr(power, method='mean'):
         raise ValueError('argument \'method\' must be one of: mean, median, galeschuk')
 
     snr = (power - noise) / noise
-    snr = xp.ma.masked_where(snr < 0.0, snr)
-    snr = 10 * xp.log10(snr.filled(1))
+
     return snr, noise
 
 
