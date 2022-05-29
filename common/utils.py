@@ -5,6 +5,24 @@ import datetime
 from dateutil.tz import tzutc
 import os
 import re
+from common.verbose import verbose
+
+
+def version():
+    here = os.path.abspath(os.path.dirname(__file__))
+    regex = "(?<=__version__..\s)\S+"
+    with open(os.path.join(here, '../__init__.py'), 'r', encoding='utf-8') as f:
+        text = f.read()
+    match = re.findall(regex, text)
+    return str(match[0].strip("'"))
+
+
+def created(mode='str'):
+    now = datetime.datetime.utcnow()
+    if mode == 'str':
+        return now.strftime('%Y-%m-%d %H:%M:%S')
+    elif mode == 'arr':
+        return np.array([now.year, now.month, now.day, now.hour, now.minute, now.second], dtype=int)
 
 
 def uvw_to_rtp(u, v, w):
@@ -418,3 +436,8 @@ def get_data_file_times(filepath):
     stop = np.append(stop, 0)
 
     return start, stop
+
+
+if __name__ == '__main__':
+    verbose().heading(f'ICEBEAR Version = {version()}')
+    verbose().heading(f'Created Date = {created()}')
