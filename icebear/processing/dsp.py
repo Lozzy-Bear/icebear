@@ -57,7 +57,7 @@ def calibration_correction(samples, calibration):
 
 def unmatched_filtering(samples, code, code_length, ranges, decimation_rate):
     """
-    Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
+    Done on the GPU. Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
     first decimates the input signal then applies a 'matched filter' like correlation using a
     special psuedo-random code which has been upsampled to match the signal window and contains
     amplitude filtering bits. This essentially demodulates the signal and removes our code.
@@ -102,7 +102,7 @@ def unmatched_filtering(samples, code, code_length, ranges, decimation_rate):
 
 def wiener_khinchin(samples1, samples2, clutter_gates, averages):
     """
-    Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
+    Done on the GPU. Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
 
     Parameters
     ----------
@@ -209,7 +209,7 @@ def clutter_correction(spectra, correction):
 
 def snr(power, method='mean'):
     """
-
+    Done on the GPU. Calculates the noise floor and snr for a given power spectrum.
     Parameters
     ----------
     power : complex64 ndarray
@@ -233,7 +233,7 @@ def snr(power, method='mean'):
     elif method == 'median':
         noise = xp.median(power)
     elif method == 'galeschuk':
-        noise = xp.mean(power[-100:-1, :])
+        noise = xp.mean(power[:, -100:-1])
     else:
         raise ValueError('argument \'method\' must be one of: mean, median, galeschuk')
 
