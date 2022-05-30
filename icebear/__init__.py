@@ -1,4 +1,4 @@
-from . import processing, verbose
+from . import processing, Verbose
 from . import imaging
 from . import plotting
 from . import tools

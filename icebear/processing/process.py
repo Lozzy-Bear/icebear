@@ -4,7 +4,7 @@ import numpy as np
 import ctypes as C
 import digital_rf
 import icebear.utils
-
+import os
 
 def generate_level1(config):
     """
@@ -33,11 +33,12 @@ def generate_level1(config):
     total_xspectras = int(len(channels)*(len(channels) - 1) / 2)
     total_spectras = int(len(channels))
     bcode = generate_bcode(config.prn_code_file)
-    complex_correction = config.rx_magnitude * np.exp(1j * np.deg2rad(config.rx_phase))
+    config.update_attr('tx_cw_code', bcode)
+    complex_correction = 1.0/config.rx_feed_corr[0] * np.exp(1j * np.deg2rad(config.rx_feed_corr[1]))
     fft_freq = np.fft.fftfreq(int(config.code_length / config.decimation_rate),
                               config.decimation_rate / config.raw_sample_rate)
 
-    if not config.processing_step:
+    if not type(config.processing_step)==type(np.array([])):
         config.processing_step = [0, 0, 0, config.incoherent_averages * config.time_resolution, 0]
     time = icebear.utils.Time(config.processing_start, config.processing_stop, config.processing_step)
     if config.incoherent_averages * config.time_resolution > time.step_epoch:
@@ -47,11 +48,11 @@ def generate_level1(config):
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         # todo : Should this stop actually be stop + step so it ends correctly?
         now = time.get_date(t)
-        spectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
-        spectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex128)
-        xspectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex128)
-        xspectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex128)
-        power = np.zeros(shape=(int(config.code_length / config.decimation_rate), config.number_ranges), dtype=np.complex128)
+        spectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex64)
+        spectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras), dtype=np.complex64)
+        xspectra = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex64)
+        xspectra_variance = np.empty(shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_xspectras), dtype=np.complex64)
+        power = np.zeros(shape=(int(config.code_length / config.decimation_rate), config.number_ranges), dtype=np.complex64)
 
         # create new file if new hour
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
@@ -60,18 +61,28 @@ def generate_level1(config):
                        f'{int(config.incoherent_averages):02d}00ms_' \
                        f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}_' \
                        f'{config.tx_site_name}_{config.rx_site_name}.h5'
-            print(f'\t-created level 1 HDf5: {filename}')
+
+            if not os.path.exists(f'{config.processing_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/'):
+                os.mkdir(f'{config.processing_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/')
+
             filenames.append(filename)
             create_level1_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
             temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+            print(f'\t-created level 1 HDf5: {filename}')
 
         # calculate the self-spectra
         for antenna_num in range(total_spectras):
             result, variance = decx(config, t, level0_data, bcode, channels[antenna_num], channels[antenna_num],
                                     complex_correction[antenna_num], complex_correction[antenna_num])
+            if not (type(result) == type(np.array([]))):
+                if result == 1:
+                    break
             spectra[:, :, antenna_num] = result
             spectra_variance[:, :, antenna_num] = variance
             power[:, :] += result[:, :]
+        if not (type(result) == type(np.array([]))):
+            if result == 1:
+                continue
 
         # Perform cross-spectra for each desired baseline or correlation
         cnt = 0
@@ -83,13 +94,13 @@ def generate_level1(config):
                 xspectra_variance[:, :, cnt] = variance
                 cnt += 1
                 
-        noise = np.median(power)
+        noise = np.mean(power[:,1900:2000])
         snr = (power - noise) / noise
         snr = np.ma.masked_where(snr < 0.0, snr)
         logsnr = 10 * np.log10(snr.filled(1))
         logsnr = np.ma.masked_where(logsnr < 1.0, logsnr)
         # Find the range-Doppler bins with a SNR above the threshold.
-        snr_indices = np.asarray(np.where(logsnr >= config.snr_cutoff)).T
+        snr_indices = np.asarray(np.where(logsnr >= config.snr_cutoff_db)).T
         if len(snr_indices) > 0:
             data_flag = True
         else:
@@ -99,19 +110,19 @@ def generate_level1(config):
         spectra_median = np.zeros(total_spectras, dtype=np.complex64)
         spectra_clutter_corr = np.zeros(total_spectras, dtype=np.complex64)
         for num_spec in range(total_spectras):
-            spectra_median[num_spec] = np.median(spectra[:, :, num_spec])
+            spectra_median[num_spec] = np.mean(spectra[:, 1900:2000, num_spec])
             spectra_clutter_corr[num_spec] = np.mean(spectra[:, 0:config.clutter_gates, num_spec])
 
         # calculate the xspectra 'noise' value
         xspectra_median = np.zeros(total_xspectras, dtype=np.complex64)
         xspectra_clutter_corr = np.zeros(total_xspectras, dtype=np.complex64)
         for num_xspec in range(total_xspectras):
-            xspectra_median[num_xspec] = np.median(xspectra[:, :, num_xspec])
+            xspectra_median[num_xspec] = np.mean(xspectra[:, 1900:2000, num_xspec])
             xspectra_clutter_corr[num_xspec] = np.mean(xspectra[:, 0:config.clutter_gates, num_xspec])
 
         # Calculate noise, range and Doppler values
         doppler = fft_freq[snr_indices[:, 0]]
-        rf_distance = config.range_resolution * (snr_indices[:, 1] - config.timestamp_correction)
+        rf_distance = config.range_resolution * (snr_indices[:, 1] - config.timestamp_corr)
         noise /= total_spectras
         snr_db = logsnr[snr_indices[:, 0], snr_indices[:, 1]]
 
@@ -271,7 +282,7 @@ def generate_bcode(filepath):
     b_code = np.zeros(20000, dtype=np.float32)
 
     # Read in code to be tested
-    test_sig = np.fromfile(open(filepath), dtype=np.complex64)
+    test_sig = np.fromfile(open(str(filepath)), dtype=np.complex64)
 
     # Sample code at 1/4 of the tx rate
     y = 0
@@ -316,7 +327,7 @@ def func():
        * Wrapped function is ssmf.cu is denoted by extern "C" {} tag
        * Inputs are (cufftComplex *meas1, cufftComplex *meas2, cufftComplex *code, cufftComplex *result, size_t measlen, size_t codelen, size_t size, ing avg, ing check)
     """
-    dll = C.CDLL('libssmf.so', mode=C.RTLD_GLOBAL)
+    dll = C.CDLL('/mnt/ICEBEAR_datastore/processing_code/icebear/libssmf.so', mode=C.RTLD_GLOBAL)
     func = dll.ssmf
     func.argtypes = [C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float), C.POINTER(C.c_float),
                      C.POINTER(C.c_float), C.c_size_t, C.c_size_t, C.c_size_t, C.c_int, C.c_int]
@@ -329,7 +340,7 @@ def func():
     Notes:
         * May be alternative ways to perform C/CUDA wrapping
 """
-#__fmed = func()
+__fmed = func()
 
 
 def ssmf(meas, code, averages, nrang, fdec, codelen):
@@ -460,7 +471,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
     """
 
     if config.number_ranges <= 2000:
-        start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
+        start_sample = int(time * config.raw_sample_rate) - config.timestamp_corr
         step_sample = config.code_length * config.incoherent_averages + config.number_ranges
         try:
             data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
@@ -471,10 +482,10 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
         except IOError:
             print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
                   f'(start {start_sample}, step {step_sample}) and raised an IOError')
-            exit()
+            return 1, 1
 
     else:
-        start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction
+        start_sample = int(time * config.raw_sample_rate) - config.timestamp_corr
         step_sample = config.code_length * config.incoherent_averages + 2000
         try:
             data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
@@ -483,7 +494,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                                      config.decimation_rate, config.code_length)
             for i in range(2000, config.number_ranges, 2000):
                 try:
-                    start_sample = int(time * config.raw_sample_rate) - config.timestamp_correction + i
+                    start_sample = int(time * config.raw_sample_rate) + i - config.timestamp_corr
                     data1 = data.read_vector_c81d(start_sample, step_sample, channel1) * correction1
                     data2 = data.read_vector_c81d(start_sample, step_sample, channel2) * correction2
                     r, v = ssmfx(data1, data2, bcode, config.incoherent_averages, 2000,
@@ -493,9 +504,9 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                 except IOError:
                     print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
                           f'(start {start_sample}, step {step_sample}) and raised an IOError')
-                    exit()
+                    return 1, 1
             return np.transpose(result), np.transpose(variance)
         except IOError:
             print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
                   f'(start {start_sample}, step {step_sample}) and raised an IOError')
-            exit()
+            return 1, 1

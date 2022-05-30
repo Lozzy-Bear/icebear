@@ -241,12 +241,12 @@ class Time:
             raise ValueError('Must include [year, month, day, hour, minute, second, microsecond]')
         if len(step) != 5:
             raise ValueError('Must include [day, hour, minute, second, microsecond]')
-        self.start_human = datetime.datetime(year=start[0], month=start[1], day=start[2], hour=start[3],
-                                             minute=start[4], second=start[5], microsecond=start[6], tzinfo=tzutc())
-        self.stop_human = datetime.datetime(year=stop[0], month=stop[1], day=stop[2], hour=stop[3],
-                                            minute=stop[4], second=stop[5], microsecond=stop[6], tzinfo=tzutc())
-        self.step_human = datetime.timedelta(days=step[0], hours=step[1], minutes=step[2],
-                                             seconds=step[3], microseconds=step[4])
+        self.start_human = datetime.datetime(year=int(start[0]), month=int(start[1]), day=int(start[2]), hour=int(start[3]),
+                                             minute=int(start[4]), second=int(start[5]), microsecond=int(start[6]), tzinfo=tzutc())
+        self.stop_human = datetime.datetime(year=int(stop[0]), month=int(stop[1]), day=int(stop[2]), hour=int(stop[3]),
+                                            minute=int(stop[4]), second=int(stop[5]), microsecond=int(stop[6]), tzinfo=tzutc())
+        self.step_human = datetime.timedelta(days=int(step[0]), hours=int(step[1]), minutes=int(step[2]),
+                                             seconds=int(step[3]), microseconds=int(step[4]))
         self.start_epoch = self.start_human.timestamp()
         self.stop_epoch = self.stop_human.timestamp()
         self.step_epoch = self.step_human.total_seconds()
