@@ -9,8 +9,7 @@ import ctypes as C
 import digital_rf
 import icebear.utils
 import os
-import dsp
-
+import icebear.processing.dsp as dsp
 
 def generate_level1(config):
     """
@@ -111,11 +110,12 @@ def generate_level1(config):
                 cnt += 1
 
         snr, noise = dsp.snr(power, 'galeschuk')
-        snr = xp.ma.masked_where(snr < 0.0, snr)
-        logsnr = 10 * xp.log10(snr.filled(1))
-        logsnr = xp.ma.masked_where(logsnr < 1.0, logsnr)
+        snr = xp.asnumpy(snr)
+        snr = np.ma.masked_where(snr < 0.0, snr)
+        logsnr = 10 * np.log10(snr.filled(1))
+        logsnr = np.ma.masked_where(logsnr < 1.0, logsnr)
         # Find the range-Doppler bins with a SNR above the threshold.
-        snr_indices = xp.asarray(xp.where(logsnr >= config.snr_cutoff_db)).T
+        snr_indices = np.asarray(np.where(logsnr >= config.snr_cutoff_db)).T
         if len(snr_indices) > 0:
             data_flag = True
         else:
@@ -136,16 +136,21 @@ def generate_level1(config):
             xspectra_clutter_corr[num_xspec] = xp.mean(xspectra[:, 0:config.clutter_gates, num_xspec])
 
         # done on GPU
-        spectra = xp.asnumpy(spectra)
-        spectra_variance = xp.asnumpy(spectra_variance)
-        xspectra = xp.asnumpy(xspectra)
-        xspectra_variance = xp.asnumpy(xspectra_variance)
+        spectra = spectra.get()
+        spectra_variance = spectra_variance.get()
+        xspectra = xspectra.get()
+        xspectra_variance = xspectra_variance.get()
 
         # Calculate noise, range and Doppler values
         doppler = fft_freq[snr_indices[:, 0]]
         rf_distance = config.range_resolution * (snr_indices[:, 1] - config.timestamp_corr)
-        noise /= total_spectras
+        noise = xp.asnumpy(noise / total_spectras)
         snr_db = logsnr[snr_indices[:, 0], snr_indices[:, 1]]
+
+        spectra_median = spectra_median.get()
+        spectra_clutter_corr = spectra_clutter_corr.get()
+        xspectra_median = xspectra_median.get()
+        xspectra_clutter_corr = xspectra_clutter_corr.get()
 
         append_level1_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000),
                            data_flag, doppler, rf_distance, snr_db, noise,
@@ -361,7 +366,9 @@ def func():
     Notes:
         * May be alternative ways to perform C/CUDA wrapping
 """
-__fmed = func()
+
+
+# __fmed = func()
 
 
 def ssmf(meas, code, averages, nrang, fdec, codelen):
@@ -436,7 +443,7 @@ def ssmfx(meas0, meas1, code, averages, nrang, fdec, codelen, clutter_gates):
     return result, variance
 
 
-def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
+def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen):
     """
     Formats measured data and CUDA function inputs and calls wrapped function for determining the cross-correlation spectra of
     selected antenna pair.
@@ -454,21 +461,18 @@ def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
         S (complex64 np.array): 2D Spectrum output for antenna pair (Doppler shift x Range).
     """
 
-    # todo: variance unimplemented
-    # todo: move the averaging loop into unmatched_filtering?
-    nfreq = int(codelen / fdec)
+    # todo: improve the integer casting
+    # nfreq = int(codelen / fdec)
     code = code.astype(xp.complex64)
-    result = xp.zeros((nrng, nfreq), dtype=xp.complex64)
-    variance = xp.zeros((nrng, nfreq), dtype=xp.complex64)
-    v0_filtered = xp.zeros((nrng, nfreq), dtype=xp.complex64)
-    v1_filtered = xp.zeros((nrng, nfreq), dtype=xp.complex64)
-    spectra = xp.zeros((nrng, nfreq), dtype=xp.complex64)
-    for i in range(navg):
-        v0_filtered = dsp.unmatched_filtering(v0[codelen*i:codelen*(i+1) + nrng], code, codelen, nrng, fdec)
-        v1_filtered = dsp.unmatched_filtering(v1[codelen*i:codelen*(i+1) + nrng], code, codelen, nrng, fdec)
-        spectra, _, _, _ = dsp.wiener_khinchin(v0_filtered, v1_filtered, clutter_gates, navg)
-        result += spectra
-    return result, variance
+    # variance = xp.zeros((nrng, nfreq), dtype=xp.complex64)
+    # v0_filtered = xp.ndarray((nrng, nfreq), dtype=xp.complex64)
+    # v1_filtered = xp.ndarray((nrng, nfreq), dtype=xp.complex64)
+    # spectra = xp.ndarray((nrng, nfreq), dtype=xp.complex64)
+    v0_filtered = dsp.unmatched_filtering(v0, code, int(codelen), int(nrng), int(fdec), int(navg))
+    v1_filtered = dsp.unmatched_filtering(v1, code, int(codelen), int(nrng), int(fdec), int(navg))
+    spectra, variance = dsp.wiener_khinchin(v0_filtered, v1_filtered, navg)
+
+    return spectra, variance
 
 
 def decx(config, time, data, bcode, channel1, channel2, correction1, correction2):
@@ -494,12 +498,11 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
         start_sample = int(time * config.raw_sample_rate) - config.timestamp_corr
         step_sample = config.code_length * config.incoherent_averages + config.number_ranges
         try:
-            data1 = dsp.calibration_correction(xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel1)),
-                                               xp.asarray(correction1))
-            data2 = dsp.calibration_correction(xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)),
-                                               xp.asarray(correction2))
-            result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), config.incoherent_averages, config.number_ranges,
-                                     config.decimation_rate, config.code_length, config.clutter_gates)
+            data1 = xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel1) * correction1)
+            data2 = xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2) * correction2)
+            result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
+                                          config.number_ranges, xp.asarray(config.decimation_rate),
+                                          xp.asarray(config.code_length))
             return xp.transpose(result), xp.transpose(variance)
         except IOError:
             print(f'Read number went beyond existing channels({channel1}, {channel2}) or data '
@@ -514,8 +517,8 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                                                xp.asarray(correction1))
             data2 = dsp.calibration_correction(xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)),
                                                xp.asarray(correction2))
-            result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
-                                     config.decimation_rate, config.code_length, config.clutter_gates)
+            result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages), 2000,
+                                          xp.asarray(config.decimation_rate), xp.asarray(config.code_length))
             for i in range(2000, config.number_ranges, 2000):
                 try:
                     start_sample = int(time * config.raw_sample_rate) + i - config.timestamp_corr
@@ -524,7 +527,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                     data2 = dsp.calibration_correction(
                         xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)), xp.asarray(correction2))
                     r, v = ssmfx_cupy(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
-                                 config.decimation_rate, config.code_length, config.clutter_gates)
+                                      config.decimation_rate, config.code_length)
                     result = xp.append(result, r, axis=0)
                     variance = xp.append(variance, v, axis=0)
                 except IOError:

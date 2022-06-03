@@ -1,4 +1,5 @@
 import numpy as np
+
 try:
     import cupy as xp
 except ModuleNotFoundError:
@@ -11,14 +12,20 @@ def windowed_view(ndarray, window_len, step):
     otherwise be dropped without missing samples needed for the convolutions windows. The
     strides will also not extend out of bounds meaning we do not need to pad extra samples and
     then drop bad samples after the fact.
-    :param      ndarray:     The input ndarray
-    :type       ndarray:     ndarray
-    :param      window_len:  The window length(filter length)
-    :type       window_len:  int
-    :param      step:        The step(dm rate)
-    :type       step:        int
-    :returns:   The array with a new view.
-    :rtype:     ndarray
+
+    Parameters
+    ----------
+    ndarray : ndarray
+        The input ndarray
+    window_len : int
+        The window length (filter length)
+    step : int
+        The step size (decimation rate)
+
+    Returns
+    -------
+     ndarray
+        The array ndarray with a new view.
     """
 
     nrows = ((ndarray.shape[-1] - window_len) // step) + 1
@@ -55,11 +62,11 @@ def calibration_correction(samples, calibration):
     return calibrated_samples
 
 
-def unmatched_filtering(samples, code, code_length, ranges, decimation_rate):
+def unmatched_filtering(samples, code, code_length, nrng, decimation_rate, navg):
     """
     Done on the GPU. Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
     first decimates the input signal then applies a 'matched filter' like correlation using a
-    special psuedo-random code which has been upsampled to match the signal window and contains
+    special pseudo-random code which has been upsampled to match the signal window and contains
     amplitude filtering bits. This essentially demodulates the signal and removes our code.
 
     See Huyghebaert, (2019). The Ionospheric Continuous-wave E-region Bistatic Experimental
@@ -68,102 +75,71 @@ def unmatched_filtering(samples, code, code_length, ranges, decimation_rate):
     Parameters
     ----------
     samples : complex64 ndarray
+        1D vector
         Antenna complex magnitude and phase voltage samples.
     code : float32 ndarray
+        1D vector
         Transmitted pseudo-random code sequence.
     code_length : int
-        Length of the transmitted psuedo-random code sequence.
-    ranges : int
+        Length of the transmitted pseudo-random code sequence.
+    nrng : int
         Number of range gates being processed. Nominally 2000.
     decimation_rate : float32
-        Decimation rate (typically 200) to be used by GPU processing, effects Doppler resolution.
+        Decimation rate (typically 200) to be used by GPU processing, affects Doppler resolution.
+    navg : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
 
     Returns
     -------
-    filtered : complex64 ndarray
+    : complex64 ndarray
+        Shape (navg, nrng, code_length/decimation_rate)
         Output decimated and unmatched filtered samples.
     """
-    # todo: test on real data/ against draven's results
-    # todo: look for a better way to make the input_samples array besides the for-loop
-    # decimation and matched filtering
-
-    filtered = xp.ndarray((ranges + 1, int(code_length / decimation_rate)), xp.complex64)
-
-    input_samples = xp.ndarray((int(code_length / decimation_rate), ranges + 1, decimation_rate), xp.int)
-    for i in range(0, int(code_length / decimation_rate)):
-        entry = windowed_view(samples[i * decimation_rate:ranges + (i + 1) * decimation_rate], window_len=decimation_rate, step=1)
-        input_samples[i, :, :] = entry
-
+    input_samples = xp.lib.stride_tricks.as_strided(samples,
+                                                    (navg, int(code_length / decimation_rate), nrng, decimation_rate),
+                                                    strides=(code_length * samples.strides[0],
+                                                             decimation_rate * samples.strides[0], samples.strides[0],
+                                                             samples.strides[0]))
     code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
-
-    filtered = xp.einsum('ijk,ik->ji', input_samples, xp.conj(code_samples))
-    return filtered
+    return xp.einsum('lijk,ik->lji', input_samples, xp.conj(code_samples))
 
 
-def wiener_khinchin(samples1, samples2, clutter_gates, averages):
+def wiener_khinchin(samples1, samples2, navg):
     """
     Done on the GPU. Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
 
     Parameters
     ----------
     samples1 : complex64 ndarray
+        Shape (navg, nrng, code_length/decimation_rate)
         Filtered and decimated complex magnitude and phase voltage samples.
     samples2 : complex64 ndarray
+        Shape (navg, nrng, code_length/decimation_rate)
         Filtered and decimated complex magnitude and phase voltage samples.
-    clutter_gates : float32
-        Range gate to go out to for calculating clutter correction
-    averages : int
+    navg : int
         The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
 
     Returns
     -------
     spectra : complex64 ndarray
+        Shape (doppler bins, range bins).
         2D Spectrum output for antenna/channel pairs or baseline. Also known as the spectra/
         auto-correlations when samples1 = samples2 or the cross-spectra/cross-correlations when
         samples1 != samples2. These are all called Visibility (the value for a baseline at u,v,w
         sampling space coordinates) for radar imaging.
-        Shape (doppler bins, range bins).
-        Final spectra is divided by the number of averages provided
-    variance : complex64 ndarray
-        the un-averaged spectra value. To calculate the variance with the variance function, it is necessary to keep
-        these values for each application of the WK function
-    spectra_median : complex64
-        median value of the calculated spectra (averaged)
-    clutter_correction : complex64
-        mean of the spectra values for the first clutter_gates range gates (averaged)
-    """
-    # todo: investigate the transpose issue
-    # todo: confirm that this is how variance works
-    # todo: spectra_median shouldn't be here?
-
-    variance = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
-    spectra = variance / averages
-    spectra_median = xp.median(spectra)
-    clutter_correction = xp.mean(spectra[:, 0:clutter_gates])
-    # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
-    return spectra, variance, spectra_median, clutter_correction
-
-def variance(variance_samples, spectra, averages):
-    """
-    Calculate the variance of the sum of the non-averaged spectra results with respect to the averaged spectra results.
-
-    Parameters
-    ----------
-    variance_samples : complex64 ndarray
-        Shape (averages, doppler bins, range bins)
-    spectra : complex64 ndarray
-        The incoherently averaged results of the wiener-khinchin calculation
-    averages : int
-        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
-
-    Returns
-    -------
+        Final spectra is divided by the number of averages.
     variance : complex64 ndarray
         Shape (doppler bins, range bins)
-        Contains the variance of each point over the incoherent averages
+        The final spectra is made up of navg coherent averages. The variance array contains the variance of each point
+        of each of those navg arrays with respect to the same point in the final spectra
+
     """
-    variance = xp.sqrt(xp.sum((variance_samples - spectra)**2, axis=0)/averages)
-    return variance
+    # todo: investigate the transpose issue
+    # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
+    variance_samples = xp.einsum('ijk,ijk->ijk', xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
+    spectra = xp.sum(variance_samples, axis=0) / navg
+    variance = xp.sqrt(xp.sum((variance_samples - spectra) ** 2, axis=0) / navg)
+    return spectra, variance
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
@@ -203,7 +179,6 @@ def clutter_correction(spectra, correction):
     """
 
     corrected_spectra = spectra - correction
-
     return corrected_spectra
 
 
@@ -238,16 +213,12 @@ def snr(power, method='mean'):
         raise ValueError('argument \'method\' must be one of: mean, median, galeschuk')
 
     snr = (power - noise) / noise
-
     return snr, noise
 
 
 def generate_bcode(filepath):
     """
        Uses the pseudo-random code file to generate the binary code for signal matching
-
-    todo
-        Make function able to take any code length and resample at any rate
     """
     # Array for storing the code to be analyzed
     b_code = np.zeros(20000, dtype=np.float32)
