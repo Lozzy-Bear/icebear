@@ -111,10 +111,8 @@ def wiener_khinchin(samples1, samples2, navg):
     Parameters
     ----------
     samples1 : complex64 ndarray
-        Shape (navg, nrng, code_length/decimation_rate)
         Filtered and decimated complex magnitude and phase voltage samples.
     samples2 : complex64 ndarray
-        Shape (navg, nrng, code_length/decimation_rate)
         Filtered and decimated complex magnitude and phase voltage samples.
     navg : int
         The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
@@ -122,24 +120,28 @@ def wiener_khinchin(samples1, samples2, navg):
     Returns
     -------
     spectra : complex64 ndarray
-        Shape (doppler bins, range bins).
         2D Spectrum output for antenna/channel pairs or baseline. Also known as the spectra/
         auto-correlations when samples1 = samples2 or the cross-spectra/cross-correlations when
         samples1 != samples2. These are all called Visibility (the value for a baseline at u,v,w
         sampling space coordinates) for radar imaging.
-        Final spectra is divided by the number of averages.
+        Shape (doppler bins, range bins).
+        Final spectra is divided by the number of averages provided
     variance : complex64 ndarray
-        Shape (doppler bins, range bins)
-        The final spectra is made up of navg coherent averages. The variance array contains the variance of each point
-        of each of those navg arrays with respect to the same point in the final spectra
-
+        the un-averaged spectra value. To calculate the variance with the variance function, it is necessary to keep
+        these values for each application of the WK function
+    clutter_correction : complex64
+        mean of the spectra values for the first clutter_gates range gates (averaged)
     """
     # todo: investigate the transpose issue
     # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
     variance_samples = xp.einsum('ijk,ijk->ijk', xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
-    spectra = xp.sum(variance_samples, axis=0) / navg
-    variance = xp.sqrt(xp.sum((variance_samples - spectra) ** 2, axis=0) / navg)
+    spectra = xp.sum(variance_samples/navg, axis=0)
+    re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra)) * (xp.real(variance_samples) - xp.real(spectra)), axis=0)/navg)
+    im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0)/navg)
+    variance = re + 1j*im
+    # variance = xp.sqrt(xp.sum((variance_samples - spectra) * (variance_samples - spectra), axis=0)/navg)
     return spectra, variance
+
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
