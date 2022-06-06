@@ -66,7 +66,7 @@ def unmatched_filtering(samples, code, code_length, nrng, decimation_rate, navg)
     """
     Done on the GPU. Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
     first decimates the input signal then applies a 'matched filter' like correlation using a
-    special pseudo-random code which has been upsampled to match the signal window and contains
+    special psuedo-random code which has been upsampled to match the signal window and contains
     amplitude filtering bits. This essentially demodulates the signal and removes our code.
 
     See Huyghebaert, (2019). The Ionospheric Continuous-wave E-region Bistatic Experimental
@@ -75,24 +75,21 @@ def unmatched_filtering(samples, code, code_length, nrng, decimation_rate, navg)
     Parameters
     ----------
     samples : complex64 ndarray
-        1D vector
         Antenna complex magnitude and phase voltage samples.
     code : float32 ndarray
-        1D vector
         Transmitted pseudo-random code sequence.
     code_length : int
-        Length of the transmitted pseudo-random code sequence.
+        Length of the transmitted psuedo-random code sequence.
     nrng : int
         Number of range gates being processed. Nominally 2000.
     decimation_rate : float32
-        Decimation rate (typically 200) to be used by GPU processing, affects Doppler resolution.
+        Decimation rate (typically 200) to be used by GPU processing, effects Doppler resolution.
     navg : int
         The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
 
     Returns
     -------
-    : complex64 ndarray
-        Shape (navg, nrng, code_length/decimation_rate)
+    filtered : complex64 ndarray
         Output decimated and unmatched filtered samples.
     """
     input_samples = xp.lib.stride_tricks.as_strided(samples,
@@ -101,7 +98,7 @@ def unmatched_filtering(samples, code, code_length, nrng, decimation_rate, navg)
                                                              decimation_rate * samples.strides[0], samples.strides[0],
                                                              samples.strides[0]))
     code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
-    return xp.einsum('lijk,ik->lji', input_samples, xp.conj(code_samples))
+    return xp.einsum('lijk,ik->lji', input_samples, xp.conj(code_samples), optimize='greedy')
 
 
 def wiener_khinchin(samples1, samples2, navg):
@@ -135,13 +132,11 @@ def wiener_khinchin(samples1, samples2, navg):
     # todo: investigate the transpose issue
     # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
     variance_samples = xp.einsum('ijk,ijk->ijk', xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
-    spectra = xp.sum(variance_samples/navg, axis=0)
+    spectra = xp.sum(variance_samples, axis=0)/navg
     re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra)) * (xp.real(variance_samples) - xp.real(spectra)), axis=0)/navg)
     im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0)/navg)
     variance = re + 1j*im
-    # variance = xp.sqrt(xp.sum((variance_samples - spectra) * (variance_samples - spectra), axis=0)/navg)
     return spectra, variance
-
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
