@@ -1,8 +1,15 @@
 import numpy as np
+try:
+    import cupy as xp
+    CUDA = True
+except ModuleNotFoundError:
+    import numpy as xp
+    CUDA = False
 import h5py
 import pymap3d as pm
 import icebear.utils as utils
 import matplotlib.pyplot as plt
+import clustering as cl
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -158,12 +165,65 @@ def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic
     return m[2, :]
 
 
+def calculate_clustering(la, lo, ti, az, el, al, k=500_000):
+    """
+    Calculates the spatial and temporal clustering values for each point in the input arrays. Calculations performed on
+    the GPU using cupy. Default spans to use for the calculation are the nearest 512 points in time and the
+    nearest 512 points in space within approximately (NOT exactly) 4 hours.
+
+    Parameters
+    ----------
+    la : 1D ndarray
+        Vector array of latitude values in [deg]
+    lo : 1D ndarray
+        Vector array of longitude values in [deg]
+    ti : 1D ndarray
+        Vector array of time values in [s]
+    az : 1D ndarray
+        Vector array of azimuth values in [deg]
+    el : 1D ndarray
+        Vector array of elevation values in [deg]
+    al : 1D ndarray
+        Vector array of altitude values in [km]
+    k  : int
+        Half of the maximum number of points thought to be within tspan hours of each point. Default 500_000. Used
+        for chunking purposes. Don't recommend going higher than 1_000_000 or there may be GPU memory issues
+
+    Returns
+    -------
+    beam : 1D ndarray
+        Same shape as the input arrays. Classifies each point into a beam.
+        Possible values:
+            -1 : the corresponding point is not in a beam
+            1  : the corresponding point is in the east beam
+            2  : the corresponding point is in the centre beam
+            3  : the corresponding point is in the west beam
+    dr : 1D ndarray
+        Same shape as the input arrays. The spatial clustering values in [km]. -1 indicates a point not in a beam
+    dt : 1D ndarray
+        Same shape as the input arrays. The temporal clustering values in [s]. -1 indicates a point not in a beam
+    """
+    beam = cl.beam_finder(az, el)
+    beam[al > 150] = -1
+    beam[al < 70] = -1
+
+    arr = xp.array([ti, la, lo])
+    trimmed_arr = arr[:, beam > 0]
+    dr = -1 * np.ones(arr.shape[1], dtype=np.float32)
+    dt = -1 * np.ones(arr.shape[1], dtype=np.float32)
+
+    # calculate clustering values
+    dr[beam > 0], dt[beam > 0] = cl.cluster_medians(trimmed_arr, k)
+    return beam, dr, dt
+
+
 def create_level2_sanitized_hdf5(config, filename,
                        epoch_time, rf_distance, snr_db, doppler_shift,
                        lattitude, longitude, altitude,
                        azimuth, elevation, slant_range,
                        velocity_azimuth, velocity_elevation, velocity,
-                       azimuth_extent, elevation_extent, area, raw_elevation):
+                       azimuth_extent, elevation_extent, area, raw_elevation, beam,
+                       spatial_cluster, temporal_cluster):
     # Add general information
     # general information
     f = h5py.File(filename, 'w')
@@ -230,6 +290,10 @@ def create_level2_sanitized_hdf5(config, filename,
     f.create_dataset('data/velocity_azimuth', data=velocity_azimuth)
     f.create_dataset('data/velocity_elevation', data=velocity_elevation)
     f.create_dataset('data/velocity_magnitude', data=velocity)
+    # Magnus clustering data
+    f.create_dataset('data/beam', data=beam)
+    f.create_dataset('data/spatial_cluster', data=spatial_cluster)
+    f.create_dataset('data/temporal_cluster', data=temporal_cluster)
     # dset.attrs['units'] = 'm/s'
     # dset.attrs['description'] = 'magnitude of the target velocity vector'
     # dset.attrs['dtype'] = dset.dtype
@@ -255,8 +319,9 @@ def create_level2_sanitized_hdf5(config, filename,
 if __name__ == '__main__':
     # Load the level 2 data file.
     # filepath = '/beaver/backup/level2_advanced_cuda/'  # Enter file path to level 2 directory
-    filepath = 'F:/icebear/level2_advanced_cuda/'  # Enter file path to level 2 directory
-    date_dir = '2020_12_12'
+    # filepath = 'F:/icebear/level2_advanced_cuda/'  # Enter file path to level 2 directory
+    filepath = '/beaver/backup/level2b/'
+    date_dir = '2020_11_10'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 
@@ -302,8 +367,8 @@ if __name__ == '__main__':
 
     filename = f'{filepath}{date_dir}/' \
                f'{config.radar_config}_{config.experiment_name}_swht_' \
-               f'{date_dir}_{config.tx_site_name}_{config.rx_site_name}.h5'
-
+               f'{date_dir}_{config.tx_site_name}_{config.rx_site_name}_brian.h5'
+    print(filename)
     print('\t-loading completed')
     # Set the azimuth pointing direction
     azimuth += config.rx_heading
@@ -389,9 +454,11 @@ if __name__ == '__main__':
     print('\t-masking completed')
     print('\t-remaining data', len(rf_distance))
 
+    beam, spatial_cluster, temporal_cluster = calculate_clustering(lat, lon, t, azimuth, elevation, altitude, k=500_000)
+
     create_level2_sanitized_hdf5(config, filename, t, rf_distance, snr_db, doppler_shift,
                        lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, vma,
-                       azimuth_extent, elevation_extent, area, raw_elevation)
+                       azimuth_extent, elevation_extent, area, raw_elevation, beam, spatial_cluster, temporal_cluster)
 
     # Draven this little bit of code can be used to make altitude histograms per day if we want one every day!
 
