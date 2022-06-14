@@ -9,7 +9,8 @@ import ctypes as C
 import digital_rf
 import icebear.utils
 import os
-import icebear.processing.dsp as dsp
+import dsp
+
 
 def generate_level1(config):
     """

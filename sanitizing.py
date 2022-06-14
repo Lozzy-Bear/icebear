@@ -9,7 +9,7 @@ import h5py
 import pymap3d as pm
 import icebear.utils as utils
 import matplotlib.pyplot as plt
-import clustering as cl
+import icebear.imaging.clustering as cl
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
