@@ -139,35 +139,34 @@ for a1 in range(len(antenna1)):
     noise_array_phase = np.zeros(num_points)
 
     # for each data point
-    for i in range(num_points):
-        for point in range(num_points):
-            # print progress
-            sys.stdout.write(f'\rBeginning step {point}/{num_points}: ' + str(
-                start_time + datetime.timedelta(seconds=(averages*0.1 + plot_spacing) * point)))
-            sys.stdout.flush()
 
-            # perform cross-correlation to obtain one data point in this baseline
-            xspec, calc_time = Imod.decx(b_code, data, codelen, complex_corr, averages, True, fdec, nrang, start_time,
-                                         point, plot_spacing, sample_rate, ant[0], ant[1])
+    for point in range(num_points):
+        # print progress
+        sys.stdout.write(f'\rBeginning step {point}/{num_points}: ' + str(
+            start_time + datetime.timedelta(seconds=(averages*0.1 + plot_spacing) * point)))
+        sys.stdout.flush()
 
-            # calculate a single complex value representing the noise in the entire range doppler matrix
-            n_real = np.average(np.real(xspec.data))
-            n_imag = np.average(np.imag(xspec.data))
-            n = n_real + 1j * n_imag
+        # perform cross-correlation to obtain one data point in this baseline
+        xspec, calc_time = Imod.decx(b_code, data, codelen, complex_corr, averages, True, fdec, nrang, start_time,
+                                     point, plot_spacing, sample_rate, ant[0], ant[1])
 
-            # power and phase of the average noise fills in one data point
-            noise_array[point] = np.abs(n)
-            noise_array_phase[point] = np.angle(n)
+        # calculate a single complex value representing the noise in the entire range doppler matrix
+        n_real = np.average(np.real(xspec.data))
+        n_imag = np.average(np.imag(xspec.data))
+        n = n_real + 1j * n_imag
 
-        # report on the completed baseline and save its associated files
-        # todo: why are we nesting for-loops here? what does the outer loop accomplish?
-        print("\n-----END-------------------------END--------")
-        print(f"Program successfully calculated all points in baseline {ant[0]}-{ant[1]}") # not accurate
-        extend = ''
-        np.save('/home/icebear-cuda/research/noise_brian/data/' + name + extend + 'noise_array.npy', noise_array)
-        np.save('/home/icebear-cuda/research/noise_brian/data/' + name + extend + 'noise_array_phase.npy', noise_array_phase)
-        np.save('/home/icebear-cuda/research/noise_brian/data/' + name + extend + 'dates.npy', dates)
+        # power and phase of the average noise fills in one data point
+        noise_array[point] = np.abs(n)
+        noise_array_phase[point] = np.angle(n)
 
-        print(name + extend + 'dates.npy')
+    # report on the completed baseline and save its associated files
+    print("\n-----END-------------------------END--------")
+    print(f"Program successfully calculated all points in baseline {ant[0]}-{ant[1]}") # not accurate
+    extend = ''
+    np.save('/home/icebear-cuda/research/noise_brian/data/' + name + extend + 'noise_array.npy', noise_array)
+    np.save('/home/icebear-cuda/research/noise_brian/data/' + name + extend + 'noise_array_phase.npy', noise_array_phase)
+    np.save('/home/icebear-cuda/research/noise_brian/data/' + name + extend + 'dates.npy', dates)
+
+    print(name + extend + 'dates.npy')
 
 print('script finished.')
