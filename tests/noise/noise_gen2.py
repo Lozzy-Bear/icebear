@@ -42,10 +42,11 @@ def usage():
     print("\t -h <hour>  Hour value at which to start the calculations")
     print("\t --minute <minute>  Minute value at which to start the calculations")
     print("\t -s <second>  Second value at which to start the calculations")
+    print("\t -p <period>  Number of hours to compute over")
 
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'y:m:d:h:m:s:', ['help', 'ini-file = ', 'igrf-year = ', 'source = ', 'minute = '])
+    opts, args = getopt.getopt(sys.argv[1:], 'y:m:d:h:m:s:p:', ['help', 'ini-file = ', 'igrf-year = ', 'source = ', 'minute = '])
 except:
     usage()
     sys.exit()
@@ -72,6 +73,8 @@ for opt, val in opts:
         minute = int(val)
     elif opt in ('-s'):
         second = int(val)
+    elif opt in ('-p'):
+        period = int(val)
 # Done parsing command line arguments
 
 
@@ -87,7 +90,7 @@ b_code = Imod.generate_bcode()
 
 # Timespan array
 start_time = datetime.datetime(year, month, minute, second)
-dates = np.array([start_time + datetime.timedelta(seconds=averages/10*shift for shift in range(num_points))])
+dates = np.array([start_time + datetime.timedelta(seconds=averages/10*shift) for shift in range(num_points)])
 
 # Open stream to antenna data
 data = digital_rf.DigitalRFReader([source])
