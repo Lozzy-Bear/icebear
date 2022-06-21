@@ -3,6 +3,7 @@ import h5py
 import pymap3d as pm
 import icebear.utils as utils
 import matplotlib.pyplot as plt
+import sys
 
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
@@ -255,8 +256,18 @@ def create_level2_sanitized_hdf5(config, filename,
 if __name__ == '__main__':
     # Load the level 2 data file.
     # filepath = '/beaver/backup/level2_advanced_cuda/'  # Enter file path to level 2 directory
-    filepath = 'F:/icebear/level2_advanced_cuda/'  # Enter file path to level 2 directory
-    date_dir = '2020_12_12'
+    filepath = 'HERE'  # Enter file path to level 2 directory
+    date_dir = 'HERE'
+
+    for arg in range(len(sys.argv)):
+        if sys.argv[arg] == "-d":
+            date_dir = str(sys.argv[arg + 1])
+        elif sys.argv[arg] == "-p":
+            filepath = str(sys.argv[arg + 1])
+
+    if (filepath == 'HERE') or (date_dir == 'HERE'):
+        sys.exit()
+
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
     print(f'files: {files}')
 

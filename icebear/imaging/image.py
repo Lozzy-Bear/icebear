@@ -59,7 +59,7 @@ def generate_level2(config, method='swht'):
         now = time.get_date(t)
         if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
             filename = f'{config.imaging_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
-                f'{config.radar_config}_{config.experiment_name}_{config.image_method}_{int(config.resolution * 10):02d}deg_' \
+                f'{config.radar_config}_{config.experiment_name}_{config.imaging_method}_{int(config.resolution * 10):02d}deg_' \
                 f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}_' \
                 f'{config.tx_site_name}_{config.rx_site_name}.h5'
             print(f'\t-created level 2 HDf5: {filename}')
@@ -131,7 +131,7 @@ def create_level2_hdf5(config, filename, year, month, day):
     f.create_dataset('incoherent_averages', data=config.incoherent_averages)
     f.create_dataset('snr_cutoff_db', data=config.snr_cutoff_db)
     # imaging settings
-    f.create_dataset('image_method', data=np.array([config.image_method], dtype='S'))
+    f.create_dataset('image_method', data=np.array([config.imaging_method], dtype='S'))
     #f.create_dataset('clean', data=np.array([config.clean], dtype='S'))
     #f.create_dataset('center', data=np.array([config.center], dtype='S'))
     f.create_dataset('swht_coeffs', data=np.array([config.swht_coeffs], dtype='S'))
@@ -327,7 +327,7 @@ if __name__ == '__main__':
     config.add_attr('imaging_step', imaging_step)
     config.add_attr('lmax', 85)
     config.add_attr('resolution', 0.1)
-    config.add_attr('image_method', 'swht')
+    config.add_attr('imaging_method', 'swht')
     # config.add_attr('fov', np.array([[0, 360], [0, 180]]))
     config.add_attr('fov', np.array([[315, 225], [90, 45]]))
     # config.add_attr('fov_center', np.array([90, 90]))

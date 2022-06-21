@@ -5,6 +5,31 @@ except ModuleNotFoundError:
     import numpy as xp
 
 
+def windowed_view(ndarray, window_len, step):
+    """
+    Creates a strided and windowed view of the ndarray. This allows us to skip samples that will
+    otherwise be dropped without missing samples needed for the convolutions windows. The
+    strides will also not extend out of bounds meaning we do not need to pad extra samples and
+    then drop bad samples after the fact.
+    :param      ndarray:     The input ndarray
+    :type       ndarray:     ndarray
+    :param      window_len:  The window length(filter length)
+    :type       window_len:  int
+    :param      step:        The step(dm rate)
+    :type       step:        int
+    :returns:   The array with a new view.
+    :rtype:     ndarray
+    """
+
+    nrows = ((ndarray.shape[-1] - window_len) // step) + 1
+    last_dim_stride = ndarray.strides[-1]
+    new_shape = ndarray.shape[:-1] + (nrows, window_len)
+    new_strides = list(ndarray.strides + (last_dim_stride,))
+    new_strides[-2] *= step
+
+    return xp.lib.stride_tricks.as_strided(ndarray, shape=new_shape, strides=new_strides)
+
+
 def calibration_correction(samples, calibration):
     """
     Applies a complex magnitude and phase correction to all complex voltage samples.
@@ -29,10 +54,9 @@ def calibration_correction(samples, calibration):
     calibrated_samples = xp.matmul(samples, calibration)
     return calibrated_samples
 
-
-def unmatched_filtering(samples, code, code_length, averages, ranges, decimation_rate):
+def unmatched_filtering(samples, code, code_length, nrng, decimation_rate, navg):
     """
-    Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
+    Done on the GPU. Apply the spread spectrum unmatched filter and decimation to the signal. Essentially this
     first decimates the input signal then applies a 'matched filter' like correlation using a
     special psuedo-random code which has been upsampled to match the signal window and contains
     amplitude filtering bits. This essentially demodulates the signal and removes our code.
@@ -48,25 +72,29 @@ def unmatched_filtering(samples, code, code_length, averages, ranges, decimation
         Transmitted pseudo-random code sequence.
     code_length : int
         Length of the transmitted psuedo-random code sequence.
-    averages : int
-        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
-    ranges : int
+    nrng : int
         Number of range gates being processed. Nominally 2000.
     decimation_rate : float32
         Decimation rate (typically 200) to be used by GPU processing, effects Doppler resolution.
+    navg : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
 
     Returns
     -------
     filtered : complex64 ndarray
         Output decimated and unmatched filtered samples.
     """
-    filtered = xp.array()  # Todo: Convert Dravens code to cupy
-    return filtered
+    input_samples = xp.lib.stride_tricks.as_strided(samples,
+                                                    (navg, int(code_length / decimation_rate), nrng, decimation_rate),
+                                                    strides=(code_length * samples.strides[0],
+                                                             decimation_rate * samples.strides[0], samples.strides[0],
+                                                             samples.strides[0]))
+    code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
+    return xp.einsum('lijk,ik->lji', input_samples, xp.conj(code_samples), optimize='greedy')
 
-
-def wiener_khinchin(samples1, samples2):
+def wiener_khinchin(samples1, samples2, navg):
     """
-    Apply the Wiener-Khinchin theorem. Do not take the finally FFT() as we want the power spectral density (PSD).
+    Done on the GPU. Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
 
     Parameters
     ----------
@@ -74,6 +102,8 @@ def wiener_khinchin(samples1, samples2):
         Filtered and decimated complex magnitude and phase voltage samples.
     samples2 : complex64 ndarray
         Filtered and decimated complex magnitude and phase voltage samples.
+    navg : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
 
     Returns
     -------
@@ -83,13 +113,43 @@ def wiener_khinchin(samples1, samples2):
         samples1 != samples2. These are all called Visibility (the value for a baseline at u,v,w
         sampling space coordinates) for radar imaging.
         Shape (doppler bins, range bins).
+        Final spectra is divided by the number of averages provided
+    variance : complex64 ndarray
+        the un-averaged spectra value. To calculate the variance with the variance function, it is necessary to keep
+        these values for each application of the WK function
+    clutter_correction : complex64
+        mean of the spectra values for the first clutter_gates range gates (averaged)
+    """
+    # todo: investigate the transpose issue
+    # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
+    variance_samples = xp.einsum('ijk,ijk->ijk', xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
+    spectra = xp.sum(variance_samples, axis=0)/navg
+    re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra)) * (xp.real(variance_samples) - xp.real(spectra)), axis=0)/navg)
+    im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0)/navg)
+    variance = re + 1j*im
+    return spectra, variance
+
+def variance(variance_samples, spectra, averages):
+    """
+    Calculate the variance of the sum of the non-averaged spectra results with respect to the averaged spectra results.
+
+    Parameters
+    ----------
+    variance_samples : complex64 ndarray
+        Shape (averages, doppler bins, range bins)
+    spectra : complex64 ndarray
+        The incoherently averaged results of the wiener-khinchin calculation
+    averages : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
+
+    Returns
+    -------
     variance : complex64 ndarray
         Shape (doppler bins, range bins)
+        Contains the variance of each point over the incoherent averages
     """
-    spectra = xp.multiply(xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
-    variance = xp.zeroes_like(result)  # Todo: Figure out how and why Draven gets variance
-    # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(variance)
-    return spectra, variance, spectra_median, clutter_correction
+    variance = xp.sqrt(xp.sum((variance_samples - spectra)**2, axis=0)/averages)
+    return variance
 
 
 def doppler_fft(indices, code_length, decimation_rate, raw_sample_rate):
@@ -127,28 +187,42 @@ def clutter_correction(spectra, correction):
     corrected_spectra : complex64 ndarray
         Shape (doppler bins, range bins, antennas)
     """
-    # Todo: do this
-    return
+
+    corrected_spectra = spectra - correction
+    return corrected_spectra
 
 
 def snr(power, method='mean'):
     """
-
+    Done on the GPU. Calculates the noise floor and snr for a given power spectrum.
     Parameters
     ----------
     power : complex64 ndarray
         Shape (range bins, doppler bins)
     method : str
-        There can be serveral methods for determing the noise value.
+        There can be several methods for determining the noise value.
         - 'mean' (default) determine noise floor as the mean of power
         - 'median' determine noise floor as the median of power
         - 'galeschuk' determine noise floor as the mean of farthest 100 ranges
 
     Returns
     -------
-    snr : float32 ndarray
-    noise :
+    snr : complex64 ndarray
+        Shape (range bins, doppler bins). The SNR given by (Power - Noise) / Noise
+
+    noise : float32
+        the noise floor as determined by the method given
     """
+    if method == 'mean':
+        noise = xp.mean(power)
+    elif method == 'median':
+        noise = xp.median(power)
+    elif method == 'galeschuk':
+        noise = xp.mean(power[:, -100:-1])
+    else:
+        raise ValueError('argument \'method\' must be one of: mean, median, galeschuk')
+
+    snr = (power - noise) / noise
     return snr, noise
 
 
@@ -177,3 +251,4 @@ def generate_bcode(filepath):
                 y += 1
 
     return b_code
+

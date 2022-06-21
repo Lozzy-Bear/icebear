@@ -85,7 +85,8 @@ xspectra_descriptors:
   - [1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 7, 8, 9, 7, 8, 9, 8, 9, 9]
 processing_source: '/ext_data3/icebear_3d_test/'
 processing_destination: '/home/icebear-processing/package/level1/'
-prn_code_file: '/home/icebear-processing/level1_data_generation_code/pseudo_random_code_test_8_lpf.txt'
+prn_code_file: '/mnt/icebear/processing_code/icebear/dat/pseudo_random_code_test_8_lpf.txt'
+#prn_code_file: '/mnt/ICEBEAR_datastore/processing_code/icebear/dat/pseudo_random_code_test_8_lpf.txt'
 processing_start: [2019,11,20,3,0,0,0]  # [year, month, day, hour, minute, second, millisecond] time to start processing
 processing_stop: [2019,11,20,23,0,0,0]  # [year, month, day, hour, minute, second, millisecond] time to stop processing
 processing_step: [0,0,0,1,0]  # [day, hour, minute, second, millisecond] step size for processing]
