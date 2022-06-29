@@ -22,7 +22,7 @@ radar_config: 'ib3d' # typically the same as radar_name
 center_freq: 49500000.0 # radar center frequency in Hz
 raw_sample_rate: 200000
 
-config_updated: [2022,05,16]
+config_updated: [2022,05,16] # [2022,06,16] (Brian)
 
 # Receiver Information
 # ----------------------------------------------------------------------------------------------------------------------
@@ -90,6 +90,7 @@ prn_code_file: '/mnt/icebear/processing_code/icebear/dat/pseudo_random_code_test
 processing_start: [2019,11,20,3,0,0,0]  # [year, month, day, hour, minute, second, millisecond] time to start processing
 processing_stop: [2019,11,20,23,0,0,0]  # [year, month, day, hour, minute, second, millisecond] time to stop processing
 processing_step: [0,0,0,1,0]  # [day, hour, minute, second, millisecond] step size for processing]
+cuda: False
 
 # Imaging Settings
 # ----------------------------------------------------------------------------------------------------------------------

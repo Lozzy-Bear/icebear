@@ -92,6 +92,19 @@ def unmatched_filtering(samples, code, code_length, nrng, decimation_rate, navg)
     code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
     return xp.einsum('lijk,ik->lji', input_samples, xp.conj(code_samples), optimize='greedy')
 
+
+def unmatched_filtering_v2(samples, code, code_length, nrng, decimation_rate, navg):
+    """
+    Returns one variance sample instead of 10. Should use significantly less memory
+    """
+    input_samples = xp.lib.stride_tricks.as_strided(samples,
+                                                    (int(code_length / decimation_rate), nrng, decimation_rate),
+                                                    strides=(decimation_rate * samples.strides[0], samples.strides[0],
+                                                             samples.strides[0]))
+    code_samples = windowed_view(code, window_len=decimation_rate, step=decimation_rate)
+    return xp.einsum('ijk,ik->ji', input_samples, xp.conj(code_samples), optimize='greedy')
+
+
 def wiener_khinchin(samples1, samples2, navg):
     """
     Done on the GPU. Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral density (PSD).
@@ -128,6 +141,40 @@ def wiener_khinchin(samples1, samples2, navg):
     im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0)/navg)
     variance = re + 1j*im
     return spectra, variance
+
+
+def wiener_khinchin_v2(samples1, samples2, navg):
+    """
+    Done on the GPU. Apply the Wiener-Khinchin theorem. Do not take the final FFT() as we want the power spectral den>
+
+    Parameters
+    ----------
+    samples1 : complex64 ndarray
+        Filtered and decimated complex magnitude and phase voltage samples.
+    samples2 : complex64 ndarray
+        Filtered and decimated complex magnitude and phase voltage samples.
+    navg : int
+        The number of chip sequence length (typically 0.1 s) incoherent averages to be performed.
+
+    Returns
+    -------
+    spectra : complex64 ndarray
+        2D Spectrum output for antenna/channel pairs or baseline. Also known as the spectra/
+        auto-correlations when samples1 = samples2 or the cross-spectra/cross-correlations when
+        samples1 != samples2. These are all called Visibility (the value for a baseline at u,v,w
+        sampling space coordinates) for radar imaging.
+        Shape (doppler bins, range bins).
+        Final spectra is divided by the number of averages provided
+    variance : complex64 ndarray
+        the un-averaged spectra value. To calculate the variance with the variance function, it is necessary to keep
+        these values for each application of the WK function
+    clutter_correction : complex64
+        mean of the spectra values for the first clutter_gates range gates (averaged)
+    """
+    # data from CUDA needs to be transposed this may not still be the case np.transpose(result), np.transpose(varianc>
+    spectra = xp.einsum('ij,ij->ij', xp.fft.fft(samples1), xp.conjugate(xp.fft.fft(samples2)))
+    return spectra
+
 
 def variance(variance_samples, spectra, averages):
     """

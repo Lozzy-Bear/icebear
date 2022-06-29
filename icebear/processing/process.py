@@ -1,15 +1,23 @@
 import h5py
 import numba
 import numpy as np
-try:
-    import cupy as xp
-except ModuleNotFoundError:
-    import numpy as xp
 import ctypes as C
 import digital_rf
 import icebear.utils
 import os
 import icebear.processing.dsp as dsp
+
+
+def load_cuda(config):
+    if not config.cuda:
+        try:
+            import cupy as xp
+        except ModuleNotFoundError:
+            import numpy as xp
+            print("cupy module not found, using numpy instead.")
+    else:
+        import numpy as xp
+    return xp
 
 
 def generate_level1(config):
@@ -23,6 +31,9 @@ def generate_level1(config):
     -------
 
     """
+    
+    xp = load_cuda(config)
+
     filenames = []
     level0_data = digital_rf.DigitalRFReader(config.processing_source)
     channels = level0_data.get_channels()
@@ -111,7 +122,10 @@ def generate_level1(config):
                 cnt += 1
 
         snr, noise = dsp.snr(power, 'galeschuk')
-        snr = xp.asnumpy(snr) #
+        
+        if not config.cuda:
+            snr = xp.asnumpy(snr) #
+       
         snr = np.ma.masked_where(snr < 0.0, snr)
         logsnr = 10 * np.log10(snr.filled(1))
         logsnr = np.ma.masked_where(logsnr < 1.0, logsnr)
@@ -136,23 +150,27 @@ def generate_level1(config):
             xspectra_median[num_xspec] = xp.mean(xspectra[:, 1900:2000, num_xspec])
             xspectra_clutter_corr[num_xspec] = xp.mean(xspectra[:, 0:config.clutter_gates, num_xspec])
 
-        # done with these on GPU
-        spectra = spectra.get() #
-        spectra_variance = spectra_variance.get() #
-        xspectra = xspectra.get() #
-        xspectra_variance = xspectra_variance.get() #
+        if not config.cuda:
+            spectra = spectra.get() #
+            spectra_variance = spectra_variance.get() #
+            xspectra = xspectra.get() #
+            xspectra_variance = xspectra_variance.get() #
 
         # Calculate noise, range and Doppler values
         doppler = fft_freq[snr_indices[:, 0]]
         rf_distance = config.range_resolution * (snr_indices[:, 1] - config.timestamp_corr)
-        noise = xp.asnumpy(noise / total_spectras) #
+
+        if not config.cuda:
+            noise = xp.asnumpy(noise / total_spectras) #
+        
         noise = noise/ total_spectras
         snr_db = logsnr[snr_indices[:, 0], snr_indices[:, 1]]
 
-        spectra_median = spectra_median.get() #
-        spectra_clutter_corr = spectra_clutter_corr.get() #
-        xspectra_median = xspectra_median.get() #
-        xspectra_clutter_corr = xspectra_clutter_corr.get() #
+        if not config.cuda:
+            spectra_median = spectra_median.get() #
+            spectra_clutter_corr = spectra_clutter_corr.get() #
+            xspectra_median = xspectra_median.get() #
+            xspectra_clutter_corr = xspectra_clutter_corr.get() #
 
         append_level1_hdf5(filename, int(now.hour), int(now.minute), int(now.second * 1000),
                            data_flag, doppler, rf_distance, snr_db, noise,
@@ -369,7 +387,7 @@ def func():
     Notes:
         * May be alternative ways to perform C/CUDA wrapping
 """
-#__fmed = func()
+__fmed = func()
 
 
 def ssmf(meas, code, averages, nrang, fdec, codelen):
@@ -472,6 +490,37 @@ def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
 
     return spectra, variance
 
+def ssmfx_cupy_v2(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
+    """
+    Formats measured data and CUDA function inputs and calls wrapped function for determining the cross-correlation spectra of
+    selected antenna pair.
+
+    Args:
+        v0 (complex64 xp.array): First antenna voltages loaded from HDF5 with phase and magnitude corrections.
+        v1 (complex64 xp.array): Second antenna voltages loaded from HDF5 with phase and magnitude corrections.
+        code (float32 xp.array): Transmitted psuedo-random code sequence.
+        navg (int): The number of 0.1 second averages to be performed on the GPU.
+        nrng (int): Number of range gates being processed. Nominally 2000.
+        fdec (int): Decimation rate to be used by GPU processing, effects Doppler resolution. Nominally 200.
+        codelen (int): Length of the transmitted psuedo-random code sequence.
+
+    Returns:
+        S (complex64 np.array): 2D Spectrum output for antenna pair (Doppler shift x Range).
+    """
+
+    nfreq = int(codelen / fdec)
+    code = code.astype(xp.complex64)
+
+    variance_samples = xp.zeros((nrng, nfreq, navg))
+    for i in range(navg):
+        variance_samples[:, :, i] = dsp.wiener_khinchin_v2(dsp.unmatched_filtering_v2(v0, code, int(codelen), int(nrng), int(fdec), int(navg)), dsp.unmatched_filtering_v2(v1, code, int(codelen), int(nrng), int(fdec), int(navg)))
+
+    spectra = xp.sum(variance_samples, axis=2)/navg
+    re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra)) * (xp.real(variance_samples) - xp.real(spectra)), axis=0) / navg)
+    im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0) / navg)
+    variance = re + 1j*im
+    return spectra, variance
+
 
 def decx(config, time, data, bcode, channel1, channel2, correction1, correction2):
     """
@@ -491,6 +540,8 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
         * Currently the rea_vector command is resulting in an error at the end of execution. This oes not appear to
           affect the output of the script. Issue may be in h5py or digital_rf. This error only appears when using python3
     """
+    
+    xp = load_cuda(config)
 
     if config.number_ranges <= 2000:
         start_sample = int(time * config.raw_sample_rate) - config.timestamp_corr
@@ -498,7 +549,12 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
         try:
             data1 = xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel1) * correction1)
             data2 = xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2) * correction2)
-            result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
+            if not config.cuda:
+                result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
+                                          config.number_ranges, xp.asarray(config.decimation_rate),
+                                          xp.asarray(config.code_length), xp.asarray(config.clutter_gates))
+            else:
+                result, variance = ssmfx(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
                                           config.number_ranges, xp.asarray(config.decimation_rate),
                                           xp.asarray(config.code_length), xp.asarray(config.clutter_gates))
             return xp.transpose(result), xp.transpose(variance)
@@ -515,7 +571,12 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                                                xp.asarray(correction1))
             data2 = dsp.calibration_correction(xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)),
                                                xp.asarray(correction2))
-            result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages), 2000,
+            if not config.cuda:
+                result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
+                                          config.number_ranges, xp.asarray(config.decimation_rate),
+                                          xp.asarray(config.code_length), xp.asarray(config.clutter_gates))
+            else: 
+                result, variance = ssmfx(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages), 2000,
                                           xp.asarray(config.decimation_rate), xp.asarray(config.code_length))
             for i in range(2000, config.number_ranges, 2000):
                 try:
@@ -524,8 +585,13 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                         xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel1)), xp.asarray(correction1))
                     data2 = dsp.calibration_correction(
                         xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)), xp.asarray(correction2))
-                    r, v = ssmfx_cupy(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
+                    if not config.cuda:
+                        r, v = ssmfx_cupy(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
                                       config.decimation_rate, config.code_length)
+                    else:
+                        r, v = ssmfx(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
+                                      config.decimation_rate, config.code_length)
+
                     result = xp.append(result, r, axis=0)
                     variance = xp.append(variance, v, axis=0)
                 except IOError:
