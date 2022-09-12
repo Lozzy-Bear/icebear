@@ -58,50 +58,8 @@ def main(filepath, dt=900, threshold=500):
 
 
 if __name__ == '__main__':
-
     files = ['/home/arl203/icebear/testing_temp_data/2021_02_19/ib3d_normal_swht_2021_02_19_prelate_bakker.h5']
     for file in files:
         main(file)
     # todo: output data -- start time, end time of chunk, beam, xi, dt, distance_bins, date
     # todo: process first 2021-02-22 then do everything
-
-
-# print('mean point: ', np.mean(p2[:, 0]), np.mean(p2[:, 1]))
-# plt.figure(1)
-# plt.subplot(121)
-# plt.scatter(p1[:, 1], p1[:, 0])
-# plt.scatter(np.mean(p1[:, 1]), np.mean(p1[:, 0]))
-# plt.ylabel('Latitude')
-# plt.xlabel('Longitude')
-# plt.xlim((-110, -100))
-# plt.ylim((56, 62))
-# plt.title('Real Data')
-# plt.subplot(122)
-# plt.scatter(p2[:, 1], p2[:, 0])
-# plt.scatter(np.mean(p2[:, 1]), np.mean(p2[:, 0]))
-# plt.ylabel('Latitude')
-# plt.xlabel('Longitude')
-# plt.title('Random Data')
-# plt.xlim((-110, -100))
-# plt.ylim((56, 62))
-# plt.figure(2)
-# plt.hist(p2[:, 1], bins=np.arange(-110.0, -100.0, 0.01))
-# plt.figure(3)
-# plt.hist(p2[:, 0], bins=np.arange(56.0, 62.0, 0.01))
-# plt.show()
-
-
-# plt.figure(figsize=[12, 8])
-# plt.suptitle(f"Beam: {beam_num}, Time Slice Number: {time_slice}")
-# plt.subplot(121)
-# plt.semilogx(bin_centers, xi)
-# plt.xlabel("Log separation distance bins [km]")
-# plt.ylabel("ξ")
-# plt.subplot(122)
-# plt.step(bin_centers, real_to_real, where='mid', color='b', label='DD')
-# plt.step(bin_centers, random_to_random, where='mid', color='r', label='RR')
-# plt.step(bin_centers, real_to_random, where='mid', color='k', label='DR')
-# plt.xlabel("Separation distance bins [km]")
-# plt.ylabel("Counts")
-# plt.legend()
-# plt.show()

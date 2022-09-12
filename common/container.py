@@ -360,30 +360,37 @@ class Info:
 @dataclass(kw_only=True, slots=True)
 class Data:
     # Typical time series aligned data
-    time: np.ndarray
-    rf_distance: np.ndarray
-    snr_db: np.ndarray
-    doppler_shift: np.ndarray
-    spectra: np.ndarray
-    spectra_variance: np.ndarray
-    xspectra: np.ndarray
-    xspectra_variance: np.ndarray
-    latitude: np.ndarray
-    longitude: np.ndarray
-    altitude: np.ndarray
-    azimuth: np.ndarray
-    elevation: np.ndarray
-    slant_range: np.ndarray
-    velocity_azimuth: np.ndarray
-    velocity_elevation: np.ndarray
-    velocity_magnitude: np.ndarray
-    # Per second but for all range-Doppler bins
-    avg_spectra_noise: np.ndarray
-    spectra_noise: np.ndarray
-    xspectra_noise: np.ndarray
-    spectra_clutter_corr: np.ndarray
-    xspectra_clutter_corr: np.ndarray
-    data_flag: np.ndarray
+    time: np.ndarray((), dtype=float) = field(
+        default=None,
+        metadata={'type': 'float32',
+                  'units': 'second',
+                  'shape': None,
+                  'version': __version__,
+                  'created': __created__,
+                  'description': 'start time of each sample in seconds since epoch'})
+    # rf_distance: np.ndarray
+    # snr_db: np.ndarray
+    # doppler_shift: np.ndarray
+    # spectra: np.ndarray
+    # spectra_variance: np.ndarray
+    # xspectra: np.ndarray
+    # xspectra_variance: np.ndarray
+    # latitude: np.ndarray
+    # longitude: np.ndarray
+    # altitude: np.ndarray
+    # azimuth: np.ndarray
+    # elevation: np.ndarray
+    # slant_range: np.ndarray
+    # velocity_azimuth: np.ndarray
+    # velocity_elevation: np.ndarray
+    # velocity_magnitude: np.ndarray
+    # # Per second but for all range-Doppler bins
+    # avg_spectra_noise: np.ndarray
+    # spectra_noise: np.ndarray
+    # xspectra_noise: np.ndarray
+    # spectra_clutter_corr: np.ndarray
+    # xspectra_clutter_corr: np.ndarray
+    # data_flag: np.ndarray
 
 
 @dataclass(kw_only=True, slots=True)
@@ -414,8 +421,8 @@ class Config:
 class Container:
     info: Info = field(default_factory=Info)
     data: Data = field(default_factory=Data)
-    dev: Dev = field(default_factory=Dev)
-    conf: Config = field(default_factory=Config)
+    # dev: Dev = field(default_factory=Dev)
+    # conf: Config = field(default_factory=Config)
 
     def __repr__(self):
         return f'info: {self.info!r}\n' \
@@ -443,13 +450,13 @@ class Container:
                    f'{x.metadata["description"]:<}\n'
         for x in fields(self.data):
             msg += f'{"data."+x.name:<30} | ' \
-                   # f'{x.metadata["units"]:^20} | ' \
-                   # f'{x.metadata["type"]:^15} | ' \
-                   # f'{str(x.metadata["shape"]):^15} | ' \
-                   # f'{x.metadata["version"]:^5} | ' \
-                   # f'{x.metadata["description"]:<}\n'
-        for x in fields(self.dev):
-            msg += f'{"dev."+x.name:<30} | ' \
+                   f'{x.metadata["units"]:^20} | ' \
+                   f'{x.metadata["type"]:^15} | ' \
+                   f'{str(x.metadata["shape"]):^15} | ' \
+                   f'{x.metadata["version"]:^5} | ' \
+                   f'{x.metadata["description"]:<}\n'
+        # for x in fields(self.dev):
+        #     msg += f'{"dev."+x.name:<30} | ' \
                    # f'{x.metadata["units"]:^20} | ' \
                    # f'{x.metadata["type"]:^15} | ' \
                    # f'{str(x.metadata["shape"]):^15} | ' \

@@ -35,7 +35,7 @@ def rescale(arr, lower, upper):
 
 def poisson_points(lat, lon, pad_lat=2.0, pad_lon=4.0, multiplier=2, scaler=1.0e5):
     """
-    Generate a 2d poisson distribution centered about the median of the input latitude and
+    Generate a 2d poisson distribution centered about the mean of the input latitude and
     longitude array. The output distribution is scaled to a boundary the same size as the
     input arrays, less extreme outliers, and increased by some pad angle.
     The number out points returned by default is twice as many as input.
@@ -60,14 +60,14 @@ def poisson_points(lat, lon, pad_lat=2.0, pad_lon=4.0, multiplier=2, scaler=1.0e
         [[lat, lon], [lat, lon], ...] 2d array of poisson distributed latitude and longitude
         points in degrees with shape (lat.shape[0] * multiplier, 2).
     """
-    median_lat = np.median(lat) * scaler
-    median_lon = np.median(lon) * scaler
+    mean_lat = np.mean(lat) * scaler
+    mean_lon = np.mean(lon) * scaler
     # np.random.poisson() requires positive numbers and return int, need to scale up input
     # and ensure positive values then scale down and preserve sign after.
-    arr = np.random.poisson([np.abs(median_lat), np.abs(median_lon)],
+    arr = np.random.poisson([np.abs(mean_lat), np.abs(mean_lon)],
                             size=(int(lat.shape[0] * multiplier), 2)) / scaler
-    arr[:, 0] = arr[:, 0] * np.sign(median_lat)
-    arr[:, 1] = arr[:, 1] * np.sign(median_lon)
+    arr[:, 0] = arr[:, 0] * np.sign(mean_lat)
+    arr[:, 1] = arr[:, 1] * np.sign(mean_lon)
     arr[:, 0] = rescale(arr[:, 0],
                         np.percentile(lat, 0.1) - pad_lat,
                         np.percentile(lat, 99.9) + pad_lat)
