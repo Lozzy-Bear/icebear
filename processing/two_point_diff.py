@@ -33,7 +33,7 @@ def rescale(arr, lower, upper):
     return arr
 
 
-def poisson_points(lat, lon, pad_lat=2.0, pad_lon=4.0, multiplier=2, scaler=1.0e5):
+def poisson_points(lat, lon, pad_lat=6.0, pad_lon=12.0, multiplier=2, scaler=1.0e5):
     """
     Generate a 2d poisson distribution centered about the mean of the input latitude and
     longitude array. The output distribution is scaled to a boundary the same size as the
@@ -60,8 +60,8 @@ def poisson_points(lat, lon, pad_lat=2.0, pad_lon=4.0, multiplier=2, scaler=1.0e
         [[lat, lon], [lat, lon], ...] 2d array of poisson distributed latitude and longitude
         points in degrees with shape (lat.shape[0] * multiplier, 2).
     """
-    mean_lat = np.mean(lat) * scaler
-    mean_lon = np.mean(lon) * scaler
+    mean_lat = np.median(lat) * scaler  # todo: prefer using the Gaussian_KDE peak but need to write CUDA code for it
+    mean_lon = np.median(lon) * scaler
     # np.random.poisson() requires positive numbers and return int, need to scale up input
     # and ensure positive values then scale down and preserve sign after.
     arr = np.random.poisson([np.abs(mean_lat), np.abs(mean_lon)],
@@ -69,11 +69,11 @@ def poisson_points(lat, lon, pad_lat=2.0, pad_lon=4.0, multiplier=2, scaler=1.0e
     arr[:, 0] = arr[:, 0] * np.sign(mean_lat)
     arr[:, 1] = arr[:, 1] * np.sign(mean_lon)
     arr[:, 0] = rescale(arr[:, 0],
-                        np.percentile(lat, 0.1) - pad_lat,
-                        np.percentile(lat, 99.9) + pad_lat)
+                        np.percentile(lat, 0.01) - pad_lat,
+                        np.percentile(lat, 99.99) + pad_lat)
     arr[:, 1] = rescale(arr[:, 1],
-                        np.percentile(lon, 0.1) - pad_lon,
-                        np.percentile(lon, 99.9) + pad_lon)
+                        np.percentile(lon, 0.01) - pad_lon,
+                        np.percentile(lon, 99.99) + pad_lon)
     return arr
 
 
