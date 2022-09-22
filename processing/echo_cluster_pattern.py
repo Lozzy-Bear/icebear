@@ -4,7 +4,6 @@ from two_point_diff import clustering_chunk, poisson_points
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-import argparse
 from scipy import stats
 
 
@@ -103,13 +102,15 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
     digitized_time = np.digitize(time, time_bins)
 
     for beam_num in range(1, int(np.max(beam)) + 1, 1):  # beams 1, 2, 3
-        for time_slice in range(1, digitized_time[-1] + 1, 1):  # time slices 1 - 55
+        for time_slice in range(1, digitized_time[-1] + 1, 1):
             idx = np.argwhere((digitized_time == time_slice) & (beam == beam_num))
             if len(lat[idx]) < threshold:
                 print(f"\tskipped: less than {threshold} points in beam {beam_num}, slice {time_slice}")
                 continue
             p1 = np.hstack((lat[idx], lon[idx]))
             p2 = poisson_points(lat[idx], lon[idx])
+            p1 = np.unique(p1, axis=0)
+            p2 = np.unique(p2, axis=0)
             num_real = p1.shape[0]
             num_random = p2.shape[0]
 
@@ -118,11 +119,11 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
             # kernel_density_estimation(p2)
 
             real_to_real = clustering_chunk(np.deg2rad(p1), np.deg2rad(p1),
-                                            bins=distance_bins, r=105.0, max_chunk=1024)
+                                            bins=distance_bins, r=105.0, max_chunk=1024, mode='upper')
             random_to_random = clustering_chunk(np.deg2rad(p2), np.deg2rad(p2),
-                                                bins=distance_bins, r=105.0, max_chunk=1024)
+                                                bins=distance_bins, r=105.0, max_chunk=1024, mode='upper')
             real_to_random = clustering_chunk(np.deg2rad(p1), np.deg2rad(p2),
-                                              bins=distance_bins, r=105.0, max_chunk=1024)
+                                              bins=distance_bins, r=105.0, max_chunk=1024, mode='upper')
 
             dd = real_to_real / (num_real * (num_real - 1) * 0.5)
             rr = random_to_random / (num_random * (num_random - 1) * 0.5)
@@ -131,31 +132,37 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
 
             xo = np.append(xo, xi)
             b = np.append(b, np.ones(xi.shape, dtype=int) * beam_num)
-            ti = np.append(ti, np.ones(xi.shape, dtype=float) * (time[0] + (time_slice * dt)))
-            tf = np.append(tf, np.ones(xi.shape, dtype=float) * (time[0] + (time_slice * dt + dt - 1)))
+            ti = np.append(ti, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - 1) * dt)))
+            tf = np.append(tf, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - 1) * dt + dt - 1)))
 
             # bin_centers = [(distance_bins[i] + distance_bins[i + 1]) / 2. for i in range(len(distance_bins) - 1)]
             # plt.figure(figsize=[12, 8])
-            # plt.suptitle(f"Beam: {beam_num}, Time Slice Number: {time_slice}")
+            # m1 = time[0] + (time_slice - 1) * dt
+            # m2 = time[0] + (time_slice - 1) * dt + dt - 1
+            # plt.suptitle(f"Beam: {beam_num}, Time: {m1 / (60 * 60)}  {m2 / (60 * 60)}")
             # plt.subplot(121)
             # plt.semilogx(bin_centers, xi)
             # plt.xlabel("Log separation distance bins [km]")
             # plt.ylabel("ξ")
             # plt.subplot(122)
-            # plt.step(bin_centers, real_to_real, where='mid', color='b', label='DD')
-            # plt.step(bin_centers, random_to_random, where='mid', color='r', label='RR')
-            # plt.step(bin_centers, real_to_random, where='mid', color='k', label='DR')
+            # # plt.step(bin_centers, real_to_real, where='mid', color='b', label='DD')
+            # # plt.step(bin_centers, random_to_random, where='mid', color='r', label='RR')
+            # # plt.step(bin_centers, real_to_random, where='mid', color='k', label='DR')
+            # plt.semilogx(bin_centers, dd, color='b', label='DD')
+            # plt.semilogx(bin_centers, rr, color='r', label='RR')
+            # plt.semilogx(bin_centers, dr, color='k', label='DR')
             # plt.xlabel("Separation distance bins [km]")
             # plt.ylabel("Counts")
             # plt.legend()
             # plt.show()
 
-    return xo, b, ti, tf
+    return xo, b, ti, tf, num_real, num_random
 
 
 if __name__ == '__main__':
     # Load files to be processed
     files = glob.glob("/data/outness/*")
+    # files = sorted(files)
     print('files loaded:', files)
 
     # Config parameters
@@ -163,7 +170,7 @@ if __name__ == '__main__':
     process_date = datetime.datetime.utcnow()
     process_date = np.array([process_date.year, process_date.month, process_date.day])
     dt = 6 * 60
-    threshold = 500
+    threshold = 10_000
     distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
     distance_bins = np.append(distance_bins, np.arange(350, 1000 + 15, 15))
 
@@ -175,8 +182,8 @@ if __name__ == '__main__':
             continue
 
         time = data[:, 0]
-        mag_lat = data[:, 1]
-        mag_lon = data[:, 2]
+        mag_lon = data[:, 1]
+        mag_lat = data[:, 2]
         beam = data[:, 3]
         time = (time - np.floor(time[0])) * 24 * 60 * 60
         print('read data shape:', time.shape, mag_lat.shape, mag_lon.shape, beam.shape)
@@ -193,13 +200,15 @@ if __name__ == '__main__':
         of.create_dataset('info/distance_bins', data=distance_bins)
         of.create_dataset(f'info/date', data=date)
 
-        xi, b, ti, tf = do_calc(time, mag_lat, mag_lon, beam, distance_bins=distance_bins, dt=dt, threshold=threshold)
+        xi, b, ti, tf, nd, nr = do_calc(time, mag_lat, mag_lon, beam, distance_bins=distance_bins, dt=dt, threshold=threshold)
 
         of.create_group('data')
         of.create_dataset('data/xi', data=xi)
         of.create_dataset('data/beam', data=b)
         of.create_dataset('data/time_start', data=ti)
         of.create_dataset('data/time_end', data=tf)
+        of.create_dataset('data/num_real', data=nd)
+        of.create_dataset('data/num_random', data=nr)
 
         # for k, v in of['info'].items():
         #     print(k, v[()])
