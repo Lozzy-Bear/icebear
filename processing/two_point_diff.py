@@ -77,7 +77,7 @@ def poisson_points(lat, lon, pad_lat=6.0, pad_lon=12.0, multiplier=2, scaler=1.0
     return arr
 
 
-def clustering_chunk(p1, p2, bins, mode='lower', r=110.0, max_chunk=2048):
+def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
     """
     Finds the difference between every element of latitude-longitude point arrays p1 and p2 using the
     Haversine formula. This function is optimized for CUDA processing. The function uses chunking
@@ -163,15 +163,16 @@ def clustering_chunk(p1, p2, bins, mode='lower', r=110.0, max_chunk=2048):
 
 
 if __name__ == '__main__':
-    N = 200_000
+    N = 1_000_000
     arr = np.array([np.arange(N), np.arange(N)]).T
-    bins = np.array([0.0, 100.0, 1000.0, 10_000.0, 100_000.0])
+    bins = np.arange(0, N, 134)
     limit = 2000
     if CUDA:
         pool = xp.get_default_memory_pool()
         x = xp.arange(1000)
-        limit = int(pool.total_bytes()/2)
+        limit = int(pool.total_bytes()/8)
         del x
+    print('limit: ', limit)
     ts = time.time()
     h = clustering_chunk(arr, arr, bins, mode='lower', r=110, max_chunk=limit)
     print('chunking time: ', time.time() - ts)
