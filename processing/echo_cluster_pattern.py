@@ -31,68 +31,13 @@ def kernel_density_estimation(points):
     return
 
 
-def main(filepath, dt=900, threshold=500):
-    data = h5py.File(filepath, 'r')
-    time = data['data']['time'][()]
-    lat = data['data']['latitude'][()]
-    lon = data['data']['longitude'][()]
-    beam = data['dev']['beam'][()]
-
-    time_bins = np.linspace(time[0], time[-1], int(np.ceil((time[-1] - time[0]) / dt)))
-    digitized_time = np.digitize(time, time_bins)
-    # Magnus wants this distance bins! He says the two big steps are good. I think it's bad.
-    distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
-    distance_bins = np.append(distance_bins, np.arange(350, 1000 + 15, 15))
-
-    for beam_num in range(1, int(np.max(beam)) + 1, 1):  # beams 1, 2, 3
-        for time_slice in range(1, digitized_time[-1] + 1, 1):  # time slices 1 - 55
-            idx = np.argwhere((digitized_time == time_slice) & (beam == beam_num))
-            if len(lat[idx]) < threshold:
-                continue
-            p1 = np.hstack((lat[idx], lon[idx]))
-            p2 = poisson_points(lat[idx], lon[idx])
-            num_real = p1.shape[0]
-            num_random = p2.shape[0]
-
-            real_to_real = clustering_chunk(np.deg2rad(p1), np.deg2rad(p1),
-                                            bins=distance_bins, r=105.0)
-            random_to_random = clustering_chunk(np.deg2rad(p2), np.deg2rad(p2),
-                                                bins=distance_bins, r=105.0)
-            real_to_random = clustering_chunk(np.deg2rad(p1), np.deg2rad(p2),
-                                              bins=distance_bins, r=105.0)
-
-            dd = real_to_real / (num_real * (num_real - 1) * 0.5)
-            rr = random_to_random / (num_random * (num_random - 1) * 0.5)
-            dr = real_to_random / (num_real * num_random)
-            xi = (dd - 2 * dr + rr) / rr
-
-            bin_centers = [(distance_bins[i] + distance_bins[i + 1]) / 2. for i in range(len(distance_bins) - 1)]
-
-            plt.figure(figsize=[12, 8])
-            plt.suptitle(f"Beam: {beam_num}, Time Slice Number: {time_slice}")
-
-            plt.subplot(121)
-            plt.semilogx(bin_centers, xi)
-            plt.xlabel("Log separation distance bins [km]")
-            plt.ylabel("ξ")
-
-            plt.subplot(122)
-            plt.step(bin_centers, real_to_real, where='mid', color='b', label='DD')
-            plt.step(bin_centers, random_to_random, where='mid', color='r', label='RR')
-            plt.step(bin_centers, real_to_random, where='mid', color='k', label='DR')
-            plt.xlabel("Separation distance bins [km]")
-            plt.ylabel("Counts")
-            plt.legend()
-
-            plt.show()
-    return
-
-
 def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
     xo = np.array([])
     b = np.array([])
     ti = np.array([])
     tf = np.array([])
+    num_real = 0
+    num_random = 0
 
     if distance_bins is None:
         distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
@@ -143,7 +88,7 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
             # plt.subplot(121)
             # plt.semilogx(bin_centers, xi)
             # plt.xlabel("Log separation distance bins [km]")
-            # plt.ylabel("ξ")
+            # plt.ylabel("xi")
             # plt.subplot(122)
             # # plt.step(bin_centers, real_to_real, where='mid', color='b', label='DD')
             # # plt.step(bin_centers, random_to_random, where='mid', color='r', label='RR')
@@ -162,7 +107,7 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
 if __name__ == '__main__':
     # Load files to be processed
     files = glob.glob("/data/outness/*")
-    # files = sorted(files)
+    files = sorted(files)
     print('files loaded:', files)
 
     # Config parameters
@@ -188,6 +133,9 @@ if __name__ == '__main__':
         time = (time - np.floor(time[0])) * 24 * 60 * 60
         print('read data shape:', time.shape, mag_lat.shape, mag_lon.shape, beam.shape)
 
+        xi, b, ti, tf, nd, nr = do_calc(time, mag_lat, mag_lon, beam,
+                                        distance_bins=distance_bins, dt=dt, threshold=threshold)
+
         # Write config data
         date = file.split('/')[-1]
         date = np.array([int(date[0:4]), int(date[4:6]), int(date[6:8])])
@@ -199,9 +147,6 @@ if __name__ == '__main__':
         of.create_dataset('info/minimum_points', data=threshold)
         of.create_dataset('info/distance_bins', data=distance_bins)
         of.create_dataset(f'info/date', data=date)
-
-        xi, b, ti, tf, nd, nr = do_calc(time, mag_lat, mag_lon, beam, distance_bins=distance_bins, dt=dt, threshold=threshold)
-
         of.create_group('data')
         of.create_dataset('data/xi', data=xi)
         of.create_dataset('data/beam', data=b)
@@ -209,10 +154,4 @@ if __name__ == '__main__':
         of.create_dataset('data/time_end', data=tf)
         of.create_dataset('data/num_real', data=nd)
         of.create_dataset('data/num_random', data=nr)
-
-        # for k, v in of['info'].items():
-        #     print(k, v[()])
-        # for k, v in of['data'].items():
-        #     print(k, v[()])
-
         of.close()
