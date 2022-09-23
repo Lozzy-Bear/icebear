@@ -33,11 +33,11 @@ def kernel_density_estimation(points):
 
 def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
     xo = np.array([])
-    b = np.array([])
+    bn = np.array([])
     ti = np.array([])
     tf = np.array([])
-    num_real = 0
-    num_random = 0
+    nd = np.array([])
+    nr = np.array([])
 
     if distance_bins is None:
         distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
@@ -63,22 +63,21 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
             # kernel_density_estimation(p1)
             # kernel_density_estimation(p2)
 
-            real_to_real = clustering_chunk(np.deg2rad(p1), np.deg2rad(p1),
-                                            bins=distance_bins, r=105.0, max_chunk=1024, mode='upper')
-            random_to_random = clustering_chunk(np.deg2rad(p2), np.deg2rad(p2),
-                                                bins=distance_bins, r=105.0, max_chunk=1024, mode='upper')
-            real_to_random = clustering_chunk(np.deg2rad(p1), np.deg2rad(p2),
-                                              bins=distance_bins, r=105.0, max_chunk=1024, mode='upper')
+            real_to_real = clustering_chunk(np.deg2rad(p1), np.deg2rad(p1), bins=distance_bins, r=105.0, mode='upper')
+            random_to_random = clustering_chunk(np.deg2rad(p2), np.deg2rad(p2), bins=distance_bins, r=105.0, mode='upper')
+            real_to_random = clustering_chunk(np.deg2rad(p1), np.deg2rad(p2), bins=distance_bins, r=105.0, mode='upper')
 
             dd = real_to_real / (num_real * (num_real - 1) * 0.5)
             rr = random_to_random / (num_random * (num_random - 1) * 0.5)
             dr = real_to_random / (num_real * num_random)
-            xi = (dd - 2 * dr + rr) / rr
+            xi = (dd - 2 * dr + rr) / rr - 1
 
             xo = np.append(xo, xi)
-            b = np.append(b, np.ones(xi.shape, dtype=int) * beam_num)
+            bn = np.append(bn, np.ones(xi.shape, dtype=int) * beam_num)
             ti = np.append(ti, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - 1) * dt)))
             tf = np.append(tf, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - 1) * dt + dt - 1)))
+            nd = np.append(nd, np.ones(xi.shape, dtype=float) * num_real)
+            nr = np.append(nr, np.ones(xi.shape, dtype=float) * num_random)
 
             # bin_centers = [(distance_bins[i] + distance_bins[i + 1]) / 2. for i in range(len(distance_bins) - 1)]
             # plt.figure(figsize=[12, 8])
@@ -101,7 +100,7 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
             # plt.legend()
             # plt.show()
 
-    return xo, b, ti, tf, num_real, num_random
+    return xo, bn, ti, tf, nd, nr
 
 
 if __name__ == '__main__':

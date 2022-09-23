@@ -77,7 +77,7 @@ def poisson_points(lat, lon, pad_lat=6.0, pad_lon=12.0, multiplier=2, scaler=1.0
     return arr
 
 
-def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
+def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
     """
     Finds the difference between every element of latitude-longitude point arrays p1 and p2 using the
     Haversine formula. This function is optimized for CUDA processing. The function uses chunking
@@ -101,8 +101,6 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
             - 'full' is the full array flattened
     r : float32
         Altitude in kilometers (km) above Earth surface of assumed shell.
-    max_chunk : float32
-        1/2 to 1/4 the maximum memory in MB the GPU can handle (default 2048 MB).
 
     Returns
     -------
@@ -110,19 +108,32 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
         1d array of two-point differences binned.
     """
     r += 6371.0
+    bins = xp.asarray(bins)
     h = xp.zeros(bins.shape[0]-1, dtype=float)
     lat1 = xp.array(p1[:, 0])[:, xp.newaxis]
     lon1 = xp.array(p1[:, 1])[:, xp.newaxis]
     lat2 = xp.array(p2[:, 0])[xp.newaxis, :]
     lon2 = xp.array(p2[:, 1])[xp.newaxis, :]
-    chunks = int(np.ceil((lat1.size * lat1.itemsize) / max_chunk))
-    chunk_size = int(p1.shape[0] / chunks)
+
+    # Figure out chunk sizes from input sizes
+    x = int((xp.cuda.Device().mem_info[0] - (2 * bins.nbytes + p1.nbytes + p2.nbytes))
+            / (3 * p2.shape[0] * p1.itemsize))
+    chunk_size = int(x/4)  # MUST divide by 4 to allow for intermediate memory expansion in calculations
+    chunks = int(p1.shape[0] / chunk_size)
     if chunks * chunk_size < lat1.shape[0]:
         chunks += 1
-    # print(f'chunks: {chunks}, chunk size: {chunk_size}, max_chunk: {max_chunk},\n'
-    #       f'array length:{lat1.shape[0]}, chunks * chunk size = array length: {chunks * chunk_size}')
+    print(f'\t\tchunks: {chunks}, chunk length: {chunk_size}, array length:{lat1.shape[0]}, '
+          f'chunks * chunk size = array length: {chunks * chunk_size}')
+
+    # print(f'\t\ttotal available VRAM = {xp.cuda.Device().mem_info[0] / 1e6} MiB')
+    # print(f'\t\ttotal bytes without chunking = '
+    #       f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (p1.shape[0] * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
+    # print(f'\t\tarray length for chunking = {x/4}')
+    # print(f'\t\ttotal bytes per chunk = '
+    #       f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (x * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
+
     for i in range(chunks):
-        # print(f'\tcomputing chunk {i}/{chunks}')
+        # print(f'\t\tcomputing chunk {i}/{chunks}')
         start = i * chunk_size
         end = start + chunk_size
         delta_lat = lat1[start:end, :] - lat2
@@ -152,9 +163,9 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0, max_chunk=2048):
             prod_cos = prod_cos.flatten()
         else:
             print(f'mode: {mode} is not an accepted mode choose; lower, upper, or full')
-        a = xp.sin(delta_lat / 2) ** 2 + prod_cos * xp.sin(delta_lon / 2) ** 2
-        b = r * 2 * xp.arctan2(xp.sqrt(a), xp.sqrt(1 - a))
-        c, _ = xp.histogram(b, bins)
+        prod_cos = xp.sin(delta_lat / 2) ** 2 + prod_cos * xp.sin(delta_lon / 2) ** 2
+        prod_cos = r * 2 * xp.arctan2(xp.sqrt(prod_cos), xp.sqrt(1 - prod_cos))
+        c, _ = xp.histogram(prod_cos, bins)
         h += c
     if CUDA:
         return h.get()
@@ -166,14 +177,7 @@ if __name__ == '__main__':
     N = 1_000_000
     arr = np.array([np.arange(N), np.arange(N)]).T
     bins = np.arange(0, N, 134)
-    limit = 2000
-    if CUDA:
-        pool = xp.get_default_memory_pool()
-        x = xp.arange(1000)
-        limit = int(pool.total_bytes()/8)
-        del x
-    print('limit: ', limit)
     ts = time.time()
-    h = clustering_chunk(arr, arr, bins, mode='lower', r=110, max_chunk=limit)
+    h = clustering_chunk(arr, arr, bins, mode='upper', r=110)
     print('chunking time: ', time.time() - ts)
     print('result: ', h)
