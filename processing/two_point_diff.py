@@ -1,4 +1,6 @@
 import time
+import os
+import gc
 import numpy as np
 try:
     import cupy as xp
@@ -6,6 +8,7 @@ try:
 except ModuleNotFoundError:
     import numpy as xp
     CUDA = False
+    print("WARNING: no cupy/CUDA using numpy")
 
 
 def rescale(arr, lower, upper):
@@ -108,7 +111,6 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
         1d array of two-point differences binned.
     """
     r += 6371.0
-    bins = xp.asarray(bins)
     h = xp.zeros(bins.shape[0]-1, dtype=float)
     lat1 = xp.array(p1[:, 0])[:, xp.newaxis]
     lon1 = xp.array(p1[:, 1])[:, xp.newaxis]
@@ -116,23 +118,29 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
     lon2 = xp.array(p2[:, 1])[xp.newaxis, :]
 
     # Figure out chunk sizes from input sizes
-    mempool = xp.get_default_memory_pool()  # we need this to later clear memory easily
-    x = int((xp.cuda.Device().mem_info[0] - (2 * bins.nbytes + p1.nbytes + p2.nbytes))
-            / (3 * p2.shape[0] * p1.itemsize))
+    if CUDA:
+        print(f'\t\ttotal available VRAM = {xp.cuda.Device().mem_info[0] / 1e6} MiB')
+        mempool = xp.get_default_memory_pool()  # we need this to later clear memory easily
+        x = int((xp.cuda.Device().mem_info[0] - (2 * bins.nbytes + p1.nbytes + p2.nbytes))
+                / (3 * p2.shape[0] * p1.itemsize))
+    else:
+        total_memory, used_memory, free_memory = map(int, os.popen('free -t -b').readlines()[-1].split()[1:])
+        print(f'\t\ttotal available RAM = {total_memory / 1e6} MiB')
+        x = int((total_memory / 4 - (2 * bins.nbytes + p1.nbytes + p2.nbytes))
+                / (3 * p2.shape[0] * p1.itemsize))
+
     chunk_size = int(x/4)  # MUST divide by 4 to allow for intermediate memory expansion in calculations
     chunks = int(p1.shape[0] / chunk_size)
     if chunks * chunk_size < lat1.shape[0]:
         chunks += 1
-    print(f'\t\tchunks: {chunks}, chunk length: {chunk_size}, array length:{lat1.shape[0]}, '
-          f'chunks * chunk size = array length: {chunks * chunk_size}')
-
-    print(f'\t\ttotal available VRAM = {xp.cuda.Device().mem_info[0] / 1e6} MiB')
     # print(f'\t\ttotal bytes without chunking = '
     #       f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (p1.shape[0] * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
     # print(f'\t\tarray length for chunking = {x/4}')
     print(f'\t\ttotal bytes per chunk = '
           f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (x * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
 
+    print(f'\t\tchunks: {chunks}, chunk length: {chunk_size}, array length:{lat1.shape[0]}, '
+          f'chunks * chunk size = array length: {chunks * chunk_size}')
     for i in range(chunks):
         # print(f'\t\tcomputing chunk {i}/{chunks}')
         start = i * chunk_size
@@ -168,6 +176,11 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
         prod_cos = r * 2 * xp.arctan2(xp.sqrt(prod_cos), xp.sqrt(1 - prod_cos))
         c, _ = xp.histogram(prod_cos, bins)
         h += c
+
+    # Explicitly clean up the memory
+    del lat1, lon1, lat2, lon2
+    del delta_lat, delta_lon, prod_cos
+    gc.collect()
     if CUDA:
         mempool.free_all_blocks()
         return h.get()
