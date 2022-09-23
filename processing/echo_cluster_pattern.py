@@ -42,6 +42,7 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
     if distance_bins is None:
         distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
         distance_bins = np.append(distance_bins, np.arange(350, 1000 + 15, 15))
+        distance_bins = np.append(distance_bins, np.arange(2000, 50_000 + 1000, 1000))
 
     time_bins = np.linspace(time[0], time[-1], int(np.ceil((time[-1] - time[0]) / dt)))
     digitized_time = np.digitize(time, time_bins)
