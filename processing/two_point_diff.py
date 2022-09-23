@@ -116,6 +116,7 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
     lon2 = xp.array(p2[:, 1])[xp.newaxis, :]
 
     # Figure out chunk sizes from input sizes
+    mempool = xp.get_default_memory_pool()  # we need this to later clear memory easily
     x = int((xp.cuda.Device().mem_info[0] - (2 * bins.nbytes + p1.nbytes + p2.nbytes))
             / (3 * p2.shape[0] * p1.itemsize))
     chunk_size = int(x/4)  # MUST divide by 4 to allow for intermediate memory expansion in calculations
@@ -125,12 +126,12 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
     print(f'\t\tchunks: {chunks}, chunk length: {chunk_size}, array length:{lat1.shape[0]}, '
           f'chunks * chunk size = array length: {chunks * chunk_size}')
 
-    # print(f'\t\ttotal available VRAM = {xp.cuda.Device().mem_info[0] / 1e6} MiB')
+    print(f'\t\ttotal available VRAM = {xp.cuda.Device().mem_info[0] / 1e6} MiB')
     # print(f'\t\ttotal bytes without chunking = '
     #       f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (p1.shape[0] * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
     # print(f'\t\tarray length for chunking = {x/4}')
-    # print(f'\t\ttotal bytes per chunk = '
-    #       f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (x * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
+    print(f'\t\ttotal bytes per chunk = '
+          f'{(2 * bins.nbytes + p1.nbytes + p2.nbytes + 3 * (x * p2.shape[0] * p1.itemsize)) / 1e6} MiB')
 
     for i in range(chunks):
         # print(f'\t\tcomputing chunk {i}/{chunks}')
@@ -168,6 +169,7 @@ def clustering_chunk(p1, p2, bins, mode='upper', r=110.0):
         c, _ = xp.histogram(prod_cos, bins)
         h += c
     if CUDA:
+        mempool.free_all_blocks()
         return h.get()
     else:
         return h
