@@ -67,8 +67,9 @@ def poisson_points(lat, lon, pad_lat=6.0, pad_lon=12.0, multiplier=2, scaler=1.0
     mean_lon = np.median(lon) * scaler
     # np.random.poisson() requires positive numbers and return int, need to scale up input
     # and ensure positive values then scale down and preserve sign after.
-    arr = np.random.poisson([np.abs(mean_lat), np.abs(mean_lon)],
-                            size=(int(lat.shape[0] * multiplier), 2)) / scaler
+    arr = np.zeros((int(lat.shape[0] * multiplier), 2))
+    arr[:, 0] = np.random.poisson(np.abs(mean_lat), size=int(lat.shape[0] * multiplier)) / scaler
+    arr[:, 1] = np.random.poisson(np.abs(mean_lon), size=int(lat.shape[0] * multiplier))
     arr[:, 0] = arr[:, 0] * np.sign(mean_lat)
     arr[:, 1] = arr[:, 1] * np.sign(mean_lon)
     arr[:, 0] = rescale(arr[:, 0],
