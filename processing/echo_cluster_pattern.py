@@ -31,7 +31,7 @@ def kernel_density_estimation(points):
     return
 
 
-def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
+def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, dw=0, threshold=500):
     xo = np.array([])
     bn = np.array([])
     ti = np.array([])
@@ -48,7 +48,10 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, threshold=500):
 
     for beam_num in range(1, int(np.max(beam)) + 1, 1):  # beams 1, 2, 3
         for time_slice in range(1, digitized_time[-1] + 1, 1):
-            idx = np.argwhere((digitized_time == time_slice) & (beam == beam_num))
+            idx = np.argwhere((digitized_time >= time_slice - dw) &
+                              (digitized_time <= time_slice + dw) &
+                              (beam == beam_num))
+            # idx = np.argwhere((digitized_time == time_slice) & (beam == beam_num))
             if len(lat[idx]) < threshold:
                 print(f"\tskipped: less than {threshold} points in beam {beam_num}, slice {time_slice}")
                 continue
@@ -113,8 +116,9 @@ if __name__ == '__main__':
     outdir = f'/data/echo_cluster/'
     process_date = datetime.datetime.utcnow()
     process_date = np.array([process_date.year, process_date.month, process_date.day])
-    dt = 6 * 60
-    threshold = 10_000
+    dt = 5 * 60  # 6 * 60
+    dw = 1  # 1 means we +/- dt to either side. ex// dt=5mins, dw=1 then 5min slices with 15min windows
+    threshold = 5000  # 10_000
     distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
     distance_bins = np.append(distance_bins, np.arange(350, 1000 + 15, 15))
     distance_bins = np.append(distance_bins, np.arange(2000, 50_000 + 1000, 1000))
