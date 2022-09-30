@@ -138,7 +138,7 @@ if __name__ == '__main__':
         print('read data shape:', time.shape, mag_lat.shape, mag_lon.shape, beam.shape)
 
         xi, b, ti, tf, nd, nr = do_calc(time, mag_lat, mag_lon, beam,
-                                        distance_bins=distance_bins, dt=dt, threshold=threshold)
+                                        distance_bins=distance_bins, dt=dt, dw=dw, threshold=threshold)
 
         # Write config data
         date = file.split('/')[-1]
