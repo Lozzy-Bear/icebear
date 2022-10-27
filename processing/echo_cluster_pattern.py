@@ -56,9 +56,9 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, dw=0, threshold=50
                 print(f"\tskipped: less than {threshold} points in beam {beam_num}, slice {time_slice}")
                 continue
             p1 = np.hstack((lat[idx], lon[idx]))
-            p2 = poisson_points(lat[idx], lon[idx])
-            p1 = np.unique(p1, axis=0)
-            p2 = np.unique(p2, axis=0)
+            p2 = poisson_points(lat[idx], lon[idx], multiplier=3)
+            # p1 = np.unique(p1, axis=0)  # removed by request
+            # p2 = np.unique(p2, axis=0)  # removed by request
             num_real = p1.shape[0]
             num_random = p2.shape[0]
 
@@ -77,8 +77,8 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, dw=0, threshold=50
 
             xo = np.append(xo, xi)
             bn = np.append(bn, np.ones(xi.shape, dtype=int) * beam_num)
-            ti = np.append(ti, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - 1) * dt)))
-            tf = np.append(tf, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - 1) * dt + dt - 1)))
+            ti = np.append(ti, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice - dw - 1) * dt)))
+            tf = np.append(tf, np.ones(xi.shape, dtype=float) * (time[0] + ((time_slice + dw - 1) * dt + dt - 1)))
             nd = np.append(nd, np.ones(xi.shape, dtype=float) * num_real)
             nr = np.append(nr, np.ones(xi.shape, dtype=float) * num_random)
 
@@ -119,9 +119,7 @@ if __name__ == '__main__':
     dt = 5 * 60  # 6 * 60
     dw = 1  # 1 means we +/- dt to either side. ex// dt=5mins, dw=1 then 5min slices with 15min windows
     threshold = 5000  # 10_000
-    distance_bins = np.append(np.arange(0, 100 + 2, 2), np.arange(110, 300 + 5, 5))
-    distance_bins = np.append(distance_bins, np.arange(350, 1000 + 15, 15))
-    distance_bins = np.append(distance_bins, np.arange(2000, 50_000 + 1000, 1000))
+    distance_bins = np.arange(0, 4000 + 1.5, 1.5)
 
     for file in files:
         print("file:", file)
@@ -159,3 +157,16 @@ if __name__ == '__main__':
         of.create_dataset('data/num_real', data=nd)
         of.create_dataset('data/num_random', data=nr)
         of.close()
+
+
+# TODO: Implement the following new functions
+#       1) Island finding for (latitudes, counts) do two-point only within island
+#       + 2) Remove unique function
+#       + 3) distance_bins (0, 4000, 1.5)
+#       4) Change time to date vector
+#       + 5) Go to 3x instead of 2x number of random echoes
+#       6) Revisit the poisson dist to ensure a proper coverage of the real dist
+#       7) Use cluster processing
+#       8) Test on 8:35:30 to 8:39:30 UT 21-02-2022 beam 2
+#       9) Make plot loglog plot of DD and of xi
+#       10) Make a new function for ray.remote()
