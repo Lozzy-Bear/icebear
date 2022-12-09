@@ -1,10 +1,19 @@
 import numpy as np
+import sys
+try:
+    import cupy as xp
+    CUDA = True
+except ModuleNotFoundError:
+    import numpy as xp
+    CUDA = False
 import h5py
 import pymap3d as pm
 import icebear.utils as utils
 import matplotlib.pyplot as plt
-import sys
-
+import icebear.imaging.clustering as cl
+import datetime
+from dateutil.tz import tzutc
+import pandas
 
 def map_target(tx, rx, az, el, rf, dop, wavelength):
     """
@@ -78,8 +87,8 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
 
     # WGS84 Model for lat, long, alt
     sx[:, :] = pm.aer2geodetic(np.rad2deg(az), np.rad2deg(el), np.abs(r),
-                               np.repeat(rx[0], len(az)),
-                               np.repeat(rx[1], len(az)),
+                               np.repeat(np.rad2deg(rx[0]), len(az)),
+                               np.repeat(np.rad2deg(rx[1]), len(az)),
                                np.repeat(rx[2], len(az)),
                                ell=pm.Ellipsoid("wgs84"), deg=True)
 
@@ -159,12 +168,91 @@ def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic
     return m[2, :]
 
 
+def calculate_clustering(la, lo, ti, az, el, al, k=500_000):
+    """
+    Calculates the spatial and temporal clustering values for each point in the input arrays. Calculations performed on
+    the GPU using cupy. Default spans to use for the calculation are the nearest 512 points in time and the
+    nearest 512 points in space within approximately (NOT exactly) 4 hours.
+
+    Parameters
+    ----------
+    la : 1D ndarray
+        Vector array of latitude values in [deg]
+    lo : 1D ndarray
+        Vector array of longitude values in [deg]
+    ti : 1D ndarray
+        Vector array of time values in [s]
+    az : 1D ndarray
+        Vector array of azimuth values in [deg]
+    el : 1D ndarray
+        Vector array of elevation values in [deg]
+    al : 1D ndarray
+        Vector array of altitude values in [km]
+    k  : int
+        Half of the maximum number of points thought to be within tspan hours of each point. Default 500_000. Used
+        for chunking purposes. Don't recommend going higher than 1_000_000 or there may be GPU memory issues
+
+    Returns
+    -------
+    beam : 1D ndarray
+        Same shape as the input arrays. Classifies each point into a beam.
+        Possible values:
+            -1 : the corresponding point is not in a beam
+            1  : the corresponding point is in the east beam
+            2  : the corresponding point is in the centre beam
+            3  : the corresponding point is in the west beam
+    dr : 1D ndarray
+        Same shape as the input arrays. The spatial clustering values in [km]. -1 indicates a point not in a beam
+    dt : 1D ndarray
+        Same shape as the input arrays. The temporal clustering values in [s]. -1 indicates a point not in a beam
+    """
+
+    # Only assess times that ran with 3-lambda seperation
+    try:
+        date = pandas.Timestamp(datetime.datetime.fromtimestamp(ti[0], tz=tzutc()))
+        dateparse = lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%S').replace(tzinfo=tzutc())
+        schedule = pandas.read_csv(f'/mnt/icebear/schedule_files/{date.year:04d}-{date.month:02d}.tx_compiled_runtimes.txt', parse_dates=['start time', 'end time'], date_parser=dateparse, na_filter=False)
+        idx = np.where((schedule['start time'].dt.day == date.day) | (schedule['end time'].dt.day == date.day))
+	
+        ti_mask = np.zeros(len(ti))
+        for i in range(len(ti)):
+            date = pandas.Timestamp(datetime.datetime.fromtimestamp(ti[i], tz=tzutc()))
+            for x in idx[0]:
+                if (schedule['start time'][x] <= date) and (schedule['end time'][x] >= date):
+                    if ('3lam' in schedule['notes'][x]) or ('NA' in schedule['notes'][x]):
+                        ti_mask[i] = 1
+    
+        if np.all(ti_mask == 0):
+            return 'NA', 'NA', 'NA'
+
+    except Exception as e:
+        print('Assumed to be pre tx schedules')
+        print(e)
+        ti_mask=np.ones(len(ti))
+
+    #ti = np.ma.masked_where(ti_mask == 0, ti)
+    
+    beam = cl.beam_finder(az, el)
+    beam[al > 150] = -1
+    beam[al < 70] = -1
+
+    arr = xp.array([ti.data, la.data, lo.data])
+    trimmed_arr = arr[:, beam > 0]
+    dr = -1 * np.ones(arr.shape[1], dtype=np.float32)
+    dt = -1 * np.ones(arr.shape[1], dtype=np.float32)
+
+    # calculate clustering values
+    dr[beam > 0], dt[beam > 0] = cl.cluster_medians(trimmed_arr, k)
+
+    return np.where(ti_mask == 0, -2, beam), np.where(ti_mask == 0, -1, dr), np.where(ti_mask == 0, -1, dt)
+
 def create_level2_sanitized_hdf5(config, filename,
                        epoch_time, rf_distance, snr_db, doppler_shift,
                        lattitude, longitude, altitude,
                        azimuth, elevation, slant_range,
                        velocity_azimuth, velocity_elevation, velocity,
-                       azimuth_extent, elevation_extent, area, raw_elevation):
+                       azimuth_extent, elevation_extent, area, raw_elevation, beam,
+                       spatial_cluster, temporal_cluster):
     # Add general information
     # general information
     f = h5py.File(filename, 'w')
@@ -243,6 +331,10 @@ def create_level2_sanitized_hdf5(config, filename,
     f.create_dataset('dev/mean_jansky', data=azimuth_extent)
     f.create_dataset('dev/max_jansky', data=elevation_extent)
     f.create_dataset('dev/valid', data=area)
+    # Magnus clustering data
+    f.create_dataset('dev/beam', data=beam)
+    f.create_dataset('dev/spatial_cluster', data=spatial_cluster)
+    f.create_dataset('dev/temporal_cluster', data=temporal_cluster)
     # f.create_dataset('dev/azimuth_extent', data=azimuth_extent)
     # f.create_dataset('dev/elevation_extent', data=elevation_extent)
     # f.create_dataset('dev/area', data=area)
@@ -266,6 +358,7 @@ if __name__ == '__main__':
             filepath = str(sys.argv[arg + 1])
 
     if (filepath == 'HERE') or (date_dir == 'HERE'):
+        print("Did not specify date and filepath")
         sys.exit()
 
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
@@ -281,6 +374,10 @@ if __name__ == '__main__':
     area = np.array([])
     t = np.array([])
     for file in files:
+        if 'altitude_distribution' in file:
+            continue
+        if f'swht_{date_dir}' in file:
+            continue
         f = h5py.File(file, 'r')
         config = utils.Config(file)
         print(file)
@@ -303,10 +400,15 @@ if __name__ == '__main__':
             azimuth = np.append(azimuth, data['azimuth'][()])
             elevation = np.append(elevation, np.abs(data['elevation'][()]))
 
-            elevation_extent = np.append(elevation_extent, data['max_jansky'][()])
-            azimuth_extent = np.append(azimuth_extent, data['mean_jansky'][()])
-            area = np.append(area, data['valid'][()])
-
+            try:
+                elevation_extent = np.append(elevation_extent, data['max_jansky'][()])
+                azimuth_extent = np.append(azimuth_extent, data['mean_jansky'][()])
+                area = np.append(area, data['valid'][()])
+            except Exception as e:
+                elevation_extent = np.append(elevation_extent, np.zeros_like(data['elevation'][()]))
+                azimuth_extent = np.append(azimuth_extent, np.zeros_like(data['elevation'][()]))
+                area = np.append(area, np.zeros_like(data['elevation'][()]))
+                
             # elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
             # azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
             # area = np.append(area, data['area'][()])
@@ -314,9 +416,10 @@ if __name__ == '__main__':
     filename = f'{filepath}{date_dir}/' \
                f'{config.radar_config}_{config.experiment_name}_swht_' \
                f'{date_dir}_{config.tx_site_name}_{config.rx_site_name}.h5'
-
+    print(filename)
     print('\t-loading completed')
     # Set the azimuth pointing direction
+
     azimuth += config.rx_heading
     print('\t-total data', len(rf_distance))
     # Pre-masking
@@ -334,11 +437,15 @@ if __name__ == '__main__':
     t = t * m
     print('\t-pre-masking completed')
 
-    rx_coord = np.rad2deg(config.rx_site_lat_long)
+    if np.abs(config.rx_site_lat_long[0]) > 10:
+        rx_coord = np.deg2rad(config.rx_site_lat_long)
+    else:
+        rx_coord = config.rx_site_lat_long
+
     if len(rx_coord) < 3:
         rx_coord = np.append(rx_coord, 0.0)
         print(rx_coord)
-    tx_coord = np.rad2deg(config.tx_site_lat_long)
+    tx_coord = np.deg2rad(config.tx_site_lat_long)
     if len(tx_coord) < 3:
         tx_coord = np.append(tx_coord, 0.0)
         print(tx_coord)
@@ -400,9 +507,12 @@ if __name__ == '__main__':
     print('\t-masking completed')
     print('\t-remaining data', len(rf_distance))
 
+    beam, spatial_cluster, temporal_cluster = calculate_clustering(lat, lon, t, azimuth, elevation, altitude, k=500_000)
+    print(beam)
+
     create_level2_sanitized_hdf5(config, filename, t, rf_distance, snr_db, doppler_shift,
                        lat, lon, altitude, azimuth, elevation, slant_range, vaz, vel, vma,
-                       azimuth_extent, elevation_extent, area, raw_elevation)
+                       azimuth_extent, elevation_extent, area, raw_elevation, beam, spatial_cluster, temporal_cluster)
 
     # Draven this little bit of code can be used to make altitude histograms per day if we want one every day!
 
@@ -427,3 +537,4 @@ if __name__ == '__main__':
     # Level 1 Data: ib3d_normal_2020_02_20_01_prelate_bakker.h5  <- one hour
     # Level 2.dev Data: ib3d_normal_dev_swht_2020_02_20_01_prelate_bakker.h5  <- one hour
     # Level 2 Data: ib3d_normal_swht_2020_02_20_prelate_bakker.h5  <- full day
+

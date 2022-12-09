@@ -2,6 +2,7 @@ import numpy as np
 import icebear
 import icebear.utils as util
 import h5py
+import os
 try:
     import cupy as cp
 except:
@@ -39,7 +40,9 @@ def generate_level2(config, method='swht'):
         for i in range(15, 95, 10):
             coeffs_fov[:, :, :, idx] = icebear.imaging.swht.unpackage_coeffs(config.swht_coeffs, i)
             idx += 1
+
         coeffs_fov = cp.asarray(coeffs_fov)
+
         args = (coeffs_fov,
                 coeffs_full,
                 config.resolution,
@@ -52,7 +55,6 @@ def generate_level2(config, method='swht'):
     print('imaging start:')
     print(f'\t-imaging method: {method}')
 
-    file = h5py.File(config.imaging_source, 'r')
     time = icebear.utils.Time(config.imaging_start, config.imaging_stop, config.imaging_step)
     temp_hour = [-1, -1, -1, -1]
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
@@ -62,17 +64,37 @@ def generate_level2(config, method='swht'):
                 f'{config.radar_config}_{config.experiment_name}_{config.imaging_method}_{int(config.resolution * 10):02d}deg_' \
                 f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}_' \
                 f'{config.tx_site_name}_{config.rx_site_name}.h5'
-            print(f'\t-created level 2 HDf5: {filename}')
-            create_level2_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
-            temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
-        data = file['data'][f'{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}']
-        if data['data_flag'][()]:
-            # todo
-            # Devin notice that the args argument is detupled before passing and everything else is standard.
-            # In this way we can pass any amount of additional arguments determined by method.
-            # data will pass by reference to the current hdf5 data we are working on.
-            calculate_image(filename, int(now.hour), int(now.minute), int(now.second * 1000), data, *args)
-            print(f'\t-appended: {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
+
+            if not os.path.exists(
+                    f'{config.imaging_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/'):
+                os.mkdir(f'{config.imaging_destination}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/')
+
+            source_file = f'{config.imaging_source}{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}/' \
+                       f'{config.radar_name}_{config.experiment_name}_{int(config.snr_cutoff_db):02d}dB_' \
+                       f'{int(config.incoherent_averages):02d}00ms_' \
+                       f'{int(now.year):04d}_{int(now.month):02d}_{int(now.day):02d}_{int(now.hour):02d}_' \
+                       f'{config.tx_site_name}_{config.rx_site_name}.h5'
+                       
+            if not os.path.exists(source_file):
+                continue
+            else:
+                print(f'\t-created level 2 HDf5: {filename}')
+                create_level2_hdf5(config, filename, int(now.year), int(now.month), int(now.day))
+                temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+
+        file = h5py.File(source_file, 'r')
+        try:
+            data = file['data'][f'{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}']
+            if data['data_flag'][()]:
+                # todo
+                # Devin notice that the args argument is detupled before passing and everything else is standard.
+                # In this way we can pass any amount of additional arguments determined by method.
+                # data will pass by reference to the current hdf5 data we are working on.
+                calculate_image(filename, int(now.hour), int(now.minute), int(now.second * 1000), data, *args)
+                print(f'\t-appended: {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
+        except Exception as e:
+            print(e)
+            
 
     return None
 

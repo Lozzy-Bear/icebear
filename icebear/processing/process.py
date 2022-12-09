@@ -31,9 +31,7 @@ def generate_level1(config):
     -------
 
     """
-    
     xp = load_cuda(config)
-
     filenames = []
     level0_data = digital_rf.DigitalRFReader(config.processing_source)
     channels = level0_data.get_channels()
@@ -65,6 +63,10 @@ def generate_level1(config):
     for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
         # todo : Should this stop actually be stop + step so it ends correctly?
         now = time.get_date(t)
+        # added check to skip making files when there is no data for that hour
+        if not os.path.exists(str(config.processing_source)+f"/antenna0/{int(now.year):04d}-{int(now.month):02d}-{int(now.day):02d}T{int(now.hour):02d}-00-00"):
+            continue
+        
         spectra = xp.empty(
             shape=(int(config.code_length / config.decimation_rate), config.number_ranges, total_spectras),
             dtype=xp.complex64)
@@ -181,7 +183,7 @@ def generate_level1(config):
                            xspectra_variance[snr_indices[:, 0], snr_indices[:, 1], :],
                            xspectra_median, xspectra_clutter_corr)
         print(f'\t-appended {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
-
+        print(f'{str(spectra[snr_indices[:, 0], snr_indices[:, 1], :])}')
     return filenames
 
 
@@ -479,7 +481,7 @@ def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
     Returns:
         S (complex64 np.array): 2D Spectrum output for antenna pair (Doppler shift x Range).
     """
-
+    import cupy as xp
     # todo: improve the integer casting
     nfreq = int(codelen / fdec)
     code = code.astype(xp.complex64)
@@ -507,17 +509,18 @@ def ssmfx_cupy_v2(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
     Returns:
         S (complex64 np.array): 2D Spectrum output for antenna pair (Doppler shift x Range).
     """
+    import cupy as xp
 
     nfreq = int(codelen / fdec)
     code = code.astype(xp.complex64)
 
-    variance_samples = xp.zeros((nrng, nfreq, navg))
-    for i in range(navg):
-        variance_samples[:, :, i] = dsp.wiener_khinchin_v2(dsp.unmatched_filtering_v2(v0, code, int(codelen), int(nrng), int(fdec), int(navg)), dsp.unmatched_filtering_v2(v1, code, int(codelen), int(nrng), int(fdec), int(navg)))
+    variance_samples = xp.zeros((int(nrng),int(nfreq), int(navg)))
+    for i in range(int(navg)):
+        variance_samples[:, :, i] = dsp.wiener_khinchin_v2(dsp.unmatched_filtering_v2(v0[int(codelen)*i:int(codelen)*(i+1) + int(nrng)], code, int(codelen), int(nrng), int(fdec), int(navg)), dsp.unmatched_filtering_v2(v1[int(codelen)*i:int(codelen)*(i+1) + int(nrng)], code, int(codelen), int(nrng), int(fdec), int(navg)), int(navg))
 
-    spectra = xp.sum(variance_samples, axis=2)/navg
-    re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra)) * (xp.real(variance_samples) - xp.real(spectra)), axis=0) / navg)
-    im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0) / navg)
+    spectra = xp.sum(variance_samples, axis=2)/int(navg)
+    re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra[:, :, xp.newaxis])) * (xp.real(variance_samples) - xp.real(spectra[:, :, xp.newaxis])), axis=2) / int(navg))
+    im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra[:, :, xp.newaxis])) * (xp.imag(variance_samples) - xp.imag(spectra[:, :, xp.newaxis])), axis=2) / int(navg))
     variance = re + 1j*im
     return spectra, variance
 
@@ -550,7 +553,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
             data1 = xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel1) * correction1)
             data2 = xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2) * correction2)
             if not config.cuda:
-                result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
+                result, variance = ssmfx_cupy_v2(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
                                           config.number_ranges, xp.asarray(config.decimation_rate),
                                           xp.asarray(config.code_length), xp.asarray(config.clutter_gates))
             else:
@@ -572,7 +575,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
             data2 = dsp.calibration_correction(xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)),
                                                xp.asarray(correction2))
             if not config.cuda:
-                result, variance = ssmfx_cupy(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
+                result, variance = ssmfx_cupy_v2(data1, data2, xp.asarray(bcode), xp.asarray(config.incoherent_averages),
                                           config.number_ranges, xp.asarray(config.decimation_rate),
                                           xp.asarray(config.code_length), xp.asarray(config.clutter_gates))
             else: 
@@ -586,7 +589,7 @@ def decx(config, time, data, bcode, channel1, channel2, correction1, correction2
                     data2 = dsp.calibration_correction(
                         xp.asarray(data.read_vector_c81d(start_sample, step_sample, channel2)), xp.asarray(correction2))
                     if not config.cuda:
-                        r, v = ssmfx_cupy(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
+                        r, v = ssmfx_cupy_v2(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,
                                       config.decimation_rate, config.code_length)
                     else:
                         r, v = ssmfx(data1, data2, xp.asarray(bcode), config.incoherent_averages, 2000,

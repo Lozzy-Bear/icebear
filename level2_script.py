@@ -7,6 +7,10 @@ import icebear.imaging.image as ibi
 year = -1
 month = -1
 day = -1
+start_minute = 0
+end_minute = 30
+start_hour = 1
+end_hour = 1
 L1_data_path = "HERE"
 L2_data_path = "HERE"
 swht_coeffs = "FILE_PATH"
@@ -20,6 +24,14 @@ for arg in range(len(sys.argv)):
         month = int(sys.argv[arg+1])
     elif sys.argv[arg] == "-d":
         day = int(sys.argv[arg+1])
+    elif sys.argv[arg] == "-sm":
+        start_minute = int(sys.argv[arg + 1])
+    elif sys.argv[arg] == "-sh":
+        start_hour = int(sys.argv[arg + 1])
+    elif sys.argv[arg] == "-em":
+        end_minute = int(sys.argv[arg + 1])
+    elif sys.argv[arg] == "-eh":
+        end_hour = int(sys.argv[arg + 1])
     elif sys.argv[arg] == "--path-L1":
         L1_data_path = str(sys.argv[arg+1])
     elif sys.argv[arg] == "--path-L2":
@@ -36,8 +48,8 @@ if (year == -1) or (month == -1) or (day == -1) or (L1_data_path == "HERE") or (
     sys.exit()
 
 config = utils.Config(config_file)
-config.update_attr("imaging_start", [year, month, day, 2, 0, 0, 0])
-config.update_attr("imaging_stop", [year, month, day, 2, 1, 0, 0])
+config.update_attr("imaging_start", [year, month, day, start_hour, start_minute, 0, 0])
+config.update_attr("imaging_stop", [year, month, day, end_hour, end_minute, 59, 0])
 config.update_attr("imaging_source", L1_data_path)
 config.update_attr("imaging_destination", L2_data_path)
 config.update_attr("swht_coeffs", swht_coeffs)
