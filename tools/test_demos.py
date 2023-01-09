@@ -3,13 +3,19 @@ import h5py
 import matplotlib.pyplot as plt
 import datetime
 import common.pretty_plots
+import glob
 
+files = glob.glob('/data/icebear_data/sanitized_data/ib3d_normal_swht_20*.h5')
 
-# files = ['demo_ib3d_level3_20201212.h5', 'demo_ib3d_level3_20201213.h5',
-#          'demo_ib3d_level3_20201214.h5', 'demo_ib3d_level3_20201215.h5']
-files = ['/beaver/backup/level2b/2020_12_12/ib3d_normal_swht_2020_12_12_prelate_bakker.h5']
-# files = ['/beaver/backup/level2_3lambda/2022_02_22/ib3d_normal_swht_2022_02_22_prelate_bakker.h5']
-# files = ['/beaver/backup/level2_1lambda/2022_03_05/ib3d_normal_swht_2022_03_05_prelate_bakker.h5']
+# files = ['/run/media/arl203/Seagate Expansion Drive/backup/level2b/2020_12_12/ib3d_normal_swht_2020_12_12_prelate_bakker_sanity.h5',
+#          '/run/media/arl203/Seagate Expansion Drive/backup/level2b/2020_12_13/ib3d_normal_swht_2020_12_13_prelate_bakker_sanity.h5',
+#          '/run/media/arl203/Seagate Expansion Drive/backup/level2b/2020_12_14/ib3d_normal_swht_2020_12_14_prelate_bakker_sanity.h5',
+#          '/run/media/arl203/Seagate Expansion Drive/backup/level2b/2020_12_15/ib3d_normal_swht_2020_12_15_prelate_bakker_sanity.h5']
+# files = ['/run/media/arl203/Seagate Expansion Drive/backup/level2b/2019_12_19/ib3d_normal_swht_2019_12_19_prelate_bakker.h5']
+# files = ['/run/media/arl203/Seagate Expansion Drive/backup/level2b/2021_02_02/ib3d_normal_swht_2021_02_02_prelate_bakker.h5']
+# files = ['/run/media/arl203/Seagate Expansion Drive/backup/level2b/ib3d_normal_swht_2021_03_20_prelate_bakker.h5']
+# files = ['/run/media/arl203/Seagate Expansion Drive/backup/level2b/ib3d_normal_swht_2020_03_31_prelate_bakker.h5']
+
 
 slant_range = np.array([])
 altitude = np.array([])
@@ -57,32 +63,42 @@ for file in files:
     # idx = np.argwhere(time>time[0]+5.0*60.0*60.0)
 
 # print(np.unique(valid, return_counts=True))
-print(slant_range.shape)
+# print(slant_range.shape)
+plt.figure()
+plt.hist2d(azimuth, altitude, bins=[np.arange(-45, 46, 1), np.arange(50, 201, 1)])
+plt.show()
 
 plt.figure()
-# mean_altitude = 93.2 # np.mean(altitude)
 total_targets = len(altitude)
-n, bins, _ = plt.hist(altitude, bins='auto', orientation='horizontal', histtype='step', label=f'Total Targets {total_targets}', color='k')
+bb = np.arange(60, 131, 0.5)
+# n, bins, _ = plt.hist(altitude, bins=bb, orientation='horizontal', histtype='step', label=f'Total Targets {len(altitude)}', color='k')
+# m, bins, _ = plt.hist(altitude[azimuth>-12.0], bins=bb, orientation='horizontal', histtype='step', label=f'East & Center {len(altitude[azimuth>-12.0])}', color='b')
+# p, bins, _ = plt.hist(altitude[azimuth<=-12.0], bins=bb, orientation='horizontal', histtype='step', label=f'Western Beam {len(altitude[azimuth<=-12.0])}', color='r')
+n, bins, _ = plt.hist(altitude, bins=bb, orientation='horizontal', histtype='step', label=f'Total Targets {len(altitude)}', color='k')
+m, bins, _ = plt.hist(altitude[azimuth>=15.0], bins=bb, orientation='horizontal', histtype='step', label=f'Eastern Beam {len(altitude[azimuth>-12.0])}', color='b')
+p, bins, _ = plt.hist(altitude[(azimuth>-12.0) & (azimuth<15.0)], bins=bb, orientation='horizontal', histtype='step', label=f'Center Beam {len(altitude[azimuth<=-12.0])}', color='r')
+p, bins, _ = plt.hist(altitude[azimuth<=-12.0], bins=bb, orientation='horizontal', histtype='step', label=f'Western Beam {len(altitude[azimuth<=-12.0])}', color='g')
 
-counts = n
+
+counts = m
 mids = 0.5*(bins[1:] + bins[:-1])
 probs = counts / np.sum(counts)
 mean = np.sum(probs * mids)
 sd = np.sqrt(np.sum(probs * (mids - mean)**2))
 print(f'standard deviation: {sd}, mean: {mean}')
+mean_altitude = 103.5
 
 # plt.xscale('log')
+plt.title('E Region Scatter Distribution\nMarch 20, 2021')
 # plt.title('E Region Scatter Distribution\nDecember 19, 2019')
 # plt.title('Geminids Meteor Trail Distribution\nDecember 12-15, 2020')
 plt.xlabel('Count')
 plt.ylabel('Altitude [km]')
-# plt.ylim((70, 120))
-# plt.xlim((10, 4_000))
-# plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Peak Altitude {mean_altitude:.1f} [km]')
-# plt.legend(loc='lower right')
+# plt.ylim((70, 130))
+# plt.xlim((10, 250_000))
+# plt.plot([0, 250_000], [mean_altitude, mean_altitude], '--k', label=f'Peak Altitude {mean_altitude:.1f} [km]')
+plt.legend(loc='lower right')
 plt.grid()
-
-plt.figure()
 
 plt.show()
 

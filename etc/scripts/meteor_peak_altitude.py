@@ -215,8 +215,11 @@ def movies(file, name):
 
 
 filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_12')  # Enter first sub directory and last
+filepath = '/run/media/arl203/Seagate Expansion Drive/backup/level2b/'  # Enter file path to level 1 directory
+# files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_12')  # Enter first sub directory and last
+files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
 # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
+# files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
 # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
 el = np.array([])
 rng = np.array([])
@@ -290,12 +293,12 @@ dop = np.ma.compressed(dop)
 az = np.ma.compressed(az)
 
 #plot_3d(az, rng, alt_geocentric, np.abs(snr))
-plot_3d(az, rng, alt_geocentric, dop)
+# plot_3d(az, rng, alt_geocentric, dop)
 meteor_distribution(alt_geocentric)
-doppler_distribution(dop, alt_geocentric)
-power_distribution(np.abs(snr), alt_geocentric)
-range_altitude_power(rng, alt_geocentric, np.abs(snr))
-range_altitude_doppler(rng, alt_geocentric, dop)
+# doppler_distribution(dop, alt_geocentric)
+# power_distribution(np.abs(snr), alt_geocentric)
+# range_altitude_power(rng, alt_geocentric, np.abs(snr))
+# range_altitude_doppler(rng, alt_geocentric, dop)
 
 
 plt.show()

@@ -621,7 +621,6 @@ if __name__ == '__main__':
     # plt.xlim((10, 10_000))
     plt.plot([0, 1_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
     plt.legend(loc='upper right')
-    plt.grid()
     # # plt.savefig(f'/beaver/backup/images/20210202_scatter_distribution.png')
 
     # plt.figure(figsize=[12, 12])

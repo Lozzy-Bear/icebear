@@ -472,13 +472,15 @@ if __name__ == '__main__':
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
     # Load the level 2 data file.
-    filepath = '/beaver/backup/level2b/'  # Enter file path to level 1 directory
+    filepath = '/run/media/arl203/Seagate Expansion Drive/backup/level2b/'  # Enter file path to level 1 directory
     # filepath = 'E:/icebear/level2b/'  # Enter file path to level 1 directory
-    # files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_14')  # Enter first sub directory and last
+    files = utils.get_all_data_files(filepath, '2020_12_12', '2020_12_15')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2019_12_19', '2019_12_19')  # Enter first sub directory and last
-    files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
+    # files = utils.get_all_data_files(filepath, '2020_03_31', '2020_03_31')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2021_02_02', '2021_02_02')  # Enter first sub directory and last
     # files = utils.get_all_data_files(filepath, '2020_06_16', '2020_06_16')
+    import glob
+    files = glob.glob('/run/media/arl203/Seagate Expansion Drive/backup/level2b/2020_12_1*/*01deg*' )
 
     pack_name = 'demo_ib3d_level3_20200616.h5'
 
@@ -550,6 +552,7 @@ if __name__ == '__main__':
     doppler_shift = sv[2, :]
     slant_range = sa[2, :]
     bad_alt = -6378.0 + np.sqrt(6378.0**2 + slant_range**2 - 2*6328.0*slant_range*np.cos(np.deg2rad(90 + elevation)))
+    bad_elevation = np.copy(elevation)
     elevation = sa[1, :]
     print('\t-mapping completed')
 
@@ -565,6 +568,7 @@ if __name__ == '__main__':
     azimuth = azimuth * m
     azimuth_extent = azimuth_extent * m
     elevation = elevation * m
+    bad_elevation = bad_elevation * m
     elevation_extent = elevation_extent * m
     area = area * m
     slant_range = slant_range * m
@@ -582,6 +586,7 @@ if __name__ == '__main__':
     azimuth = azimuth[~azimuth.mask].flatten()
     azimuth_extent = azimuth_extent[~azimuth_extent.mask].flatten()
     elevation = elevation[~elevation.mask].flatten()
+    bad_elevation = bad_elevation[~bad_elevation.mask].flatten()
     elevation_extent = elevation_extent[~elevation_extent.mask].flatten()
     area = area[~area.mask].flatten()
     slant_range = slant_range[~slant_range.mask].flatten()
@@ -661,6 +666,60 @@ if __name__ == '__main__':
     # plt.legend(loc='upper right')
     # plt.grid()
     # # plt.savefig(f'/beaver/backup/geminids/summary/altitude_histogram_filtered_02.png')
+
+    # Plot alternative methods
+    plt.figure()
+    plt.subplot(311)
+    from scipy.optimize import curve_fit
+    hist, _, _ = np.histogram2d(slant_range, bad_alt, bins=[np.arange(300, 1000, 1), np.arange(0, 400, 1)])
+    h = np.copy(hist)
+    h[h == 0] = np.nan
+    mean_hs = np.zeros(h.shape[0])
+    for i in range(len(mean_hs)):
+        mean_hs[i] = np.argmax(hist[i, :])
+    xdata = np.arange(300, 999, 1)
+    xdata = np.ma.masked_where(mean_hs < 10, xdata)
+    ydata = np.ma.masked_where(mean_hs < 10, mean_hs)
+    xdata = np.ma.compressed(xdata)
+    ydata = np.ma.compressed(ydata)
+    def func(x, a, b, c):
+        return a * x ** 2 + b * x + c
+    popt, pcov = curve_fit(func, xdata, ydata)
+    fitted = func(slant_range, *popt)
+    plt.scatter(slant_range, bad_alt, c='r', marker='.')
+    plt.plot(xdata, func(xdata, *popt), 'k', label='fit: a=%5.6f, b=%5.6f, c=%5.6f' % tuple(popt))
+    plt.plot([0, 1000], [110, 110], '--k')
+    plt.plot([0, 1000], [70, 70], '--k')
+    plt.grid()
+    plt.xlim(200, 1000)
+    plt.ylim(0, 300)
+    plt.ylabel('Altitude [km]')
+    plt.legend(loc='upper left', fancybox=True, shadow=True)
+    plt.title('Geminids Meteor Shower\nDecember 12-15, 2020')
+
+    plt.subplot(312)
+    reflected = 6378.0 - np.sqrt(6378.0**2 + slant_range**2 - 2*6328.0*slant_range*np.cos(np.deg2rad(90 - bad_elevation)))
+    plt.scatter(slant_range, bad_alt - fitted + popt[2], c='m', marker='.', label='fit')
+    plt.scatter(slant_range, reflected, c='r', marker='.', label='reflection')
+    plt.plot([0, 1000], [110, 110], '--k')
+    plt.plot([0, 1000], [70, 70], '--k')
+    plt.grid()
+    plt.xlim(200, 1000)
+    plt.ylim(0, 300)
+    plt.ylabel('Altitude [km]')
+    plt.legend(loc='upper left', ncol=2, fancybox=True, shadow=True)
+
+    plt.subplot(313)
+    plt.scatter(slant_range, bad_alt - fitted + popt[2] - altitude, c='m', marker='.', label='Δ fit')
+    plt.scatter(slant_range, reflected - altitude, c='r', marker='.', label='Δ reflection')
+    plt.grid()
+    plt.xlim(200, 1000)
+    plt.xlabel('Slant Range [km]')
+    plt.ylabel('Altitude [km]')
+    plt.legend(loc='lower left', ncol=2, fancybox=True, shadow=True)
+
+    plt.tight_layout()
+    # plt.savefig('/beaver/backup/images/conventional_vs_geocentral.png')
     plt.show()
 
 exit()  # Needs a clean exit?

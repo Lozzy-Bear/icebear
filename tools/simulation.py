@@ -367,6 +367,7 @@ def gpu_visibility(visibilty, n):
     print(v.shape, v.nbytes/1000, 'KB', time.time() - ts)
     return v
 
+
 if __name__ == '__main__':
     # Pretty plot configuration.
     from matplotlib import rc

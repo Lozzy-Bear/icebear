@@ -106,6 +106,32 @@ def do_calc(time, lat, lon, beam, distance_bins=None, dt=900, dw=0, threshold=50
     return xo, bn, ti, tf, nd, nr
 
 
+def write_output():
+    # Write config data
+    date = file.split('/')[-1]
+    date = np.array([int(date[0:4]), int(date[4:6]), int(date[6:8])])
+    outfile = outdir + file.split('/')[-1].split('.')[0] + '_cluster.h5'
+    of = h5py.File(outfile, 'w')
+    of.create_group('config')
+    of.create_dataset('info/processed_date', data=process_date)
+    of.create_dataset('info/time_spacing', data=dt)
+    of.create_dataset('info/minimum_points', data=threshold)
+    of.create_dataset('info/distance_bins', data=distance_bins)
+    of.create_dataset(f'info/date', data=date)
+    of.create_group('data')
+    of.create_dataset('data/xi', data=xi)
+    of.create_dataset('data/beam', data=b)
+    of.create_dataset('data/time_start', data=ti)
+    of.create_dataset('data/time_end', data=tf)
+    of.create_dataset('data/num_real', data=nd)
+    of.create_dataset('data/num_random', data=nr)
+    of.close()
+
+
+def main():
+
+    futures = [do_calc]
+
 if __name__ == '__main__':
     # Load files to be processed
     files = glob.glob("/data/outness/*")
@@ -138,25 +164,7 @@ if __name__ == '__main__':
         xi, b, ti, tf, nd, nr = do_calc(time, mag_lat, mag_lon, beam,
                                         distance_bins=distance_bins, dt=dt, dw=dw, threshold=threshold)
 
-        # Write config data
-        date = file.split('/')[-1]
-        date = np.array([int(date[0:4]), int(date[4:6]), int(date[6:8])])
-        outfile = outdir + file.split('/')[-1].split('.')[0] + '_cluster.h5'
-        of = h5py.File(outfile, 'w')
-        of.create_group('config')
-        of.create_dataset('info/processed_date', data=process_date)
-        of.create_dataset('info/time_spacing', data=dt)
-        of.create_dataset('info/minimum_points', data=threshold)
-        of.create_dataset('info/distance_bins', data=distance_bins)
-        of.create_dataset(f'info/date', data=date)
-        of.create_group('data')
-        of.create_dataset('data/xi', data=xi)
-        of.create_dataset('data/beam', data=b)
-        of.create_dataset('data/time_start', data=ti)
-        of.create_dataset('data/time_end', data=tf)
-        of.create_dataset('data/num_real', data=nd)
-        of.create_dataset('data/num_random', data=nr)
-        of.close()
+
 
 
 # TODO: Implement the following new functions

@@ -279,7 +279,7 @@ class Config:
         # Add version attribute
         here = os.path.abspath(os.path.dirname(__file__))
         regex = "(?<=__version__..\s)\S+"
-        with open(os.path.join(here, '../icebear/__init__.py'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(here, '../__init__.py'), 'r', encoding='utf-8') as f:
             text = f.read()
         match = re.findall(regex, text)
         setattr(self, 'version', str(match[0].strip("'")))
