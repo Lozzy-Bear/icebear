@@ -476,6 +476,37 @@ def ssmfx_cupy(v0, v1, code, navg, nrng, fdec, codelen):
     return spectra, variance
 
 
+def ssmfx_cupy_v2(v0, v1, code, navg, nrng, fdec, codelen, clutter_gates):
+    """
+    Formats measured data and CUDA function inputs and calls wrapped function for determining the cross-correlation spectra of
+    selected antenna pair.
+
+    Args:
+        v0 (complex64 xp.array): First antenna voltages loaded from HDF5 with phase and magnitude corrections.
+        v1 (complex64 xp.array): Second antenna voltages loaded from HDF5 with phase and magnitude corrections.
+        code (float32 xp.array): Transmitted psuedo-random code sequence.
+        navg (int): The number of 0.1 second averages to be performed on the GPU.
+        nrng (int): Number of range gates being processed. Nominally 2000.
+        fdec (int): Decimation rate to be used by GPU processing, effects Doppler resolution. Nominally 200.
+        codelen (int): Length of the transmitted psuedo-random code sequence.
+
+    Returns:
+        S (complex64 np.array): 2D Spectrum output for antenna pair (Doppler shift x Range).
+    """
+
+    nfreq = int(codelen / fdec)
+    code = code.astype(xp.complex64)
+    variance_samples = xp.zeros((nrng, nfreq, navg))
+    for i in range(navg):
+        variance_samples[:, :, i] = dsp.wiener_khinchin_v2(dsp.unmatched_filtering_v2(v0, code, int(codelen), int(nrng), int(fdec), int(navg)), dsp.unmatched_filtering_v2(v1, code, int(codelen), int(nrng), int(fdec), int(navg)))
+
+    spectra = xp.sum(variance_samples, axis=2)/navg
+    re = xp.sqrt(xp.sum((xp.real(variance_samples) - xp.real(spectra)) * (xp.real(variance_samples) - xp.real(spectra)), axis=0) / navg)
+    im = xp.sqrt(xp.sum((xp.imag(variance_samples) - xp.imag(spectra)) * (xp.imag(variance_samples) - xp.imag(spectra)), axis=0) / navg)
+    variance = re + 1j*im
+    return spectra, variance
+
+
 def decx(config, time, data, bcode, channel1, channel2, correction1, correction2):
     """
     Performs cross-correlation and decimation for inputed baseline from the radar data

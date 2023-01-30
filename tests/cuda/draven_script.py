@@ -93,8 +93,6 @@ def ssmf_kernel(meas, code, N=20000, r=2000, dec_rate=200):
 
     return result
 
-
-
 def conj_kernel(arr1, arr2, averages):
     """
     Performs conjugate multiplication between two ndarrays ie: arr1 * conj(arr2)

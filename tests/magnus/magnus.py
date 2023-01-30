@@ -11,8 +11,10 @@ except ModuleNotFoundError:
 import cProfile
 import sys
 
+
 def beam_finder(azimuth, elevation):
     # linear model val(x) = p1*x + p2
+    #              el(az) = p1*az + p2
     beam = np.zeros(len(azimuth))
     coeffs = np.array([[-0.3906, 0.1125],  # west0 coefficients [p1, p2]
                        [-0.3814, 5.934],   # west1      "          "
@@ -49,12 +51,13 @@ def beam_finder(azimuth, elevation):
 
             J0 = (EAST.any() or CENTRE.any()) or WEST.any()
             # numbering to match Magnus
-            # if not in a beam, set to 0
             if J0.any():
                 temp_beam[WEST] = 3
                 temp_beam[CENTRE] = 2
                 temp_beam[EAST] = 1
                 beam[cur_idx] = temp_beam
+
+    beam[beam == 0] = -1
     return beam
 
 
@@ -219,7 +222,6 @@ def cluster_medians(arr, k, r=110.0, tspan=4, di_r=512):
     return dr, dt
 
 
-
 def haversine(p1, p2, r):
     """
     Calculates haversine distance between each point in p1 and every point in p2
@@ -254,7 +256,7 @@ def cluster_plot(fig_num, dt, dr):
     logbinsdr = np.logspace(np.log10(1), np.log10(max(dr)), 300)
 
     fig = plt.figure(fig_num)
-    fig.suptitle('February 25, 2021. ' + str(dr.shape[0]) + ' echoes within the beams, ' + str(dr[dr > 40].shape[0]) + ' echoes above 40 km.', fontsize=14)
+    # fig.suptitle('February 25, 2021. ' + str(dr.shape[0]) + ' echoes within the beams, ' + str(dr[dr > 40].shape[0]) + ' echoes above 40 km.', fontsize=14)
     gs = fig.add_gridspec(4, 4)
     ax1 = fig.add_subplot(gs[1:4, 0:3])
     ax2 = fig.add_subplot(gs[0, 0:3])
@@ -291,16 +293,17 @@ def cluster_plot(fig_num, dt, dr):
     plt.show()
 
 
+
 if __name__ == '__main__':
     import h5py
     # filepath = str(sys.argv[1])
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_20_prelate_bakker.h5'  # 9_025_008
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_31_prelate_bakker.h5'  # 976_000
-    filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_02_25_prelate_bakker.h5'
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_21_prelate_bakker.h5'  # 159_000
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_03_15_prelate_bakker.h5'  # 38_000
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2021_02_20_prelate_bakker.h5'  # Magnus Paper
     # filepath = '/beaver/backup/level2b/ib3d_normal_swht_2020_11_10_prelate_bakker.h5'  # All meteors
+    filepath = '/beaver/backup/level2b/ib3d_normal_swht_2019_12_19_prelate_bakker.h5'
 
     f = h5py.File(filepath, 'r')
     la = f['data']['latitude'][()]
@@ -309,18 +312,16 @@ if __name__ == '__main__':
     az = f['data']['azimuth'][()]
     el = f['data']['elevation'][()]
     al = f['data']['altitude'][()]
-    start = time.perf_counter()
+
     beam = beam_finder(az, el)
-    beam[al > 150] = 0
-    beam[al < 70] = 0
-    #beam = beam.get()
-    end = time.perf_counter()
-    print(f'beam time: {end - start}')
+    beam[al > 150] = -1
+    beam[al < 70] = -1
+
     arr = xp.array([ti, la, lo])
     east_arr = arr[:, beam == 1]
     centre_arr = arr[:, beam == 2]
     west_arr = arr[:, beam == 3]
-    print(beam[beam==0].shape)
+
     #plt.scatter(east_arr.get()[1, :], east_arr.get()[2, :])
     #plt.scatter(centre_arr.get()[1, :], centre_arr.get()[2, :])
     #plt.scatter(west_arr.get()[1, :], west_arr.get()[2, :])
@@ -328,10 +329,9 @@ if __name__ == '__main__':
     #plt.figure(2)
     #plt.scatter(arr.get()[2, :], arr.get()[1, :])
     #plt.show()
-    print(arr.shape, east_arr.shape, centre_arr.shape, west_arr.shape)
 
-    # dr = np.zeros(arr.shape[1], dtype=np.float32)
-    # dt = np.zeros(arr.shape[1], dtype=np.float32)
+    dr = -1*np.ones(arr.shape[1], dtype=np.float32)
+    dt = -1*np.ones(arr.shape[1], dtype=np.float32)
     k = 500_000
     n = int(arr.shape[1]/k)
     #start = time.perf_counter()
@@ -344,15 +344,26 @@ if __name__ == '__main__':
     #dr1, dt1 = cluster_medians(east_arr, k)
     #dr2, dt2 = cluster_medians(centre_arr, k)
     #dr3, dt3 = cluster_medians(west_arr, k)
-    sanitized_arr = arr[:, beam > 0]
+    trimmed_arr = arr[:, beam > 0]
     #cluster_plot(1, dt1, dr1)
     #cluster_plot(1, dt2, dr2)
     #cluster_plot(1, dt3, dr3)
-    #dr = np.concatenate((dr1, dr2, dr3))
-    #dt = np.concatenate((dt1, dt2, dt3))
-    #cluster_plot(1, dt, dr)
-    dr, dt = cluster_medians(sanitized_arr, k)
+    dr[beam > 0], dt[beam > 0] = cluster_medians(trimmed_arr, k)
     cluster_plot(1, dt, dr)
+
+    results = np.ndarray((3, beam.shape[0]))
+    results[0, :] = beam # beam number, -1 if not in a beam
+    results[1, :] = dr # spatial clustering value [km], -1 if not in a beam
+    results[2, :] = dt # temporal clustering value [s], -1 if not in a beam
+
+    # f = h5py.File('/beaver/backup/level2b/2019_12_19/ib3d_normal_swht_2019_12_19_prelate_bakker_brian.h5', 'r')
+    # beam = f['data']['beam'][()]
+    # spatial_cluster = f['data']['spatial_cluster'][()]
+    # temporal_cluster = f['data']['temporal_cluster'][()]
+    #
+    # np.allclose(results[0, :], beam)
+    # np.allclose(results[1, :], spatial_cluster)
+    # np.allclose(results[2, :], temporal_cluster)
 
     # beamfinder benchmarks (k=100_000)
     # 38_000    pts -- 78.0847 s (cupy), 0.06352 s (numpy)

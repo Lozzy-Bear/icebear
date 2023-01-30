@@ -93,13 +93,13 @@ def ssmf_kernel(meas, code, N=20000, r=2000, dec_rate=200):
 
     return result
 
-N = 20000
-r = 2000
-dec_rate = 200
-meas = xp.arange(0, N+r)
-code = xp.arange(0, N)
+# N = 20000
+# r = 2000
+# dec_rate = 200
+# meas = xp.arange(0, N+r)
+# code = xp.arange(0, N)
 
-print(ssmf_kernel(meas, code, N, r, dec_rate))
+# print(ssmf_kernel(meas, code, N, r, dec_rate))
 
 
 # these two operations should give same result:

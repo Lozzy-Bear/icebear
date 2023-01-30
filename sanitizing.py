@@ -321,8 +321,9 @@ if __name__ == '__main__':
     # filepath = '/beaver/backup/level2_advanced_cuda/'  # Enter file path to level 2 directory
     # filepath = 'F:/icebear/level2_advanced_cuda/'  # Enter file path to level 2 directory
     filepath = '/beaver/backup/level2b/'
-    date_dir = '2020_11_10'
+    date_dir = '2019_12_19'
     files = utils.get_all_data_files(filepath, date_dir, date_dir)  # Enter first sub directory and last
+
     print(f'files: {files}')
 
     rf_distance = np.array([])
@@ -357,17 +358,17 @@ if __name__ == '__main__':
             azimuth = np.append(azimuth, data['azimuth'][()])
             elevation = np.append(elevation, np.abs(data['elevation'][()]))
 
-            elevation_extent = np.append(elevation_extent, data['max_jansky'][()])
-            azimuth_extent = np.append(azimuth_extent, data['mean_jansky'][()])
-            area = np.append(area, data['valid'][()])
+#            elevation_extent = np.append(elevation_extent, data['max_jansky'][()])
+#            azimuth_extent = np.append(azimuth_extent, data['mean_jansky'][()])
+#            area = np.append(area, data['valid'][()])
 
-            # elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
-            # azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
-            # area = np.append(area, data['area'][()])
+            elevation_extent = np.append(elevation_extent, data['elevation_extent'][()])
+            azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
+            area = np.append(area, data['area'][()])
 
     filename = f'{filepath}{date_dir}/' \
                f'{config.radar_config}_{config.experiment_name}_swht_' \
-               f'{date_dir}_{config.tx_site_name}_{config.rx_site_name}_brian.h5'
+               f'{date_dir}_{config.tx_site_name}_{config.rx_site_name}.h5'
     print(filename)
     print('\t-loading completed')
     # Set the azimuth pointing direction
