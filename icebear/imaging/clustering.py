@@ -1,3 +1,5 @@
+import h5py
+import skimage.measure as image
 import numpy as np
 try:
     import cupy as xp
@@ -7,7 +9,63 @@ except ModuleNotFoundError:
     CUDA = False
 
 
-def beam_finder(azimuth, elevation):
+def find_nearest(array, value):
+    # Returns the index of array that is closest to value
+    array = np.asarray(array)
+    idx = (np.abs(array-value)).argmin()
+    return idx
+
+
+def beam_finder(data_lat, data_lon, beam_pattern):
+    if beam_pattern in ['1lam', '3lam']:
+        # load gain data for beam pattern
+        with h5py.File("~/icebear-processing/icebear/ICEBEAR/IB3D-beams/ib3d_link_gain_mask_" + beam_pattern + "_rot13.h5", 'r') as f:
+            alt_b = f['altitude'][:]
+            gain_b = f['gain_mask'][:]
+            lat_b = f['latitude'][:]
+            lon_b = f['longitude'][:]
+            # Note: gain is indexed as (lat, lon, alt, 0)
+        alt_b = alt_b / 1000
+        gain_b = np.nan_to_num(gain_b, nan=0.0)
+    else:
+        return np.ones_like(data_lat) * np.NaN  # Return empty beam array if selected beam pattern is not defined
+
+        # Mask the closest latitudes to the radar (check with Adam or Magnus about if this is reasonable)
+    gain_b[0:21, :, :, 0] = 0.0
+
+    # Get gain slice closest to 90 km
+    alt_val = 90
+    alt_idx = find_nearest(alt_b, alt_val)
+
+    # Grab gain slice at selected altitude and mask the data
+    # Currently using mask of 15 dB in beam pattern gain
+    # All gain values lower than 15 dB are set to 0
+    # Although, I believe image.label requires g to be an array of integers
+    mask = 15
+    g = gain_b[:, :, alt_idx, 0]
+    g = np.where(g < mask, 0, g)
+    g = np.where(g >= mask, 30, g)
+    l = image.label(g)
+
+    beam = np.zeros_like(data_lat)
+    # for every data point in the data set
+    for i in range(len(data_lat)):
+        # Find the index of the gain pattern lat and long values that is closest to
+        # the data point the loop is assigning a beam number to.
+        x = find_nearest(lat_b, data_lat[i])
+        y = find_nearest(lon_b, data_lon[i])
+
+        # assign beam number (0 if outside beam, 1-3 for the 3 main beams in 3lam)
+        # 3-lam I believe it will label east as 1, center as 2, and west as 3. Adjust as needed
+        # 1-lam will label the beam as 1, adjust as needed
+        beam[i] = l[x, y]
+
+    # relabel outside beam as -1
+    beam[beam == 0] = -1
+    return beam
+
+
+def beam_finder_six_lines(azimuth, elevation):
     """
     Classifies each point into a beam corresponding to the 3 lambda Icebear transmitter configuration.
 
