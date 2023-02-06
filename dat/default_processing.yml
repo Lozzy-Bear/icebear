@@ -29,7 +29,7 @@ config_updated: [2022,05,16] # [2022,06,16] (Brian)
 rx_site_name: 'bakker'  # name of receiver site
 rx_site_lat_long: [52.243, -106.450]  # [latitude, longitude] coordinates of the receiver antenna array
 rx_heading: 7 # receiver array boresight pointing direction in degrees east of north
-rx_updated: [2022,07,17] # [year, month, day] date the positions, mask, and/or calibration was updated
+rx_updated: [2022,12,13] # [year, month, day] date the positions, mask, and/or calibration was updated
 rx_rf_path: 'Ant->feed->bulk->BPF->LNA->LNA->X300'  # RF hardware path chain, eg. antenna->feedline->bulkhead->...
 rx_ant_type: 'Cushcraft 50MHz Superboomer' # brand and model of antenna used
 rx_ant_coords:  # [[x0, ...],[y0, ...],[z0, ...]]receiver antenna relative locations in meters from antenna 0
@@ -38,7 +38,7 @@ rx_ant_coords:  # [[x0, ...],[y0, ...],[z0, ...]]receiver antenna relative locat
   - [0.,0.0895,0.3474,0.2181,0.6834,-0.0587,-1.0668,-0.7540,-0.5266,-0.4087] # [z,...]
 rx_feed_corr: # [[ant 0 magnitude, ...],[ant 0 phase, ...]] correction per receiver antenna
   - [6.708204,6.4031243,6.0827622,6.3245554,6.4031243,6.0827622,6.708204,6.0827622,5.830952,6.0] # [magnitude, ...]
-  - [0.0, -21.655, -14.38, -24.685, -62.805, 23.935, 15.255, -34.205, 0.605, -22.63] # [phase, ...]
+  - [0.0, -19.805, -22.595, -22.17, -35.42, 9.57, 9.94, -5.56, 2.07, 18.095] # [phase, ...]
 rx_feed_corr_date: []
 rx_feed_corr_type: ''
 rx_ant_mask: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # [0, 1, ...] mask indicating which receiver antennas were used and/or functional
