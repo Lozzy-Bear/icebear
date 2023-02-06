@@ -87,8 +87,8 @@ def map_target(tx, rx, az, el, rf, dop, wavelength):
 
     # WGS84 Model for lat, long, alt
     sx[:, :] = pm.aer2geodetic(np.rad2deg(az), np.rad2deg(el), np.abs(r),
-                               np.repeat(np.rad2deg(rx[0]), len(az)),
-                               np.repeat(np.rad2deg(rx[1]), len(az)),
+                               np.repeat(rx[0], len(az)),
+                               np.repeat(rx[1], len(az)),
                                np.repeat(rx[2], len(az)),
                                ell=pm.Ellipsoid("wgs84"), deg=True)
 
@@ -415,7 +415,8 @@ if __name__ == '__main__':
             # azimuth_extent = np.append(azimuth_extent, data['azimuth_extent'][()])
             # area = np.append(area, data['area'][()])
 
-    filename = f'{filepath}{date_dir}/' \
+    year, month, day = date_dir.split('_')
+    filename = f'{filepath}/{year}/{month}/{date_dir}/' \
                f'{config.radar_config}_{config.experiment_name}_swht_' \
                f'{date_dir}_{config.tx_site_name}_{config.rx_site_name}.h5'
     print(filename)
@@ -439,15 +440,20 @@ if __name__ == '__main__':
     t = t * m
     print('\t-pre-masking completed')
 
-    if np.abs(config.rx_site_lat_long[0]) > 10:
-        rx_coord = np.deg2rad(config.rx_site_lat_long)
+    if np.abs(config.rx_site_lat_long[0]) < 10:
+        rx_coord = np.rad2deg(config.rx_site_lat_long)
     else:
         rx_coord = config.rx_site_lat_long
+
+    if np.abs(config.tx_site_lat_long[0]) < 10:
+        tx_coord = np.rad2deg(config.tx_site_lat_long)
+    else:
+        tx_coord = config.tx_site_lat_long
 
     if len(rx_coord) < 3:
         rx_coord = np.append(rx_coord, 0.0)
         print(rx_coord)
-    tx_coord = np.deg2rad(config.tx_site_lat_long)
+
     if len(tx_coord) < 3:
         tx_coord = np.append(tx_coord, 0.0)
         print(tx_coord)
@@ -531,7 +537,7 @@ if __name__ == '__main__':
     plt.plot([0, 10_000], [mean_altitude, mean_altitude], '--k', label=f'Mean Altitude {mean_altitude:.1f} [km]')
     plt.legend(loc='upper right')
     plt.grid()
-    plt.savefig(f'{filepath}{date_dir}/altitude_distribution_{date_dir}.png')
+    plt.savefig(f'{filepath}/{year}/{month}/{date_dir}/altitude_distribution_{date_dir}.png')
     # plt.show()
     plt.close()
 
