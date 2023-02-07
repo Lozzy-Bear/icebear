@@ -19,7 +19,7 @@ def find_nearest(array, value):
 def beam_finder(data_lat, data_lon, beam_pattern):
     if beam_pattern in ['1lam', '3lam']:
         # load gain data for beam pattern
-        with h5py.File("~/icebear-processing/icebear/ICEBEAR/IB3D-beams/ib3d_link_gain_mask_" + beam_pattern + "_rot13.h5", 'r') as f:
+        with h5py.File("/home/icebear-processing/github_repos/icebear/dat/ib3d_link_gain_mask_" + beam_pattern + "_rot13.h5", 'r') as f:
             alt_b = f['altitude'][:]
             gain_b = f['gain_mask'][:]
             lat_b = f['latitude'][:]

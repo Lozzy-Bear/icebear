@@ -168,7 +168,7 @@ def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic
     return m[2, :]
 
 
-def calculate_clustering(la, lo, ti, az, el, al, k=500_000, beam_pattern='3lam'):
+def calculate_clustering(la, lo, ti, az, el, al, k=500_000):
     """
     Calculates the spatial and temporal clustering values for each point in the input arrays. Calculations performed on
     the GPU using cupy. Default spans to use for the calculation are the nearest 512 points in time and the
@@ -222,6 +222,10 @@ def calculate_clustering(la, lo, ti, az, el, al, k=500_000, beam_pattern='3lam')
             for x in idx[0]:
                 if (schedule['start time'][x] <= date) and (schedule['end time'][x] >= date):
                     if ('3lam' in schedule['notes'][x]) or ('NA' in schedule['notes'][x]):
+                        beam_pattern='3lam'
+                        ti_mask[i] = 1
+                    if ('1lam' in schedule['notes'][x]):
+                        beam_pattern='1lam'
                         ti_mask[i] = 1
     
         if np.all(ti_mask == 0):
