@@ -439,5 +439,4 @@ def get_data_file_times(filepath):
 
 
 if __name__ == '__main__':
-    verbose().heading(f'ICEBEAR Version = {version()}')
-    verbose().heading(f'Created Date = {created()}')
+    walk_hdf5("/data/icebear_data/graphic/2020_03_31/ib3d_normal_graphic_10deg_2020_03_31_03_prelate_bakker.h5")

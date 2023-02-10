@@ -519,6 +519,40 @@ def swht_method_advanced_cuda(visibilities, coeffs_fov, coeffs_full,
     return fov_mx, fov_my, mean_jansky, max_jansky, valid
 
 
+def graphic_method(visibilities, coeffs, resolution, fov, fov_center,
+                   rf_distance, doppler_shift, snr_db, wavelength=6.056):
+    from sanitizing import map_target
+
+    brightness = swht_py(visibilities, coeffs)
+    brightness = np.abs(brightness / np.max(brightness))
+    brightness[brightness < 0.8] = 0.0
+    brightness[brightness > 0.0] = 1.0
+    image = np.array(brightness * 255, dtype=np.uint8)
+    threshed = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+    contours, _ = cv2.findContours(threshed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    vertices_geo = []
+    for i in range(len(contours)):
+        px = contours[i][:, 0, 0] * resolution - fov[0, 0] + fov_center[0]
+        py = contours[i][:, 0, 1] * resolution - fov[1, 0] + fov_center[1]
+        px += 7.0  # Adjust for RX site pointing direction
+        sx, sa, sv = map_target(np.array([50.893, -109.403, 0.0]),
+                                np.array([52.243, -106.450, 0.0]),
+                                px, py,
+                                np.repeat(rf_distance, px.shape),
+                                np.repeat(doppler_shift, px.shape), wavelength)
+        s = np.zeros((6, sx.shape[1]), dtype=np.float)
+        s[0:3, :] = sx
+        s[3, :] = np.repeat(np.abs(snr_db), sx.shape[1])
+        s[4, :] = sv[2, :]
+        s[5, :] = np.repeat(doppler_shift, sx.shape[1])
+        vertices_geo.append(s)
+
+    # For this range-doppler bin these are each lists, where each element in the list is a target
+    # in the same range-doppler image bin. Each target is represented by an array of vertices.
+    return vertices_geo
+
+
 def contour_map(brightness, px, py):
     """
 

@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # plt.savefig(f"data_hist_3lam.pdf")
     # plt.show()
 
-    f = h5py.File('/home/arl203/arraytools/nec/ib3d_link_gain_mask_rot13.h5', 'r')
+    f = h5py.File('/home/arl203/arraytools/nec/ib3d_link_gain_mask_3lam_rot13.h5', 'r')
     # f = h5py.File('/home/arl203/arraytools/nec/ib3d_link_gain_mask_1lam_rot13.h5', 'r')
     alt = f['altitude'][()]
     lat = f['latitude'][()]

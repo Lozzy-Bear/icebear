@@ -2,12 +2,12 @@ import common.utils as utils
 import numpy as np
 
 
-filepath = 'E:/icebear/level1/'  # Enter file path to level 1 directory
+# filepath = 'E:/icebear/level1/'  # Enter file path to level 1 directory
 #files = utils.get_all_data_files(filepath, '2020_12_13', '2020_12_15')  # Enter first sub directory and last
-files = ['E:/icebear/level1/2019_12_19/ib3d_normal_01dB_1000ms_2019_12_19_05_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
+files = ['/run/media/arl203/Seagate Expansion Drive/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_03_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
 
 for file in files:
-    config = common.utils.Config(file)
+    config = utils.Config(file)
     config.lmax = 85
 
     # config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_01_17_090az_045el_01res_218lmax.h5')

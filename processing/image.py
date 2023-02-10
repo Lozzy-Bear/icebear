@@ -1,10 +1,11 @@
 import numpy as np
-import common.utils as util
+import common.utils
 import h5py
 try:
     import cupy as cp
 except:
     print('no cupy')
+import processing.swht
 
 
 def generate_level2(config, method='swht'):
@@ -44,6 +45,12 @@ def generate_level2(config, method='swht'):
                 config.resolution,
                 config.fov,
                 config.fov_center)
+    elif method == 'graphic':
+        calculate_image = _graphic_method
+        args = (processing.swht.unpackage_coeffs(config.swht_coeffs, int(config.lmax)),
+                config.resolution,
+                config.fov,
+                config.fov_center)
     else:
         print(f'ERROR: the imaging method {method} does not exist.')
         exit()
@@ -72,6 +79,7 @@ def generate_level2(config, method='swht'):
             # data will pass by reference to the current hdf5 data we are working on.
             calculate_image(filename, int(now.hour), int(now.minute), int(now.second * 1000), data, *args)
             print(f'\t-appended: {int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}')
+            exit()
 
     return None
 
@@ -311,27 +319,101 @@ def _swht_method_advanced(filename, hour, minute, second, data, coeffs_fov, coef
     return
 
 
+def _graphic_method(filename, hour, minute, second, data, coeffs, resolution, fov, fov_center):
+    """
+    Sets up the environment for imaging with the SWHT method with standard parameters and appends the level 2 HDF5 file
+    for both standard measurements and SWHT specific ones.
+
+    Parameters
+    ----------
+        filename : string
+            Name of the hdf5 file to be appended.
+        hour : int
+            Hour of the data passed.
+        minute : int
+            Minute of the data passed.
+        second : int
+            Second of the data passed.
+        data : dict hdf5
+            HDF5 structure of the level 1 data
+        coeffs : complex128 np.array
+            Complex matrix of coefficients for the SWHT with dimension fov / resolution.
+
+    Returns
+    -------
+        None
+    """
+
+    doppler_shift = data['doppler_shift'][()]
+    # This is a little hack to check if we are seeing a dropped sample.
+    # Dropped samples always have data for way more range-Doppler bins and that never occurs with real data.
+    if len(doppler_shift) >= 9000:#28000:
+        print('\t-dropped sample detected; skipped')
+        return
+    rf_distance = data['rf_distance'][()]
+    snr_db = data['snr_db'][()]
+    visibilities = np.array(data['spectra'][:, 0], dtype=np.complex64)[:, np.newaxis]
+    visibilities = np.append(visibilities, data['xspectra'][:, :], axis=1)
+    visibilities = np.append(visibilities, np.conjugate(visibilities), axis=1)
+
+    vertices_geo = []
+    for idx, visibility in enumerate(visibilities):
+        vg = processing.swht.graphic_method(visibility, coeffs, resolution, fov, fov_center,
+                                            rf_distance[idx],
+                                            doppler_shift[idx],
+                                            snr_db[idx],
+                                            6.056)
+        vertices_geo.append(vg)
+        print(f"\t{idx:04d} / {visibilities.shape[0]}")
+
+    import pickle
+    file = open('important4', 'wb')
+    pickle.dump(vertices_geo, file)
+
+    # Custom data appending for SWHT image data sets
+    time = f'{hour:02d}{minute:02d}{second:05d}'
+    f = h5py.File(filename, 'a')
+    f.create_group(f'data/{time}')
+    f.create_dataset(f'data/{time}/time', data=np.array([hour, minute, second]))
+    f.create_dataset(f'data/{time}/doppler_shift', data=doppler_shift)
+    f.create_dataset(f'data/{time}/snr_db', data=snr_db)
+    f.create_dataset(f'data/{time}/rf_distance', data=rf_distance)
+    f.create_dataset(f'data/{time}/vertices_geo', data=vertices_geo, dtype=object)
+    f.close()
+
+    return
+
+
 if __name__ == '__main__':
-    file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
+    # file = 'E:/icebear/level1/2022_22_22/ib3d_normal_01dB_1000ms_2019_10_28_06_prelate_bakker.h5'
     # file = '/beaver/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_13_prelate_bakker.h5'
-    config = common.utils.Config(file)
-    config.add_attr('imaging_destination', 'E:/icebear/level2_advanced_cuda/')
-    # config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
-    # config.add_attr('imaging_destination', '/beaver/backup/level2_widefov/')
-    config.add_attr('imaging_source', file)
-    imaging_start, imaging_stop = util.get_data_file_times(file)
-    imaging_step = [0, 0, 0, 1, 0]
-    config.add_attr('imaging_start', imaging_start)
-    config.add_attr('imaging_stop', imaging_stop)
-    config.add_attr('imaging_step', imaging_step)
-    config.add_attr('lmax', 85)
-    config.add_attr('resolution', 0.1)
-    config.add_attr('image_method', 'swht')
-    # config.add_attr('fov', np.array([[0, 360], [0, 180]]))
-    config.add_attr('fov', np.array([[315, 225], [90, 45]]))
-    # config.add_attr('fov_center', np.array([90, 90]))
-    config.add_attr('fov_center', np.array([270, 90]))
-    config.add_attr('swht_coeffs', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
-    config.add_attr('swht_coeffs_lowres', 'X:/PythonProjects/icebear/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5')
-    # config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
-    generate_level2(config, method='advanced')
+    files = ['/data/icebear_datastore/ICEBEAR_Level1_data/2021/02/2021_02_21/ib3d_normal_01dB_1000ms_2021_02_21_05_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
+    # files = ['/run/media/arl203/Seagate Expansion Drive/backup/level1/2021_02_02/ib3d_normal_01dB_1000ms_2021_02_02_05_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
+    # files = ['/run/media/arl203/Seagate Expansion Drive/backup/level1/2019_12_19/ib3d_normal_01dB_1000ms_2019_12_19_05_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
+    # files = ['/run/media/arl203/Seagate Expansion Drive/backup/level1/2020_03_31/ib3d_normal_01dB_1000ms_2020_03_31_03_prelate_bakker.h5']  # Alternate; make a list of files with file paths.
+    for file in files:
+        config = common.utils.Config(file)
+        # config.add_attr('imaging_destination', 'E:/icebear/level2_advanced_cuda/')
+        # config.add_attr('imaging_destination', '/beaver/backup/level2_magnus/')
+        config.add_attr('imaging_destination', '/data/icebear_data/graphic/')
+        config.add_attr('imaging_source', file)
+        imaging_start, imaging_stop = common.utils.get_data_file_times(file)
+        imaging_start[4] = 41  # 22  # 22
+        imaging_start[5] = 55  # 54  # 33
+        imaging_step = [0, 0, 0, 1, 0]
+        config.add_attr('imaging_start', imaging_start)
+        config.add_attr('imaging_stop', imaging_stop)
+        config.add_attr('imaging_step', imaging_step)
+        config.add_attr('lmax', 85)
+        config.add_attr('resolution', 0.1)
+        config.add_attr('image_method', 'graphic')
+        # config.add_attr('fov', np.array([[0, 360], [0, 180]]))
+        # config.add_attr('fov', np.array([[360, 0], [90, 0]]))
+        config.add_attr('fov', np.array([[315, 225], [90, 45]]))
+        # config.add_attr('fov_center', np.array([90, 90]))
+        # config.add_attr('fov_center', np.array([270, 90]))
+        config.add_attr('fov_center', np.array([270, 90]))
+        config.add_attr('swht_coeffs', '/home/arl203/icebear/icebear/dat/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
+        # config.add_attr('swht_coeffs_lowres', '/home/arl203/icebear/icebear/dat/swhtcoeffs_ib3d_2021_10_19_360az_090el_10res_85lmax.h5')
+        # config.add_attr('swht_coeffs', '/beaver/backup/icebear/swhtcoeffs_ib3d_2021_07_28_090az_045el_01res_85lmax.h5')
+        generate_level2(config, method='graphic')

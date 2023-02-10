@@ -154,7 +154,7 @@ def relaxation_elevation(beta, rf_distance, azimuth, bistatic_distance, bistatic
         n += 1
 
     m[2, :] = np.where(err >= target, np.nan, m[2, :])
-    print('\t-relaxation mean error:', np.rad2deg(np.nanmean(err)), 'iterations:', n)
+    # print('\t-relaxation mean error:', np.rad2deg(np.nanmean(err)), 'iterations:', n)
     return m[2, :]
 
 
