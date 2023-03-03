@@ -217,8 +217,9 @@ def calculate_clustering(la, lo, ti, az, el, al, k=500_000):
         idx = np.where((schedule['start time'].dt.day == date.day) | (schedule['end time'].dt.day == date.day))
 	
         ti_mask = np.zeros(len(ti))
-        for i in range(len(ti)):
+        for i in range(len(ti)-1, -1, -1):
             date = pandas.Timestamp(datetime.datetime.fromtimestamp(ti[i], tz=tzutc()))
+            beam_pattern='3lam'
             for x in idx[0]:
                 if (schedule['start time'][x] <= date) and (schedule['end time'][x] >= date):
                     if ('3lam' in schedule['notes'][x]) or ('NA' in schedule['notes'][x]):
@@ -227,17 +228,19 @@ def calculate_clustering(la, lo, ti, az, el, al, k=500_000):
                     if ('1lam' in schedule['notes'][x]):
                         beam_pattern='1lam'
                         ti_mask[i] = 1
-    
+
         if np.all(ti_mask == 0):
             return 'NA', 'NA', 'NA'
 
     except Exception as e:
         print('Assumed to be pre tx schedules')
         print(e)
+        beam_pattern='3lam'
         ti_mask=np.ones(len(ti))
 
     #ti = np.ma.masked_where(ti_mask == 0, ti)
     
+    print(f"Using beam pattern {beam_pattern}")
     beam = cl.beam_finder(la, lo, beam_pattern)
     beam[al > 150] = -1
     beam[al < 70] = -1
