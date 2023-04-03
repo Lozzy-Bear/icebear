@@ -196,7 +196,6 @@ def quick_look(config, time):
 def range_doppler_snr(config, time, spacing):
     """
     Creates a standard range-Doppler SNR plot of level 1 data for the specified time frame.
-
     Parameters
     ----------
         config : Class Object
@@ -205,16 +204,13 @@ def range_doppler_snr(config, time, spacing):
             Time class instantiation for start, stop, step deceleration.
         spacing : int
             The amount of time in seconds to plot in one image.
-
     Returns
     -------
         None
-
     Notes
     -----
         * Typically a Quick Look plot should be one day of data with a step size equal to the incoherent averages
           time length used to generate the level 1 data used.
-
     """
     temp_hour = [-1, -1, -1, -1]
     spacing_counter = 0
@@ -225,7 +221,7 @@ def range_doppler_snr(config, time, spacing):
                             f'{int(time.start_human.year):04d}_'
                             f'{int(time.start_human.month):02d}_'
                             f'{int(time.start_human.day):02d}_'
-                            f'{int(time.start_human.hour)}'
+                            f'{int(time.start_human.hour):02d}'
                             f'.mp4', fps=10, mode='I') as writer:
         for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
             now = time.get_date(t)
@@ -313,6 +309,139 @@ def range_doppler_snr(config, time, spacing):
                             data_flag = True
                 except:
                     continue
+    writer.close()
+    return None
+    
+    
+def range_doppler_snr_l2(config, time, spacing):
+    """
+    Creates a standard range-Doppler SNR plot of level 2 data for the specified time frame.
+
+    Parameters
+    ----------
+        config : Class Object
+            Config class instantiation which contains plotting settings.
+        time : Class Object
+            Time class instantiation for start, stop, step deceleration.
+        spacing : int
+            The amount of time in seconds to plot in one image.
+
+    Returns
+    -------
+        None
+
+    Notes
+    -----
+        * Typically a Quick Look plot should be one day of data with a step size equal to the incoherent averages
+          time length used to generate the level 1 data used.
+
+    """
+    
+    # Make image
+    fig = plt.figure(1)
+    plt.scatter(0, -1, c=0.0, vmin=0.0, vmax=30.0, s=3, cmap='plasma_r')
+    cb = plt.colorbar(label='SNR (dB)')
+    cb.ax.plot([-500, 500], [config.snr_cutoff_db, config.snr_cutoff_db], 'k')
+    plt.xlabel('Doppler (Hz)')
+    plt.ylabel('Total RF Distance (km)')
+    plt.ylim(0, config.number_ranges * config.range_resolution)
+    plt.xlim(-500, 500)
+    plt.xticks(np.arange(-500, 500 + 100, 100))
+    plt.yticks(np.arange(0, int(config.number_ranges * config.range_resolution + 500), 500))
+    plt.grid(linestyle=':')
+    props = dict(boxstyle='square', facecolor='wheat', alpha=0.5)
+    plt.text(-450, 150, f'{config.snr_cutoff_db} dB SNR Cutoff', bbox=props)
+    plt.text(250, 150, f'{spacing} s Interval', bbox=props)
+    
+    
+    temp_hour = [-1, -1, -1, -1]
+    spacing_counter = 1
+    data_flag = False
+    sum_counter = 0
+    data_sets = []
+    with imageio.get_writer(f'{config.plotting_destination}{config.radar_config}_{config.experiment_name}_'
+                            f'range_doppler_snr_{spacing}sec_movie_'
+                            f'{int(time.start_human.year):04d}_'
+                            f'{int(time.start_human.month):02d}_'
+                            f'{int(time.start_human.day):02d}_'
+                            f'{int(time.start_human.hour):02d}'
+                            f'.mp4', fps=10, mode='I') as writer:
+        for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
+            now = time.get_date(t)
+            if [int(now.year), int(now.month), int(now.day), int(now.hour)] != temp_hour:
+                source_file = f'{config.plotting_source}{config.radar_config}_'\
+                              f'{config.experiment_name}_'\
+                              f'{int(config.snr_cutoff_db):02d}dB_'\
+                              f'{config.incoherent_averages:02d}00ms_'\
+                              f'{int(now.year):04d}_'\
+                              f'{int(now.month):02d}_'\
+                              f'{int(now.day):02d}_'\
+                              f'{int(now.hour):02d}_'\
+                              f'{config.tx_site_name}_{config.rx_site_name}.h5'
+                              
+                print(source_file)
+                try:
+                    filename = h5py.File(source_file, 'r')
+                except:
+                    print('ERROR: File skipped or does not exist')
+                    continue
+                temp_hour = [int(now.year), int(now.month), int(now.day), int(now.hour)]
+
+            # Add to the image if under spacing
+            if spacing_counter <= spacing:
+                try:
+                    moment = f'data/{int(now.hour):02d}{int(now.minute):02d}{int(now.second * 1000):05d}'
+                    if bool(filename[f'{moment}/data_flag']):
+                        dop = filename[f'{moment}/doppler_shift'][:]
+                        rng = np.abs(filename[f'{moment}/rf_distance'][:])
+                        snr = np.abs(filename[f'{moment}/snr_db'][:])
+                        period = plt.scatter(dop, rng, c=snr, vmin=0.0, vmax=30.0, s=3, cmap='plasma_r')
+                        data_sets.append(period)
+                        sum_counter += int(len(rng))
+                        if sum_counter > 10:
+                            data_flag = True
+                except:
+                    continue
+
+            # Save the image if over spacing
+            if spacing_counter >= spacing:
+                plt.title(f'ICEBEAR-3D Range-Doppler-SNR Plot\n'
+                          f'{int(now.year):04d}-'
+                          f'{int(now.month):02d}-'
+                          f'{int(now.day):02d} '
+                          f'{int(now.hour):02d}:'
+                          f'{int(now.minute):02d}:'
+                          f'{int(now.second):02d}')
+            
+                if data_flag:     
+                    save_name = f'{config.plotting_destination}{config.radar_config}_{config.experiment_name}_'\
+                                f'range_doppler_snr_{spacing}sec_'\
+                                f'{int(now.year):04d}_'\
+                                f'{int(now.month):02d}_'\
+                                f'{int(now.day):02d}_'\
+                                f'{int(now.hour):02d}_'\
+                                f'{int(now.minute):02d}_'\
+                                f'{int(now.second):02d}'
+                            
+                    print('\tsaving image:', save_name)
+                    plt.savefig(save_name + '.pdf')
+
+                canvas = FigureCanvas(fig)
+                canvas.draw()
+                writer.append_data(np.asarray(canvas.buffer_rgba()))
+
+                spacing_counter = 0
+                data_flag = False
+                sum_counter = 0
+                
+                # Clear Data
+                for dset in data_sets:
+                    dset.remove()
+                data_sets = []
+            
+            spacing_counter += 1
+                
+            
     writer.close()
     return None
 
@@ -517,9 +646,9 @@ def FoV_snr(config, time, spacing, source_file):
     lat = data['data']['latitude'][:]
     lon = data['data']['longitude'][:]
 
-    print("Check if Lat Lon look correct")
-    print(lat)
-    print(lon)
+    #print("Check if Lat Lon look correct")
+    #print(lat)
+    #print(lon)
 
     lat = np.ma.masked_where(snr < config.snr_cutoff_db, lat)
     lon = np.ma.masked_where(snr < config.snr_cutoff_db, lon)
@@ -530,7 +659,7 @@ def FoV_snr(config, time, spacing, source_file):
                             f'{int(time.start_human.year):04d}_'
                             f'{int(time.start_human.month):02d}_'
                             f'{int(time.start_human.day):02d}_'
-                            f'{int(time.start_human.hour)}'
+                            f'{int(time.start_human.hour):02d}'
                             f'.mp4', fps=10, mode='I') as writer:
         for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
             now = time.get_date(t)
@@ -611,9 +740,9 @@ def FoV_dop(config, time, spacing, source_file):
     lat = data['data']['latitude'][:]
     lon = data['data']['longitude'][:]
 
-    print("Check if Lat Lon look correct")
-    print(lat)
-    print(lon)
+    #print("Check if Lat Lon look correct")
+    #print(lat)
+    #print(lon)
 
     lat = np.ma.masked_where(snr < config.snr_cutoff_db, lat)
     lon = np.ma.masked_where(snr < config.snr_cutoff_db, lon)
@@ -625,7 +754,7 @@ def FoV_dop(config, time, spacing, source_file):
                             f'{int(time.start_human.year):04d}_'
                             f'{int(time.start_human.month):02d}_'
                             f'{int(time.start_human.day):02d}_'
-                            f'{int(time.start_human.hour)}'
+                            f'{int(time.start_human.hour):02d}'
                             f'.mp4', fps=10, mode='I') as writer:
         for t in range(int(time.start_epoch), int(time.stop_epoch), int(time.step_epoch)):
             now = time.get_date(t)

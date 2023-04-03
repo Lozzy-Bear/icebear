@@ -73,7 +73,7 @@ coherent_integration_time: 1
 incoherent_averages: 10
 number_ranges: 2000
 range_resolution: 1.5 # km
-timestamp_corr: 30
+timestamp_corr: 30 # Corrects for sequence offset between tx and rx. 30 ~ 150us
 clutter_gates: 100
 code_length: 20000 #
 snr_cutoff_db: 1.0 # signal-to-noise ratio cutoff in dB

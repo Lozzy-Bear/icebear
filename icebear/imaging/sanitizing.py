@@ -211,10 +211,11 @@ def calculate_clustering(la, lo, ti, az, el, al, k=500_000):
 
     # Only assess times that ran with 3-lambda seperation
     try:
-        date = pandas.Timestamp(datetime.datetime.fromtimestamp(ti[0], tz=tzutc()))
+        date_start = pandas.Timestamp(datetime.datetime.fromtimestamp(ti[0], tz=tzutc()))
+        date_end = pandas.Timestamp(datetime.datetime.fromtimestamp(ti[-1], tz=tzutc()))
         dateparse = lambda x: datetime.datetime.strptime(x, '%Y-%m-%dT%H:%M:%S').replace(tzinfo=tzutc())
         schedule = pandas.read_csv(f'/mnt/icebear/schedule_files/{date.year:04d}-{date.month:02d}.tx_compiled_runtimes.txt', parse_dates=['start time', 'end time'], date_parser=dateparse, na_filter=False)
-        idx = np.where((schedule['start time'].dt.day == date.day) | (schedule['end time'].dt.day == date.day))
+        idx = np.where((schedule['start time'] <= date_start) | (schedule['end time'].dt.day >= date_end))
 	
         ti_mask = np.zeros(len(ti))
         for i in range(len(ti)-1, -1, -1):

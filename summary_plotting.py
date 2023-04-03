@@ -25,7 +25,7 @@ end_second = 60 * 1000
 snr_lim = 1.0
 prefix = "ib3d_normal_01db_1000ms"
 suffix = "prelate_bakker"
-path = '/mnt/icebear/ICEBEAR_plots/summary_plots/'
+path = '/mnt/NAS/plots/summary_plots/'
 source = 'Not Set'
 errors = False
 
@@ -69,7 +69,7 @@ if (year == 0) or (month == 0) or (day == 0):
     print("\t-y: year\n\t-m: month\n\t-d: day")
 
 if source == 'Not Set':
-    source = f'/mnt/icebear/ICEBEAR_Level1_data/{year:04d}/{month:02d}/'
+    source = f'/mnt/NAS/level1_data/{year:04d}/{month:02d}/'
 
 print(f"Beginning summary plotting for {year:04d}-{month:02d}-{day:02d}")
 for hour in range(start_hour, end_hour):
